@@ -70,12 +70,12 @@ def unConditionalLoss(model, x, t, e):
         
         return _weibullLoss(model, x, t, e) 
         
-    else if model.dist == 'LogNormal':
+    elif model.dist == 'LogNormal':
         
         return _logNormalLoss(model, x, t, e) 
 
 
-def _conditionalLogNormalLoss(model, x, t, e, ELBO=True, mean=True, lambd=1e-2, alpha=1., ):
+def _conditionalLogNormalLoss(model, x, t, e, ELBO=True, lambd=1e-2, alpha=1., ):
     
     # k = log(shape), b = -log(scale)
     
@@ -147,7 +147,7 @@ def _conditionalLogNormalLoss(model, x, t, e, ELBO=True, mean=True, lambd=1e-2, 
     return -ll/x.shape[0]
 
 
-def _conditionalWeibullLoss(model, x, t, e, ELBO=True, mean=True, lambd=1e-2, alpha=1.):
+def _conditionalWeibullLoss(model, x, t, e, ELBO=True, lambd=1e-2, alpha=1.):
     
     # k = log(shape), b = -log(scale)
     
@@ -224,15 +224,15 @@ def _conditionalWeibullLoss(model, x, t, e, ELBO=True, mean=True, lambd=1e-2, al
 
     return -ll/x.shape[0]
 
-def conditionalLoss(model, x, t, e, ELBO=True, mean=True, lambd=1e-2, alpha=1.):
+def conditionalLoss(model, x, t, e, ELBO=True, lambd=1e-2, alpha=1.):
     
     if model.dist == 'Weibull':
         
-        return _conditionalWeibullLoss(model, x, t, e, G, ELBO, mean, lambd, alpha) 
+        return _conditionalWeibullLoss(model, x, t, e, ELBO, lambd, alpha) 
         
-    else if model.dist == 'LogNormal':
+    elif model.dist == 'LogNormal':
         
-        return _conditionalLogNormalLoss(model, x, t, e, G, ELBO, mean, lambd, alpha) 
+        return _conditionalLogNormalLoss(model, x, t, e, ELBO, lambd, alpha) 
 
 def _weibull_cdf(model, x, t_horizon):
 

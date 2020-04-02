@@ -3,7 +3,7 @@ import torch
 
 class DeepSurvivalMachines(nn.Module):
 
-    def __init__(self, inputdim, k, mlptyp=1, HIDDEN=False, init=False, dist='Weibull'):
+    def __init__(self, inputdim, k, mlptyp=1, HIDDEN=None, init=False, dist='Weibull'):
         
         super(DeepSurvivalMachines, self).__init__()
         
