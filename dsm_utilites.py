@@ -54,7 +54,7 @@ def increaseCensoring(e, t, p):
 
 
 def pretrainDSM(model, x_train, t_train, e_train, x_valid, t_valid, e_valid, \
-                n_iter=1000, lr=1e-2, thres=1e-4):
+                n_iter=10000, lr=1e-2, thres=1e-4):
     
 
     from tqdm import tqdm_notebook as tqdm    
@@ -125,12 +125,12 @@ def trainDSM(model,quantiles , x_train, t_train, e_train, x_valid, t_valid, e_va
     G      = model.k
     mlptyp = model.mlptype
     HIDDEN = model.HIDDEN
-    
+    dist   = model.dist
     
     print ("Pretraining the Underlying Distributions...")
     
     premodel = pretrainDSM(model, x_train, t_train, e_train, x_valid, t_valid, e_valid, \
-            n_iter=1000, lr=1e-2, thres=1e-4)
+            n_iter=10000, lr=1e-2, thres=1e-4)
     
 
     print(torch.exp(-premodel.scale).cpu().data.numpy()[0], \
@@ -139,7 +139,7 @@ def trainDSM(model,quantiles , x_train, t_train, e_train, x_valid, t_valid, e_va
 
 
     model = DeepSurvivalMachines(x_train.shape[1], G, mlptyp=mlptyp, HIDDEN=HIDDEN, \
-                           init=(float(premodel.shape[0]), float(premodel.scale[0]) ))
+                           init=(float(premodel.shape[0]), float(premodel.scale[0]) ), dist=dist )
     
     model.double()
 

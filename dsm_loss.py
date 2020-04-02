@@ -3,7 +3,7 @@ def _logNormalLoss(model, x, t, e):
     
     import numpy as np
     
-    shape, scale, logits = model.forward(x)
+    shape, scale, logits = model.forward(x, adj=False)
     
     k_ = shape.expand(x.shape[0], -1)
     b_ = scale.expand(x.shape[0], -1)
