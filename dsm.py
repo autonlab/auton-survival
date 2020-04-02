@@ -13,9 +13,26 @@ class DeepSurvivalMachines(nn.Module):
         self.k = k
 
         self.mlptype = mlptyp
-        self.scale = nn.Parameter(-torch.ones(k))
-        self.shape = nn.Parameter(-torch.ones(k))
+
+
         
+        self.dist = dist
+        
+        if self.dist == 'Weibull':
+            
+            self.act = nn.SELU()
+
+            self.scale = nn.Parameter(-torch.ones(k))
+            self.shape = nn.Parameter(-torch.ones(k))
+            
+         
+        elif self.dist == 'LogNormal':
+            
+            self.act = nn.Tanh()
+            self.scale = nn.Parameter(torch.ones(k))
+            self.shape = nn.Parameter(torch.ones(k))
+            
+
         self.HIDDEN = HIDDEN
         
             
@@ -96,15 +113,7 @@ class DeepSurvivalMachines(nn.Module):
             self.scale.data.fill_(init[1])
 
 
-        self.dist = dist
-        
-        if self.dist == 'Weibull':
-            
-            self.act = nn.SELU()
-         
-        elif self.dist == 'LogNormal':
-            
-            self.act = nn.Tanh()
+
     
     def forward(self, x, adj=True):
         
