@@ -54,9 +54,10 @@ def increaseCensoring(e, t, p):
 
 
 def pretrainDSM(model, x_train, t_train, e_train, x_valid, t_valid, e_valid, \
-                n_iter=10000, lr=1e-3, thres=1e-4):
+                n_iter=1000, lr=1e-2, thres=1e-4):
     
-    from tqdm import tqdm
+
+    from tqdm import tqdm_notebook as tqdm    
     from dsm_loss import unConditionalLoss
     from dsm import DeepSurvivalMachines
     import torch
@@ -69,7 +70,7 @@ def pretrainDSM(model, x_train, t_train, e_train, x_valid, t_valid, e_valid, \
 
     torch.manual_seed(0)
     
-    optimizer = torch.optim.Adam(model.parameters(), lr=lr)
+    optimizer = torch.optim.Adam(premodel.parameters(), lr=lr)
 
     oldcost = -float('inf')
 
@@ -78,6 +79,7 @@ def pretrainDSM(model, x_train, t_train, e_train, x_valid, t_valid, e_valid, \
     costs = []
     
     for i in tqdm(range(n_iter)):
+
 
         optimizer.zero_grad()
     
@@ -92,8 +94,9 @@ def pretrainDSM(model, x_train, t_train, e_train, x_valid, t_valid, e_valid, \
         valid_loss = valid_loss.detach().cpu().numpy()
         
         costs.append(valid_loss)
-    
-    
+
+        # print(valid_loss)
+
         if np.abs(costs[-1] - oldcost) < thres: 
             
             patience += 1
@@ -104,7 +107,7 @@ def pretrainDSM(model, x_train, t_train, e_train, x_valid, t_valid, e_valid, \
         
         oldcost = costs[-1]
         
-    return model
+    return premodel
     
 
 def trainDSM(model,quantiles , x_train, t_train, e_train, x_valid, t_valid, e_valid, \
@@ -114,7 +117,7 @@ def trainDSM(model,quantiles , x_train, t_train, e_train, x_valid, t_valid, e_va
     import torch
     import numpy as np
 
-    from tqdm import tqdm
+    from tqdm import tqdm_notebook as tqdm
     from dsm import DeepSurvivalMachines
     from dsm_loss import conditionalLoss
     from copy import deepcopy
@@ -127,8 +130,13 @@ def trainDSM(model,quantiles , x_train, t_train, e_train, x_valid, t_valid, e_va
     print ("Pretraining the Underlying Distributions...")
     
     premodel = pretrainDSM(model, x_train, t_train, e_train, x_valid, t_valid, e_valid, \
-            n_iter=10000, lr=1e-3, thres=1e-4)
+            n_iter=1000, lr=1e-2, thres=1e-4)
     
+
+    print(torch.exp(-premodel.scale).cpu().data.numpy()[0], \
+          torch.exp(premodel.shape).cpu().data.numpy()[0])
+    
+
 
     model = DeepSurvivalMachines(x_train.shape[1], G, mlptyp=mlptyp, HIDDEN=HIDDEN, \
                            init=(float(premodel.shape[0]), float(premodel.scale[0]) ))
@@ -168,6 +176,8 @@ def trainDSM(model,quantiles , x_train, t_train, e_train, x_valid, t_valid, e_va
         valid_loss = valid_loss.detach().cpu().numpy()
         
         out =  computeCIScores(model,quantiles, x_valid, t_valid, e_valid, t_train, e_train)
+
+        #print(valid_loss, out)
 
         valid_loss = np.mean(out)
         
