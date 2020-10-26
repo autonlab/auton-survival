@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.9.1" />
+<title>dsm.datasets API documentation</title>
+<meta name="description" content="Utility functions to load standard datasets to train and evaluate the
+Deep Survival Machines models." />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS_CHTML" integrity="sha256-kZafAc6mZvK3W3v1pHOcUix30OHQN6pU/NO2oFkqZVw=" crossorigin></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>dsm.datasets</code></h1>
+</header>
+<section id="section-intro">
+<p>Utility functions to load standard datasets to train and evaluate the
+Deep Survival Machines models.</p>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python"># coding=utf-8
+# Copyright 2020 Chirag Nagpal, Auton Lab.
+#
+# Licensed under the Apache License, Version 2.0 (the &#34;License&#34;);
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an &#34;AS IS&#34; BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+&#34;&#34;&#34;Utility functions to load standard datasets to train and evaluate the
+Deep Survival Machines models.
+&#34;&#34;&#34;
+
+
+import io
+import pkgutil
+
+import pandas as pd
+import numpy as np
+
+from sklearn.impute import SimpleImputer
+from sklearn.preprocessing import StandardScaler
+
+def increase_censoring(e, t, p):
+
+  uncens = np.where(e == 1)[0]
+  mask = np.random.choice([False, True], len(uncens), p=[1-p, p])
+  toswitch = uncens[mask]
+
+  e[toswitch] = 0
+  t_ = t[toswitch]
+
+  newt = []
+  for t__ in t_:
+    newt.append(np.random.uniform(1, t__))
+  t[toswitch] = newt
+
+  return e, t
+
+def _load_pbc_dataset():
+  &#34;&#34;&#34;Helper function to load and preprocess the PBC dataset
+
+  The Primary biliary cirrhosis (PBC) Dataset [1] is well known
+  dataset for evaluating survival analysis models with time
+  dependent covariates.
+
+  References
+  ----------
+  [1] Fleming, Thomas R., and David P. Harrington. Counting processes and
+  survival analysis. Vol. 169. John Wiley &amp; Sons, 2011.
+
+  &#34;&#34;&#34;
+
+  raise NotImplementedError(&#39;&#39;)
+
+def _load_support_dataset():
+  &#34;&#34;&#34;Helper function to load and preprocess the SUPPORT dataset.
+
+  The SUPPORT Dataset comes from the Vanderbilt University study
+  to estimate survival for seriously ill hospitalized adults [1].
+
+  Please refer to http://biostat.mc.vanderbilt.edu/wiki/Main/SupportDesc.
+  for the original datasource.
+
+  References
+  ----------
+  [1]: Knaus WA, Harrell FE, Lynn J et al. (1995): The SUPPORT prognostic
+  model: Objective estimates of survival for seriously ill hospitalized
+  adults. Annals of Internal Medicine 122:191-203.
+
+  &#34;&#34;&#34;
+
+  data = pkgutil.get_data(__name__, &#39;datasets/support2.csv&#39;)
+  data = pd.read_csv(io.BytesIO(data))
+  x1 = data[[&#39;age&#39;, &#39;num.co&#39;, &#39;meanbp&#39;, &#39;wblc&#39;, &#39;hrt&#39;, &#39;resp&#39;, &#39;temp&#39;,
+             &#39;pafi&#39;, &#39;alb&#39;, &#39;bili&#39;, &#39;crea&#39;, &#39;sod&#39;, &#39;ph&#39;, &#39;glucose&#39;, &#39;bun&#39;,
+             &#39;urine&#39;, &#39;adlp&#39;, &#39;adls&#39;]]
+
+  catfeats = [&#39;sex&#39;, &#39;dzgroup&#39;, &#39;dzclass&#39;, &#39;income&#39;, &#39;race&#39;, &#39;ca&#39;]
+  x2 = pd.get_dummies(data[catfeats])
+
+  x = np.concatenate([x1, x2], axis=1)
+  t = data[&#39;d.time&#39;].values
+  e = data[&#39;death&#39;].values
+
+  x = SimpleImputer(missing_values=np.nan, strategy=&#39;mean&#39;).fit_transform(x)
+  x = StandardScaler().fit_transform(x)
+
+  remove = ~np.isnan(t)
+  return x[remove], t[remove], e[remove]
+
+
+def load_dataset(dataset=&#39;SUPPORT&#39;):
+  &#34;&#34;&#34;Helper function to load datasets to test Survival Analysis models.
+
+  Parameters
+  ----------
+  dataset: str
+      The choice of dataset to load. Currently implemented is &#39;SUPPORT&#39;.
+
+  Returns
+  ----------
+  tuple: (np.ndarray, np.ndarray, np.ndarray)
+      A tuple of the form of (x, t, e) where x, t, e are the input covariates,
+      event times and the censoring indicators respectively.
+
+  &#34;&#34;&#34;
+
+  if dataset == &#39;SUPPORT&#39;:
+    return _load_support_dataset()
+  else:
+    return NotImplementedError(&#39;Dataset &#39;+dataset+&#39; not implemented.&#39;)</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="dsm.datasets.increase_censoring"><code class="name flex">
+<span>def <span class="ident">increase_censoring</span></span>(<span>e, t, p)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def increase_censoring(e, t, p):
+
+  uncens = np.where(e == 1)[0]
+  mask = np.random.choice([False, True], len(uncens), p=[1-p, p])
+  toswitch = uncens[mask]
+
+  e[toswitch] = 0
+  t_ = t[toswitch]
+
+  newt = []
+  for t__ in t_:
+    newt.append(np.random.uniform(1, t__))
+  t[toswitch] = newt
+
+  return e, t</code></pre>
+</details>
+</dd>
+<dt id="dsm.datasets.load_dataset"><code class="name flex">
+<span>def <span class="ident">load_dataset</span></span>(<span>dataset='SUPPORT')</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper function to load datasets to test Survival Analysis models.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>dataset</code></strong> :&ensp;<code>str</code></dt>
+<dd>The choice of dataset to load. Currently implemented is 'SUPPORT'.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>tuple</code></strong> :&ensp;<code>(np.ndarray, np.ndarray, np.ndarray)</code></dt>
+<dd>A tuple of the form of (x, t, e) where x, t, e are the input covariates,
+event times and the censoring indicators respectively.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def load_dataset(dataset=&#39;SUPPORT&#39;):
+  &#34;&#34;&#34;Helper function to load datasets to test Survival Analysis models.
+
+  Parameters
+  ----------
+  dataset: str
+      The choice of dataset to load. Currently implemented is &#39;SUPPORT&#39;.
+
+  Returns
+  ----------
+  tuple: (np.ndarray, np.ndarray, np.ndarray)
+      A tuple of the form of (x, t, e) where x, t, e are the input covariates,
+      event times and the censoring indicators respectively.
+
+  &#34;&#34;&#34;
+
+  if dataset == &#39;SUPPORT&#39;:
+    return _load_support_dataset()
+  else:
+    return NotImplementedError(&#39;Dataset &#39;+dataset+&#39; not implemented.&#39;)</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="dsm" href="index.html">dsm</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="dsm.datasets.increase_censoring" href="#dsm.datasets.increase_censoring">increase_censoring</a></code></li>
+<li><code><a title="dsm.datasets.load_dataset" href="#dsm.datasets.load_dataset">load_dataset</a></code></li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.9.1</a>.</p>
+</footer>
+</body>
+</html>
