@@ -1,3 +1,7 @@
+
+Package: `dsm`
+-------------
+
 Python package `dsm` provides an API to train the Deep Survival Machines
 and associated models for problems in survival analysis. The underlying model
 is implemented in `pytorch`.
@@ -19,11 +23,8 @@ regression problems, Survival Analysis differs in two major ways:
 Deep Survival Machines
 ----------------------
 
-.. figure:: https://ndownloader.figshare.com/files/25259852
-   :figwidth: 20 %
-   :alt: map to buried treasure
+<img width=50% src=https://ndownloader.figshare.com/files/25259852>
 
-   This is the caption of the figure (a simple paragraph).
 
 **Deep Survival Machines (DSM)** is a fully parametric approach to model
 Time-to-Event outcomes in the presence of Censoring first introduced in
@@ -49,7 +50,7 @@ model and allows for learning of representations of the input covariates using
 Machines is a natural fit to model problems where there are time dependendent
 covariates.
 
-..warning:: Not Implemented Yet!
+> :warning: **Not Implemented Yet!**
 
 Deep Convolutional Survival Machines
 ------------------------------------
@@ -61,7 +62,7 @@ convolutional layers. If working with streaming data, the learnt
 representations are then passed through an LSTM to model temporal dependencies
 before determining the underlying survival distributions.
 
-..warning:: Not Implemented Yet!
+> :warning: **Not Implemented Yet!**
 
 References
 ----------
