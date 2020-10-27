@@ -14,8 +14,8 @@
 # GNU General Public License for more details.
 
 # You should have received a copy of the GNU General Public License
-# along with Foobar.  If not, see <https://www.gnu.org/licenses/>.
-
+# along with Deep Survival Machines.
+# If not, see <https://www.gnu.org/licenses/>.
 
 """Loss function definitions for the Deep Survival Machines model
 
