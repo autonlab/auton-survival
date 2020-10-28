@@ -1,6 +1,7 @@
 import unittest
 
 from dsm import DeepSurvivalMachines
+from dsm.dsm_torch import DeepSurvivalMachinesTorch
 from dsm import datasets
 
 import numpy as np
@@ -20,7 +21,7 @@ class TestDSM(unittest.TestCase):
     self.assertEqual(e.shape, (9105,))
 
     model = DeepSurvivalMachines()
-    self.assertIsInstance(model, dsm.dsm_api.DeepSurvivalMachines)
+    self.assertIsInstance(model, DeepSurvivalMachines)
     model.fit(x, t, e, iters=10)
     self.assertIsInstance(model.torch_model,
-                          dsm.dsm_torch.DeepSurvivalMachinesTorch)
+                          DeepSurvivalMachinesTorch)
