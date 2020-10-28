@@ -15,3 +15,4 @@ install:
 # command to run tests
 script:
   - tests/test_dsm.py
+  - pylint dsm/
