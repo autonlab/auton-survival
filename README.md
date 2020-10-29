@@ -56,7 +56,7 @@ Deep Convolutional Survival Machines
 ------------------------------------
 
 Predictive maintenance and medical imaging sometimes requires to work with
-image streams. Deep Convolutional Survival Machines extend **DSM** and
+image streams. Deep Convolutional Survival Machines extends **DSM** and
 **DRSM** to learn representations of the input image data using
 convolutional layers. If working with streaming data, the learnt
 representations are then passed through an LSTM to model temporal dependencies
@@ -93,9 +93,9 @@ To evaluate performance using standard metrics
 
 Contributing
 ------------
-`dsm` is on [GitHub]. Bug reports and pull requests are welcome.
+`dsm` is [on GitHub]. Bug reports and pull requests are welcome.
 
-[GitHub]: https://github.com/chiragnagpal/deepsurvivalmachines
+[on GitHub]: https://github.com/chiragnagpal/deepsurvivalmachines
 
 License
 -------
