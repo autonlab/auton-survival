@@ -115,4 +115,4 @@ You should have received a copy of the GNU General Public License
 along with Deep Survival Machines.  If not, see <https://www.gnu.org/licenses/>.
 
 <img style="float: left; padding-top:25px" width ="150px" src="https://www.cmu.edu/brand/downloads/assets/images/wordmarks-600x600-min.jpg">
-<img style="float: right;padding-top:25px" width = "150px" src="https://www.autonlab.org/user/themes/auton/images/AutonLogo.png"> 
+<img style="float: right; padding-top:25px" width = "150px" src="https://www.autonlab.org/user/themes/auton/images/AutonLogo.png"> 
