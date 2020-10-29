@@ -33,19 +33,24 @@ from torch.nn.Module.</p>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python"># coding=utf-8
-# Copyright 2020 Chirag Nagpal, Auton Lab.
+# Copyright 2020 Chirag Nagpal
 #
-# Licensed under the Apache License, Version 2.0 (the &#34;License&#34;);
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an &#34;AS IS&#34; BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+# This file is part of Deep Survival Machines.
+
+# Deep Survival Machines is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+
+# Deep Survival Machines is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with Deep Survival Machines.
+# If not, see &lt;https://www.gnu.org/licenses/&gt;.
+
 
 &#34;&#34;&#34;Torch model definitons for the Deep Survival Machines model
 
@@ -63,8 +68,8 @@ import torch
 def create_representation(inputdim, layers, activation):
   &#34;&#34;&#34;Helper function to generate the representation function for DSM.
 
-  Deep Survival Machines learns a representation $$\Phi(X)$$ for the input data.
-  This representation is parameterized using a Non Linear Multilayer
+  Deep Survival Machines learns a representation (\ Phi(X) \) for the input
+  data. This representation is parameterized using a Non Linear Multilayer
   Perceptron (`torch.nn.Module`). This is a helper function designed to
   instantiate the representation for Deep Survival Machines.
 
@@ -145,7 +150,7 @@ class DeepSurvivalMachinesTorch(nn.Module):
       Default is 1.
   &#34;&#34;&#34;
 
-  def __init__(self, inputdim, k, layers=None, init=False, dist=&#39;Weibull&#39;,
+  def __init__(self, inputdim, k, layers=None, dist=&#39;Weibull&#39;,
                temp=1000., discount=1.0, optimizer=&#39;Adam&#39;):
     super(DeepSurvivalMachinesTorch, self).__init__()
 
@@ -163,11 +168,13 @@ class DeepSurvivalMachinesTorch(nn.Module):
       self.act = nn.SELU()
       self.scale = nn.Parameter(-torch.ones(k))
       self.shape = nn.Parameter(-torch.ones(k))
-
     elif self.dist == &#39;LogNormal&#39;:
       self.act = nn.Tanh()
       self.scale = nn.Parameter(torch.ones(k))
       self.shape = nn.Parameter(torch.ones(k))
+    else:
+      raise NotImplementedError(&#39;Distribution: &#39;+self.dist+&#39; not implemented&#39;+
+                                &#39; yet.&#39;)
 
     self.embedding = create_representation(inputdim, layers, &#39;ReLU6&#39;)
 
@@ -181,10 +188,6 @@ class DeepSurvivalMachinesTorch(nn.Module):
       self.scaleg = nn.Sequential(nn.Linear(layers[-1], k, bias=True))
       self.shapeg = nn.Sequential(nn.Linear(layers[-1], k, bias=True))
 
-    if init is not False:
-      self.shape.data.fill_(init[0])
-      self.scale.data.fill_(init[1])
-
   def forward(self, x):
     &#34;&#34;&#34;The forward function that is called when data is passed through DSM.
 
@@ -195,6 +198,112 @@ class DeepSurvivalMachinesTorch(nn.Module):
     xrep = self.embedding(x)
     return(self.act(self.shapeg(xrep))+self.shape.expand(x.shape[0], -1),
            self.act(self.scaleg(xrep))+self.scale.expand(x.shape[0], -1),
+           self.gate(xrep)/self.temp)
+
+  def get_shape_scale(self):
+    return(self.shape,
+           self.scale)
+
+class DeepRecurrentSurvivalMachinesTorch(DeepSurvivalMachinesTorch):
+  &#34;&#34;&#34;A Torch implementation of Deep Recurrent Survival Machines model.
+
+  This is an implementation of Deep Recurrent Survival Machines model
+  in torch. It inherits from `DeepSurvivalMachinesTorch` and replaces the
+  input representation learning MLP with an LSTM or RNN, the parameters of the
+  underlying distributions and the forward function which is called whenever
+  data is passed to the module. Each of the parameters are nn.Parameters and
+  torch automatically keeps track and computes gradients for them.
+
+  .. warning::
+    Not designed to be used directly.
+    Please use the API inferface `dsm.dsm_api.DeepRecurrentSurvivalMachines`!!
+
+  Parameters
+  ----------
+  inputdim: int
+      Dimensionality of the input features.
+  k: int
+      The number of underlying parametric distributions.
+  layers: int
+      The number of hidden layers in the LSTM or RNN cell.
+  hidden: int
+      The number of neurons in each hidden layer.
+  init: tuple
+      A tuple for initialization of the parameters for the underlying
+      distributions. (shape, scale).
+  dist: str
+      Choice of the underlying survival distributions.
+      One of &#39;Weibull&#39;, &#39;LogNormal&#39;.
+      Default is &#39;Weibull&#39;.
+  temp: float
+      The logits for the gate are rescaled with this value.
+      Default is 1000.
+  discount: float
+      a float in [0,1] that determines how to discount the tail bias
+      from the uncensored instances.
+      Default is 1.
+  &#34;&#34;&#34;
+
+  def __init__(self, inputdim, k, typ=&#39;LSTM&#39;, layers=1,
+               hidden=None, dist=&#39;Weibull&#39;,
+               temp=1000., discount=1.0, optimizer=&#39;Adam&#39;):
+    super(DeepSurvivalMachinesTorch, self).__init__()
+
+    self.k = k
+    self.dist = dist
+    self.temp = float(temp)
+    self.discount = float(discount)
+    self.optimizer = optimizer
+    self.hidden = hidden
+    self.layers = layers
+    self.typ = typ
+
+    if self.dist == &#39;Weibull&#39;:
+      self.act = nn.SELU()
+      self.scale = nn.Parameter(-torch.ones(k))
+      self.shape = nn.Parameter(-torch.ones(k))
+    elif self.dist == &#39;LogNormal&#39;:
+      self.act = nn.Tanh()
+      self.scale = nn.Parameter(torch.ones(k))
+      self.shape = nn.Parameter(torch.ones(k))
+    else:
+      raise NotImplementedError(&#39;Distribution: &#39;+self.dist+&#39; not implemented&#39;+
+                                &#39; yet.&#39;)
+
+    self.gate = nn.Sequential(nn.Linear(hidden, k, bias=False))
+    self.scaleg = nn.Sequential(nn.Linear(hidden, k, bias=True))
+    self.shapeg = nn.Sequential(nn.Linear(hidden, k, bias=True))
+
+    if self.typ == &#39;LSTM&#39;:
+      self.embedding = nn.LSTM(inputdim, hidden, layers,
+                               bias=False, batch_first=True)
+    if self.typ == &#39;RNN&#39;:
+      self.embedding = nn.RNN(inputdim, hidden, layers,
+                              bias=False, batch_first=True)
+
+    #self.embedding = nn.ReLU6(self.embedding)
+
+
+  def forward(self, x):
+    &#34;&#34;&#34;The forward function that is called when data is passed through DSM.
+
+    Note: As compared to DSM, the input data for DRSM is a tensor. The forward
+    function involves unpacking the tensor in-order to directly use the
+    DSM loss functions.
+
+    Args:
+      x:
+        a torch.tensor of the input features.
+    &#34;&#34;&#34;
+    x = x.detach().clone()
+    inputmask = ~torch.isnan(x[:, :, 0]).reshape(-1)
+    x[torch.isnan(x)] = 0
+    xrep, _ = self.embedding(x)
+    xrep = xrep.contiguous().view(-1, self.hidden)
+    xrep = xrep[inputmask]
+    #xrep = nn.ReLU6()(xrep)
+    return(self.act(self.shapeg(xrep))+self.shape.expand(xrep.shape[0], -1),
+           self.act(self.scaleg(xrep))+self.scale.expand(xrep.shape[0], -1),
            self.gate(xrep)/self.temp)
 
   def get_shape_scale(self):
@@ -214,8 +323,8 @@ class DeepSurvivalMachinesTorch(nn.Module):
 </code></dt>
 <dd>
 <div class="desc"><p>Helper function to generate the representation function for DSM.</p>
-<p>Deep Survival Machines learns a representation <span><span class="MathJax_Preview">\Phi(X)</span><script type="math/tex; mode=display">\Phi(X)</script></span> for the input data.
-This representation is parameterized using a Non Linear Multilayer
+<p>Deep Survival Machines learns a representation (\ Phi(X) ) for the input
+data. This representation is parameterized using a Non Linear Multilayer
 Perceptron (<code>torch.nn.Module</code>). This is a helper function designed to
 instantiate the representation for Deep Survival Machines.</p>
 <div class="admonition warning">
@@ -240,8 +349,8 @@ instantiate the representation for Deep Survival Machines.</p>
 <pre><code class="python">def create_representation(inputdim, layers, activation):
   &#34;&#34;&#34;Helper function to generate the representation function for DSM.
 
-  Deep Survival Machines learns a representation $$\Phi(X)$$ for the input data.
-  This representation is parameterized using a Non Linear Multilayer
+  Deep Survival Machines learns a representation (\ Phi(X) \) for the input
+  data. This representation is parameterized using a Non Linear Multilayer
   Perceptron (`torch.nn.Module`). This is a helper function designed to
   instantiate the representation for Deep Survival Machines.
 
@@ -285,9 +394,234 @@ instantiate the representation for Deep Survival Machines.</p>
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
+<dt id="dsm.dsm_torch.DeepRecurrentSurvivalMachinesTorch"><code class="flex name class">
+<span>class <span class="ident">DeepRecurrentSurvivalMachinesTorch</span></span>
+<span>(</span><span>inputdim, k, typ='LSTM', layers=1, hidden=None, dist='Weibull', temp=1000.0, discount=1.0, optimizer='Adam')</span>
+</code></dt>
+<dd>
+<div class="desc"><p>A Torch implementation of Deep Recurrent Survival Machines model.</p>
+<p>This is an implementation of Deep Recurrent Survival Machines model
+in torch. It inherits from <code><a title="dsm.dsm_torch.DeepSurvivalMachinesTorch" href="#dsm.dsm_torch.DeepSurvivalMachinesTorch">DeepSurvivalMachinesTorch</a></code> and replaces the
+input representation learning MLP with an LSTM or RNN, the parameters of the
+underlying distributions and the forward function which is called whenever
+data is passed to the module. Each of the parameters are nn.Parameters and
+torch automatically keeps track and computes gradients for them.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Not designed to be used directly.
+Please use the API inferface <code><a title="dsm.dsm_api.DeepRecurrentSurvivalMachines" href="dsm_api.html#dsm.dsm_api.DeepRecurrentSurvivalMachines">DeepRecurrentSurvivalMachines</a></code>!!</p>
+</div>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>inputdim</code></strong> :&ensp;<code>int</code></dt>
+<dd>Dimensionality of the input features.</dd>
+<dt><strong><code>k</code></strong> :&ensp;<code>int</code></dt>
+<dd>The number of underlying parametric distributions.</dd>
+<dt><strong><code>layers</code></strong> :&ensp;<code>int</code></dt>
+<dd>The number of hidden layers in the LSTM or RNN cell.</dd>
+<dt><strong><code>hidden</code></strong> :&ensp;<code>int</code></dt>
+<dd>The number of neurons in each hidden layer.</dd>
+<dt><strong><code>init</code></strong> :&ensp;<code>tuple</code></dt>
+<dd>A tuple for initialization of the parameters for the underlying
+distributions. (shape, scale).</dd>
+<dt><strong><code>dist</code></strong> :&ensp;<code>str</code></dt>
+<dd>Choice of the underlying survival distributions.
+One of 'Weibull', 'LogNormal'.
+Default is 'Weibull'.</dd>
+<dt><strong><code>temp</code></strong> :&ensp;<code>float</code></dt>
+<dd>The logits for the gate are rescaled with this value.
+Default is 1000.</dd>
+<dt><strong><code>discount</code></strong> :&ensp;<code>float</code></dt>
+<dd>a float in [0,1] that determines how to discount the tail bias
+from the uncensored instances.
+Default is 1.</dd>
+</dl>
+<p>Initializes internal Module state, shared by both nn.Module and ScriptModule.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class DeepRecurrentSurvivalMachinesTorch(DeepSurvivalMachinesTorch):
+  &#34;&#34;&#34;A Torch implementation of Deep Recurrent Survival Machines model.
+
+  This is an implementation of Deep Recurrent Survival Machines model
+  in torch. It inherits from `DeepSurvivalMachinesTorch` and replaces the
+  input representation learning MLP with an LSTM or RNN, the parameters of the
+  underlying distributions and the forward function which is called whenever
+  data is passed to the module. Each of the parameters are nn.Parameters and
+  torch automatically keeps track and computes gradients for them.
+
+  .. warning::
+    Not designed to be used directly.
+    Please use the API inferface `dsm.dsm_api.DeepRecurrentSurvivalMachines`!!
+
+  Parameters
+  ----------
+  inputdim: int
+      Dimensionality of the input features.
+  k: int
+      The number of underlying parametric distributions.
+  layers: int
+      The number of hidden layers in the LSTM or RNN cell.
+  hidden: int
+      The number of neurons in each hidden layer.
+  init: tuple
+      A tuple for initialization of the parameters for the underlying
+      distributions. (shape, scale).
+  dist: str
+      Choice of the underlying survival distributions.
+      One of &#39;Weibull&#39;, &#39;LogNormal&#39;.
+      Default is &#39;Weibull&#39;.
+  temp: float
+      The logits for the gate are rescaled with this value.
+      Default is 1000.
+  discount: float
+      a float in [0,1] that determines how to discount the tail bias
+      from the uncensored instances.
+      Default is 1.
+  &#34;&#34;&#34;
+
+  def __init__(self, inputdim, k, typ=&#39;LSTM&#39;, layers=1,
+               hidden=None, dist=&#39;Weibull&#39;,
+               temp=1000., discount=1.0, optimizer=&#39;Adam&#39;):
+    super(DeepSurvivalMachinesTorch, self).__init__()
+
+    self.k = k
+    self.dist = dist
+    self.temp = float(temp)
+    self.discount = float(discount)
+    self.optimizer = optimizer
+    self.hidden = hidden
+    self.layers = layers
+    self.typ = typ
+
+    if self.dist == &#39;Weibull&#39;:
+      self.act = nn.SELU()
+      self.scale = nn.Parameter(-torch.ones(k))
+      self.shape = nn.Parameter(-torch.ones(k))
+    elif self.dist == &#39;LogNormal&#39;:
+      self.act = nn.Tanh()
+      self.scale = nn.Parameter(torch.ones(k))
+      self.shape = nn.Parameter(torch.ones(k))
+    else:
+      raise NotImplementedError(&#39;Distribution: &#39;+self.dist+&#39; not implemented&#39;+
+                                &#39; yet.&#39;)
+
+    self.gate = nn.Sequential(nn.Linear(hidden, k, bias=False))
+    self.scaleg = nn.Sequential(nn.Linear(hidden, k, bias=True))
+    self.shapeg = nn.Sequential(nn.Linear(hidden, k, bias=True))
+
+    if self.typ == &#39;LSTM&#39;:
+      self.embedding = nn.LSTM(inputdim, hidden, layers,
+                               bias=False, batch_first=True)
+    if self.typ == &#39;RNN&#39;:
+      self.embedding = nn.RNN(inputdim, hidden, layers,
+                              bias=False, batch_first=True)
+
+    #self.embedding = nn.ReLU6(self.embedding)
+
+
+  def forward(self, x):
+    &#34;&#34;&#34;The forward function that is called when data is passed through DSM.
+
+    Note: As compared to DSM, the input data for DRSM is a tensor. The forward
+    function involves unpacking the tensor in-order to directly use the
+    DSM loss functions.
+
+    Args:
+      x:
+        a torch.tensor of the input features.
+    &#34;&#34;&#34;
+    x = x.detach().clone()
+    inputmask = ~torch.isnan(x[:, :, 0]).reshape(-1)
+    x[torch.isnan(x)] = 0
+    xrep, _ = self.embedding(x)
+    xrep = xrep.contiguous().view(-1, self.hidden)
+    xrep = xrep[inputmask]
+    #xrep = nn.ReLU6()(xrep)
+    return(self.act(self.shapeg(xrep))+self.shape.expand(xrep.shape[0], -1),
+           self.act(self.scaleg(xrep))+self.scale.expand(xrep.shape[0], -1),
+           self.gate(xrep)/self.temp)
+
+  def get_shape_scale(self):
+    return(self.shape,
+           self.scale)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="dsm.dsm_torch.DeepSurvivalMachinesTorch" href="#dsm.dsm_torch.DeepSurvivalMachinesTorch">DeepSurvivalMachinesTorch</a></li>
+<li>torch.nn.modules.module.Module</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="dsm.dsm_torch.DeepRecurrentSurvivalMachinesTorch.dump_patches"><code class="name">var <span class="ident">dump_patches</span> : bool</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="dsm.dsm_torch.DeepRecurrentSurvivalMachinesTorch.training"><code class="name">var <span class="ident">training</span> : bool</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="dsm.dsm_torch.DeepRecurrentSurvivalMachinesTorch.forward"><code class="name flex">
+<span>def <span class="ident">forward</span></span>(<span>self, x) ‑> Callable[..., Any]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>The forward function that is called when data is passed through DSM.</p>
+<p>Note: As compared to DSM, the input data for DRSM is a tensor. The forward
+function involves unpacking the tensor in-order to directly use the
+DSM loss functions.</p>
+<h2 id="args">Args</h2>
+<p>x:
+a torch.tensor of the input features.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def forward(self, x):
+  &#34;&#34;&#34;The forward function that is called when data is passed through DSM.
+
+  Note: As compared to DSM, the input data for DRSM is a tensor. The forward
+  function involves unpacking the tensor in-order to directly use the
+  DSM loss functions.
+
+  Args:
+    x:
+      a torch.tensor of the input features.
+  &#34;&#34;&#34;
+  x = x.detach().clone()
+  inputmask = ~torch.isnan(x[:, :, 0]).reshape(-1)
+  x[torch.isnan(x)] = 0
+  xrep, _ = self.embedding(x)
+  xrep = xrep.contiguous().view(-1, self.hidden)
+  xrep = xrep[inputmask]
+  #xrep = nn.ReLU6()(xrep)
+  return(self.act(self.shapeg(xrep))+self.shape.expand(xrep.shape[0], -1),
+         self.act(self.scaleg(xrep))+self.scale.expand(xrep.shape[0], -1),
+         self.gate(xrep)/self.temp)</code></pre>
+</details>
+</dd>
+<dt id="dsm.dsm_torch.DeepRecurrentSurvivalMachinesTorch.get_shape_scale"><code class="name flex">
+<span>def <span class="ident">get_shape_scale</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_shape_scale(self):
+  return(self.shape,
+         self.scale)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
 <dt id="dsm.dsm_torch.DeepSurvivalMachinesTorch"><code class="flex name class">
 <span>class <span class="ident">DeepSurvivalMachinesTorch</span></span>
-<span>(</span><span>inputdim, k, layers=None, init=False, dist='Weibull', temp=1000.0, discount=1.0, optimizer='Adam')</span>
+<span>(</span><span>inputdim, k, layers=None, dist='Weibull', temp=1000.0, discount=1.0, optimizer='Adam')</span>
 </code></dt>
 <dd>
 <div class="desc"><p>A Torch implementation of Deep Survival Machines model.</p>
@@ -378,7 +712,7 @@ Default is 1.</dd>
       Default is 1.
   &#34;&#34;&#34;
 
-  def __init__(self, inputdim, k, layers=None, init=False, dist=&#39;Weibull&#39;,
+  def __init__(self, inputdim, k, layers=None, dist=&#39;Weibull&#39;,
                temp=1000., discount=1.0, optimizer=&#39;Adam&#39;):
     super(DeepSurvivalMachinesTorch, self).__init__()
 
@@ -396,11 +730,13 @@ Default is 1.</dd>
       self.act = nn.SELU()
       self.scale = nn.Parameter(-torch.ones(k))
       self.shape = nn.Parameter(-torch.ones(k))
-
     elif self.dist == &#39;LogNormal&#39;:
       self.act = nn.Tanh()
       self.scale = nn.Parameter(torch.ones(k))
       self.shape = nn.Parameter(torch.ones(k))
+    else:
+      raise NotImplementedError(&#39;Distribution: &#39;+self.dist+&#39; not implemented&#39;+
+                                &#39; yet.&#39;)
 
     self.embedding = create_representation(inputdim, layers, &#39;ReLU6&#39;)
 
@@ -413,10 +749,6 @@ Default is 1.</dd>
       self.gate = nn.Sequential(nn.Linear(layers[-1], k, bias=False))
       self.scaleg = nn.Sequential(nn.Linear(layers[-1], k, bias=True))
       self.shapeg = nn.Sequential(nn.Linear(layers[-1], k, bias=True))
-
-    if init is not False:
-      self.shape.data.fill_(init[0])
-      self.scale.data.fill_(init[1])
 
   def forward(self, x):
     &#34;&#34;&#34;The forward function that is called when data is passed through DSM.
@@ -437,6 +769,10 @@ Default is 1.</dd>
 <h3>Ancestors</h3>
 <ul class="hlist">
 <li>torch.nn.modules.module.Module</li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="dsm.dsm_torch.DeepRecurrentSurvivalMachinesTorch" href="#dsm.dsm_torch.DeepRecurrentSurvivalMachinesTorch">DeepRecurrentSurvivalMachinesTorch</a></li>
 </ul>
 <h3>Class variables</h3>
 <dl>
@@ -513,6 +849,15 @@ a torch.tensor of the input features.</p></div>
 </li>
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
+<li>
+<h4><code><a title="dsm.dsm_torch.DeepRecurrentSurvivalMachinesTorch" href="#dsm.dsm_torch.DeepRecurrentSurvivalMachinesTorch">DeepRecurrentSurvivalMachinesTorch</a></code></h4>
+<ul class="">
+<li><code><a title="dsm.dsm_torch.DeepRecurrentSurvivalMachinesTorch.dump_patches" href="#dsm.dsm_torch.DeepRecurrentSurvivalMachinesTorch.dump_patches">dump_patches</a></code></li>
+<li><code><a title="dsm.dsm_torch.DeepRecurrentSurvivalMachinesTorch.forward" href="#dsm.dsm_torch.DeepRecurrentSurvivalMachinesTorch.forward">forward</a></code></li>
+<li><code><a title="dsm.dsm_torch.DeepRecurrentSurvivalMachinesTorch.get_shape_scale" href="#dsm.dsm_torch.DeepRecurrentSurvivalMachinesTorch.get_shape_scale">get_shape_scale</a></code></li>
+<li><code><a title="dsm.dsm_torch.DeepRecurrentSurvivalMachinesTorch.training" href="#dsm.dsm_torch.DeepRecurrentSurvivalMachinesTorch.training">training</a></code></li>
+</ul>
+</li>
 <li>
 <h4><code><a title="dsm.dsm_torch.DeepSurvivalMachinesTorch" href="#dsm.dsm_torch.DeepSurvivalMachinesTorch">DeepSurvivalMachinesTorch</a></code></h4>
 <ul class="">

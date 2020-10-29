@@ -31,19 +31,24 @@ Deep Survival Machines models.</p>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python"># coding=utf-8
-# Copyright 2020 Chirag Nagpal, Auton Lab.
+# Copyright 2020 Chirag Nagpal
 #
-# Licensed under the Apache License, Version 2.0 (the &#34;License&#34;);
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an &#34;AS IS&#34; BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+# This file is part of Deep Survival Machines.
+
+# Deep Survival Machines is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+
+# Deep Survival Machines is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with Deep Survival Machines.
+# If not, see &lt;https://www.gnu.org/licenses/&gt;.
+
 
 &#34;&#34;&#34;Utility functions to load standard datasets to train and evaluate the
 Deep Survival Machines models.
@@ -75,12 +80,20 @@ def increase_censoring(e, t, p):
 
   return e, t
 
-def _load_pbc_dataset():
+def _load_pbc_dataset(sequential):
   &#34;&#34;&#34;Helper function to load and preprocess the PBC dataset
 
   The Primary biliary cirrhosis (PBC) Dataset [1] is well known
   dataset for evaluating survival analysis models with time
   dependent covariates.
+
+  Parameters
+  ----------
+  sequential: bool
+    If True returns a list of np.arrays for each individual.
+    else, returns collapsed results for each time step. To train
+    recurrent neural models you would typically use True.
+
 
   References
   ----------
@@ -89,7 +102,36 @@ def _load_pbc_dataset():
 
   &#34;&#34;&#34;
 
-  raise NotImplementedError(&#39;&#39;)
+  data = pkgutil.get_data(__name__, &#39;datasets/pbc2.csv&#39;)
+  data = pd.read_csv(io.BytesIO(data))
+
+  data[&#39;histologic&#39;] = data[&#39;histologic&#39;].astype(str)
+  dat_cat = data[[&#39;drug&#39;, &#39;sex&#39;, &#39;ascites&#39;, &#39;hepatomegaly&#39;,
+                  &#39;spiders&#39;, &#39;edema&#39;, &#39;histologic&#39;]]
+  dat_num = data[[&#39;serBilir&#39;, &#39;serChol&#39;, &#39;albumin&#39;, &#39;alkaline&#39;,
+                  &#39;SGOT&#39;, &#39;platelets&#39;, &#39;prothrombin&#39;]]
+  age = data[&#39;age&#39;] + data[&#39;years&#39;]
+
+  x1 = pd.get_dummies(dat_cat).values
+  x2 = dat_num.values
+  x3 = age.values.reshape(-1, 1)
+  x = np.hstack([x1, x2, x3])
+
+  time = (data[&#39;years&#39;] - data[&#39;year&#39;]).values
+  event = data[&#39;status2&#39;].values
+
+  x = SimpleImputer(missing_values=np.nan, strategy=&#39;mean&#39;).fit_transform(x)
+  x_ = StandardScaler().fit_transform(x)
+
+  if not sequential:
+    return x_, time, event
+  else:
+    x, t, e = [], [], []
+    for id_ in sorted(list(set(data[&#39;id&#39;]))):
+      x.append(x_[data[&#39;id&#39;] == id_])
+      t.append(time[data[&#39;id&#39;] == id_])
+      e.append(event[data[&#39;id&#39;] == id_])
+    return x, t, e
 
 def _load_support_dataset():
   &#34;&#34;&#34;Helper function to load and preprocess the SUPPORT dataset.
@@ -128,13 +170,16 @@ def _load_support_dataset():
   return x[remove], t[remove], e[remove]
 
 
-def load_dataset(dataset=&#39;SUPPORT&#39;):
+def load_dataset(dataset=&#39;SUPPORT&#39;, **kwargs):
   &#34;&#34;&#34;Helper function to load datasets to test Survival Analysis models.
 
   Parameters
   ----------
   dataset: str
-      The choice of dataset to load. Currently implemented is &#39;SUPPORT&#39;.
+      The choice of dataset to load. Currently implemented is &#39;SUPPORT&#39;
+      and &#39;PBC&#39;.
+  **kwargs: dict
+      Dataset specific keyword arguments.
 
   Returns
   ----------
@@ -146,6 +191,9 @@ def load_dataset(dataset=&#39;SUPPORT&#39;):
 
   if dataset == &#39;SUPPORT&#39;:
     return _load_support_dataset()
+  if dataset == &#39;PBC&#39;:
+    sequential = kwargs.get(&#39;sequential&#39;, False)
+    return _load_pbc_dataset(sequential)
   else:
     return NotImplementedError(&#39;Dataset &#39;+dataset+&#39; not implemented.&#39;)</code></pre>
 </details>
@@ -184,14 +232,17 @@ def load_dataset(dataset=&#39;SUPPORT&#39;):
 </details>
 </dd>
 <dt id="dsm.datasets.load_dataset"><code class="name flex">
-<span>def <span class="ident">load_dataset</span></span>(<span>dataset='SUPPORT')</span>
+<span>def <span class="ident">load_dataset</span></span>(<span>dataset='SUPPORT', **kwargs)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Helper function to load datasets to test Survival Analysis models.</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
 <dt><strong><code>dataset</code></strong> :&ensp;<code>str</code></dt>
-<dd>The choice of dataset to load. Currently implemented is 'SUPPORT'.</dd>
+<dd>The choice of dataset to load. Currently implemented is 'SUPPORT'
+and 'PBC'.</dd>
+<dt><strong><code>**kwargs</code></strong> :&ensp;<code>dict</code></dt>
+<dd>Dataset specific keyword arguments.</dd>
 </dl>
 <h2 id="returns">Returns</h2>
 <dl>
@@ -203,13 +254,16 @@ event times and the censoring indicators respectively.</dd>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def load_dataset(dataset=&#39;SUPPORT&#39;):
+<pre><code class="python">def load_dataset(dataset=&#39;SUPPORT&#39;, **kwargs):
   &#34;&#34;&#34;Helper function to load datasets to test Survival Analysis models.
 
   Parameters
   ----------
   dataset: str
-      The choice of dataset to load. Currently implemented is &#39;SUPPORT&#39;.
+      The choice of dataset to load. Currently implemented is &#39;SUPPORT&#39;
+      and &#39;PBC&#39;.
+  **kwargs: dict
+      Dataset specific keyword arguments.
 
   Returns
   ----------
@@ -221,6 +275,9 @@ event times and the censoring indicators respectively.</dd>
 
   if dataset == &#39;SUPPORT&#39;:
     return _load_support_dataset()
+  if dataset == &#39;PBC&#39;:
+    sequential = kwargs.get(&#39;sequential&#39;, False)
+    return _load_pbc_dataset(sequential)
   else:
     return NotImplementedError(&#39;Dataset &#39;+dataset+&#39; not implemented.&#39;)</code></pre>
 </details>

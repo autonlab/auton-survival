@@ -5,7 +5,6 @@ python:
   - "3.8"
 os:
   - linux
-  - osx
 # command to install dependencies
 install:
   - pip install -r requirements.txt
@@ -15,4 +14,4 @@ install:
 # command to run tests
 script:
   - python -m pytest tests/
-  - pylint --fail-under=9 dsm/
+  - pylint --fail-under=8 dsm/

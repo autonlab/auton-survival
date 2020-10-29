@@ -40,19 +40,23 @@ These losses are optimized when training DSM.</p>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python"># coding=utf-8
-# Copyright 2020 Chirag Nagpal, Auton Lab.
+# Copyright 2020 Chirag Nagpal
 #
-# Licensed under the Apache License, Version 2.0 (the &#34;License&#34;);
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an &#34;AS IS&#34; BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+# This file is part of Deep Survival Machines.
+
+# Deep Survival Machines is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+
+# Deep Survival Machines is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with Deep Survival Machines.
+# If not, see &lt;https://www.gnu.org/licenses/&gt;.
 
 &#34;&#34;&#34;Loss function definitions for the Deep Survival Machines model
 
@@ -93,7 +97,6 @@ def _lognormal_loss(model, t, e):
 
     uncens = np.where(e == 1)[0]
     cens = np.where(e == 0)[0]
-
     ll += f[uncens].sum() + s[cens].sum()
 
   return -ll.mean()
@@ -179,15 +182,17 @@ def _conditional_lognormal_loss(model, x, t, e, elbo=True):
 
   uncens = np.where(e.cpu().data.numpy() == 1)[0]
   cens = np.where(e.cpu().data.numpy() == 0)[0]
-
   ll = lossf[uncens].sum() + alpha*losss[cens].sum()
-  return -ll/x.shape[0]
+
+  return -ll.mean()
 
 
 def _conditional_weibull_loss(model, x, t, e, elbo=True):
 
   alpha = model.discount
   shape, scale, logits = model.forward(x)
+
+  #print (shape, scale, logits)
 
   k_ = shape
   b_ = scale
@@ -228,9 +233,9 @@ def _conditional_weibull_loss(model, x, t, e, elbo=True):
 
   uncens = np.where(e.cpu().data.numpy() == 1)[0]
   cens = np.where(e.cpu().data.numpy() == 0)[0]
-
   ll = lossf[uncens].sum() + alpha*losss[cens].sum()
-  return -ll/x.shape[0]
+
+  return -ll.mean()
 
 
 def conditional_loss(model, x, t, e, elbo=True):
@@ -269,9 +274,7 @@ def _weibull_cdf(model, x, t_horizon):
       lcdfs.append(s)
 
     lcdfs = torch.stack(lcdfs, dim=1)
-
     lcdfs = lcdfs+logits
-
     lcdfs = torch.logsumexp(lcdfs, dim=1)
     cdfs.append(lcdfs.detach().numpy())
 
@@ -309,7 +312,6 @@ def _lognormal_cdf(model, x, t_horizon):
       lcdfs.append(s)
 
     lcdfs = torch.stack(lcdfs, dim=1)
-
     lcdfs = lcdfs+logits
     lcdfs = torch.logsumexp(lcdfs, dim=1)
     cdfs.append(lcdfs.detach().numpy())
@@ -321,7 +323,6 @@ def predict_cdf(model, x, t_horizon):
   torch.no_grad()
   if model.dist == &#39;Weibull&#39;:
     return _weibull_cdf(model, x, t_horizon)
-
   if model.dist == &#39;LogNormal&#39;:
     return _lognormal_cdf(model, x, t_horizon)</code></pre>
 </details>
@@ -364,7 +365,6 @@ def predict_cdf(model, x, t_horizon):
   torch.no_grad()
   if model.dist == &#39;Weibull&#39;:
     return _weibull_cdf(model, x, t_horizon)
-
   if model.dist == &#39;LogNormal&#39;:
     return _lognormal_cdf(model, x, t_horizon)</code></pre>
 </details>

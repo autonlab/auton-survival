@@ -31,19 +31,24 @@ provides a convenient API to train Deep Survival Machines.</p>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python"># coding=utf-8
-# Copyright 2020 Chirag Nagpal, Auton Lab.
+# Copyright 2020 Chirag Nagpal
 #
-# Licensed under the Apache License, Version 2.0 (the &#34;License&#34;);
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an &#34;AS IS&#34; BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+# This file is part of Deep Survival Machines.
+
+# Deep Survival Machines is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+
+# Deep Survival Machines is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with Deep Survival Machines.
+# If not, see &lt;https://www.gnu.org/licenses/&gt;.
+
 
 &#34;&#34;&#34;
 This module is a wrapper around torch implementations and
@@ -55,7 +60,6 @@ from dsm.losses import predict_cdf
 from dsm.utilities import train_dsm
 
 import torch
-
 import numpy as np
 
 class DeepSurvivalMachines():
@@ -70,7 +74,7 @@ class DeepSurvivalMachines():
 
   References
   ----------
-  [1] &lt;a href=&#34;https://arxiv.org/abs/2003.01176&#34;&gt;Deep Survival Machines: 
+  [1] &lt;a href=&#34;https://arxiv.org/abs/2003.01176&#34;&gt;Deep Survival Machines:
   Fully Parametric Survival Regression and
   Representation Learning for Censored Data with Competing Risks.&#34;
   arXiv preprint arXiv:2003.01176 (2020)&lt;/a&gt;
@@ -124,7 +128,7 @@ class DeepSurvivalMachines():
     print(&#34;Distribution Choice:&#34;, self.dist)
 
 
-  def fit(self, x, t, e, vsize=0.15, 
+  def fit(self, x, t, e, vsize=0.15,
           iters=1, learning_rate=1e-3, batch_size=100,
           elbo=True, optimizer=&#34;Adam&#34;, random_state=100):
 
@@ -150,10 +154,10 @@ class DeepSurvivalMachines():
         learning is performed on mini-batches of input data. this parameter
         specifies the size of each mini-batch.
     elbo: bool
-        Whether to use the Evidence Lower Bound for Optimization.
+        Whether to use the Evidence Lower Bound for optimization.
         Default is True.
     optimizer: str
-        The choice of the gradient based optimization method. One of 
+        The choice of the gradient based optimization method. One of
         &#39;Adam&#39;, &#39;RMSProp&#39; or &#39;SGD&#39;.
     random_state: float
         random seed that determines how the validation set is chosen.
@@ -182,7 +186,6 @@ class DeepSurvivalMachines():
       model = DeepSurvivalMachinesTorch(inputdim,
                                         k=self.k,
                                         layers=self.layers,
-                                        init=False, 
                                         dist=self.dist,
                                         temp=self.temp,
                                         discount=self.discount,
@@ -204,7 +207,7 @@ class DeepSurvivalMachines():
 
 
   def predict_risk(self, x, t):
-    &#34;&#34;&#34;Returns the estimated risk of an event occuring before time \( t \),
+    &#34;&#34;&#34;Returns the estimated risk of an event occuring before time \( t \)
       \( \widehat{\mathbb{P}}(T\leq t|X) \) for some input data \( x \).
 
     Parameters
@@ -396,7 +399,7 @@ Default is 1.</dd>
 
   References
   ----------
-  [1] &lt;a href=&#34;https://arxiv.org/abs/2003.01176&#34;&gt;Deep Survival Machines: 
+  [1] &lt;a href=&#34;https://arxiv.org/abs/2003.01176&#34;&gt;Deep Survival Machines:
   Fully Parametric Survival Regression and
   Representation Learning for Censored Data with Competing Risks.&#34;
   arXiv preprint arXiv:2003.01176 (2020)&lt;/a&gt;
@@ -450,7 +453,7 @@ Default is 1.</dd>
     print(&#34;Distribution Choice:&#34;, self.dist)
 
 
-  def fit(self, x, t, e, vsize=0.15, 
+  def fit(self, x, t, e, vsize=0.15,
           iters=1, learning_rate=1e-3, batch_size=100,
           elbo=True, optimizer=&#34;Adam&#34;, random_state=100):
 
@@ -476,10 +479,10 @@ Default is 1.</dd>
         learning is performed on mini-batches of input data. this parameter
         specifies the size of each mini-batch.
     elbo: bool
-        Whether to use the Evidence Lower Bound for Optimization.
+        Whether to use the Evidence Lower Bound for optimization.
         Default is True.
     optimizer: str
-        The choice of the gradient based optimization method. One of 
+        The choice of the gradient based optimization method. One of
         &#39;Adam&#39;, &#39;RMSProp&#39; or &#39;SGD&#39;.
     random_state: float
         random seed that determines how the validation set is chosen.
@@ -508,7 +511,6 @@ Default is 1.</dd>
       model = DeepSurvivalMachinesTorch(inputdim,
                                         k=self.k,
                                         layers=self.layers,
-                                        init=False, 
                                         dist=self.dist,
                                         temp=self.temp,
                                         discount=self.discount,
@@ -530,7 +532,7 @@ Default is 1.</dd>
 
 
   def predict_risk(self, x, t):
-    &#34;&#34;&#34;Returns the estimated risk of an event occuring before time \( t \),
+    &#34;&#34;&#34;Returns the estimated risk of an event occuring before time \( t \)
       \( \widehat{\mathbb{P}}(T\leq t|X) \) for some input data \( x \).
 
     Parameters
@@ -613,7 +615,7 @@ Default is 1.</dd>
 <dd>learning is performed on mini-batches of input data. this parameter
 specifies the size of each mini-batch.</dd>
 <dt><strong><code>elbo</code></strong> :&ensp;<code>bool</code></dt>
-<dd>Whether to use the Evidence Lower Bound for Optimization.
+<dd>Whether to use the Evidence Lower Bound for optimization.
 Default is True.</dd>
 <dt><strong><code>optimizer</code></strong> :&ensp;<code>str</code></dt>
 <dd>The choice of the gradient based optimization method. One of
@@ -625,7 +627,7 @@ Default is True.</dd>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def fit(self, x, t, e, vsize=0.15, 
+<pre><code class="python">def fit(self, x, t, e, vsize=0.15,
         iters=1, learning_rate=1e-3, batch_size=100,
         elbo=True, optimizer=&#34;Adam&#34;, random_state=100):
 
@@ -651,10 +653,10 @@ Default is True.</dd>
       learning is performed on mini-batches of input data. this parameter
       specifies the size of each mini-batch.
   elbo: bool
-      Whether to use the Evidence Lower Bound for Optimization.
+      Whether to use the Evidence Lower Bound for optimization.
       Default is True.
   optimizer: str
-      The choice of the gradient based optimization method. One of 
+      The choice of the gradient based optimization method. One of
       &#39;Adam&#39;, &#39;RMSProp&#39; or &#39;SGD&#39;.
   random_state: float
       random seed that determines how the validation set is chosen.
@@ -683,7 +685,6 @@ Default is True.</dd>
     model = DeepSurvivalMachinesTorch(inputdim,
                                       k=self.k,
                                       layers=self.layers,
-                                      init=False, 
                                       dist=self.dist,
                                       temp=self.temp,
                                       discount=self.discount,
@@ -708,7 +709,7 @@ Default is True.</dd>
 <span>def <span class="ident">predict_risk</span></span>(<span>self, x, t)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Returns the estimated risk of an event occuring before time <span><span class="MathJax_Preview"> t </span><script type="math/tex"> t </script></span>,
+<div class="desc"><p>Returns the estimated risk of an event occuring before time <span><span class="MathJax_Preview"> t </span><script type="math/tex"> t </script></span>
 <span><span class="MathJax_Preview"> \widehat{\mathbb{P}}(T\leq t|X) </span><script type="math/tex"> \widehat{\mathbb{P}}(T\leq t|X) </script></span> for some input data <span><span class="MathJax_Preview"> x </span><script type="math/tex"> x </script></span>.</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
@@ -728,7 +729,7 @@ to be computed</dd>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def predict_risk(self, x, t):
-  &#34;&#34;&#34;Returns the estimated risk of an event occuring before time \( t \),
+  &#34;&#34;&#34;Returns the estimated risk of an event occuring before time \( t \)
     \( \widehat{\mathbb{P}}(T\leq t|X) \) for some input data \( x \).
 
   Parameters
