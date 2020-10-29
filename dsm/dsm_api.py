@@ -100,7 +100,7 @@ class DeepSurvivalMachines():
           iters=1, learning_rate=1e-3, batch_size=100,
           elbo=True, optimizer="Adam", random_state=100):
 
-    r"""This method is used to train an instance of the DSM model.
+    """This method is used to train an instance of the DSM model.
 
     Parameters
     ----------
@@ -175,7 +175,7 @@ class DeepSurvivalMachines():
 
 
   def predict_risk(self, x, t):
-    r"""Returns the estimated risk of an event occuring before time \( t \)
+    """Returns the estimated risk of an event occuring before time \( t \)
       \( \widehat{\mathbb{P}}(T\leq t|X) \) for some input data \( x \).
 
     Parameters
@@ -199,7 +199,7 @@ class DeepSurvivalMachines():
 
 
   def predict_survival(self, x, t):
-    r"""Returns the estimated survival probability at time \( t \),
+    """Returns the estimated survival probability at time \( t \),
       \( \widehat{\mathbb{P}}(T > t|X) \) for some input data \( x \).
 
     Parameters
@@ -227,6 +227,7 @@ class DeepSurvivalMachines():
                       "before calling `predict_risk`.")
 
 class DeepRecurrentSurvivalMachines(DeepSurvivalMachines):
+
   __doc__ = "..warning:: Not Implemented"
   pass
 

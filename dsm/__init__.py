@@ -17,7 +17,7 @@
 # along with Deep Survival Machines.
 # If not, see <https://www.gnu.org/licenses/>.
 
-r"""
+"""
 Python package `dsm` provides an API to train the Deep Survival Machines
 and associated models for problems in survival analysis. The underlying model
 is implemented in `pytorch`.
@@ -67,7 +67,14 @@ Deep Recurrent Survival Machines
 model and allows for learning of representations of the input covariates using
 **Recurrent Neural Networks** like **LSTMs, GRUs**. Deep Recurrent Survival
 Machines is a natural fit to model problems where there are time dependendent
-covariates.
+covariates. Examples include situations where we are working with streaming
+data like vital signs, degradation monitoring signals in predictive
+maintainance. **DRSM** allows the learnt representations at each time step to
+involve historical context from previous time steps. **DRSM** implementation in
+`dsm` is carried out through an easy to use API that accepts lists of data
+streams and corresponding failure times. The module automatically takes care of
+appropriate batching and padding of variable length sequences.
+
 
 ..warning:: Not Implemented Yet!
 

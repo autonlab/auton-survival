@@ -32,7 +32,7 @@ import torch
 
 
 def create_representation(inputdim, layers, activation):
-  r"""Helper function to generate the representation function for DSM.
+  """Helper function to generate the representation function for DSM.
 
   Deep Survival Machines learns a representation (\ Phi(X) \) for the input
   data. This representation is parameterized using a Non Linear Multilayer
