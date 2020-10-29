@@ -19,6 +19,7 @@
 
 """Utility functions to train the Deep Survival Machines models"""
 
+from dsm.dsm_torch import DeepSurvivalMachinesTorch
 from dsm.losses import unconditional_loss, conditional_loss
 
 from tqdm import tqdm
@@ -29,7 +30,6 @@ import numpy as np
 
 import gc
 
-from dsm.dsm_torch import DeepSurvivalMachinesTorch
 
 def get_optimizer(model, lr):
 
@@ -40,18 +40,18 @@ def get_optimizer(model, lr):
   elif model.optimizer == 'RMSProp':
     return torch.optim.RMSprop(model.parameters(), lr=lr)
   else:
-    raise NotImplementedError("Optimizer "+model.optimizer+
-                              " is not implemented")
-    
+    raise NotImplementedError('Optimizer '+model.optimizer+
+                              ' is not implemented')
+
 def pretrain_dsm(model, t_train, e_train, t_valid, e_valid,
                  n_iter=10000, lr=1e-2, thres=1e-4):
 
   premodel = DeepSurvivalMachinesTorch(1, 1,
-                                       init=False, dist=model.dist)
+                                       dist=model.dist)
   premodel.double()
 
   optimizer = torch.optim.Adam(premodel.parameters(), lr=lr)
-  oldcost = -float('inf')
+  oldcost = float('inf')
   patience = 0
 
   costs = []
@@ -76,6 +76,10 @@ def pretrain_dsm(model, t_train, e_train, t_valid, e_valid,
 
   return premodel
 
+def _reshape_tensor_with_nans(data):
+  """Helper function to unroll padded RNN inputs"""
+  data = data.reshape(-1)
+  return data[~torch.isnan(data)]
 
 def train_dsm(model,
               x_train, t_train, e_train,
@@ -85,24 +89,27 @@ def train_dsm(model,
 
   print('Pretraining the Underlying Distributions...')
 
+  print(t_train.shape, e_train.shape)
+
+  t_train_ = _reshape_tensor_with_nans(t_train)
+  e_train_ = _reshape_tensor_with_nans(e_train)
+  t_valid_ = _reshape_tensor_with_nans(t_valid)
+  e_valid_ = _reshape_tensor_with_nans(e_valid)
+
+  print(t_train_.shape, e_train_.shape)
+
   premodel = pretrain_dsm(model,
-                          t_train,
-                          e_train,
-                          t_valid,
-                          e_valid,
+                          t_train_,
+                          e_train_,
+                          t_valid_,
+                          e_valid_,
                           n_iter=10000,
                           lr=1e-2,
                           thres=1e-4)
   model.shape.data.fill_(float(premodel.shape))
   model.scale.data.fill_(float(premodel.scale))
 
-  # print(premodel.shape, premodel.scale)
-  # print(model.shape, model.scale)
-
-  # init=(float(premodel.shape[0]),
-  # float(premodel.scale[0])),
-  # print(torch.exp(-premodel.scale).cpu().data.numpy()[0],
-  #       torch.exp(premodel.shape).cpu().data.numpy()[0])
+  print(float(premodel.shape), float(premodel.scale))
 
   model.double()
   optimizer = torch.optim.Adam(model.parameters(), lr=lr)
@@ -118,19 +125,24 @@ def train_dsm(model,
   for i in tqdm(range(n_iter)):
     for j in range(nbatches):
 
+      xb = x_train[j*bs:(j+1)*bs]
+      tb = t_train[j*bs:(j+1)*bs]
+      eb = e_train[j*bs:(j+1)*bs]
+
       optimizer.zero_grad()
       loss = conditional_loss(model,
-                              x_train[j*bs:(j+1)*bs],
-                              t_train[j*bs:(j+1)*bs],
-                              e_train[j*bs:(j+1)*bs],
+                              xb,
+                              _reshape_tensor_with_nans(tb),
+                              _reshape_tensor_with_nans(eb),
                               elbo=elbo)
+      #print ("Train Loss:", float(loss))
       loss.backward()
       optimizer.step()
 
     valid_loss = conditional_loss(model,
                                   x_valid,
-                                  t_valid,
-                                  e_valid,
+                                  t_valid_,
+                                  e_valid_,
                                   elbo=False)
 
     valid_loss = valid_loss.detach().cpu().numpy()

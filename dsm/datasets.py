@@ -14,7 +14,7 @@
 # GNU General Public License for more details.
 
 # You should have received a copy of the GNU General Public License
-# along with Deep Survival Machines.  
+# along with Deep Survival Machines.
 # If not, see <https://www.gnu.org/licenses/>.
 
 
@@ -144,7 +144,8 @@ def load_dataset(dataset='SUPPORT', **kwargs):
   Parameters
   ----------
   dataset: str
-      The choice of dataset to load. Currently implemented is 'SUPPORT'.
+      The choice of dataset to load. Currently implemented is 'SUPPORT'
+      and 'PBC'.
   **kwargs: dict
       Dataset specific keyword arguments.
 

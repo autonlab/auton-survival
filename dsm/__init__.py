@@ -14,10 +14,10 @@
 # GNU General Public License for more details.
 
 # You should have received a copy of the GNU General Public License
-# along with Deep Survival Machines.  
+# along with Deep Survival Machines.
 # If not, see <https://www.gnu.org/licenses/>.
 
-"""
+r"""
 Python package `dsm` provides an API to train the Deep Survival Machines
 and associated models for problems in survival analysis. The underlying model
 is implemented in `pytorch`.
@@ -137,7 +137,7 @@ along with Foobar.  If not, see <https://www.gnu.org/licenses/>.
 
 
 <img style="float: right;" width ="200px" src="https://www.cmu.edu/brand/downloads/assets/images/wordmarks-600x600-min.jpg">
-<img style="float: right;padding-top:50px" src="https://www.autonlab.org/user/themes/auton/images/AutonLogo.png"> 
+<img style="float: right;padding-top:50px" src="https://www.autonlab.org/user/themes/auton/images/AutonLogo.png">
 
 <br><br><br><br><br>
 <br><br><br><br><br>

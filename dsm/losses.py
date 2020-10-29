@@ -143,13 +143,15 @@ def _conditional_lognormal_loss(model, x, t, e, elbo=True):
   cens = np.where(e.cpu().data.numpy() == 0)[0]
   ll = lossf[uncens].sum() + alpha*losss[cens].sum()
 
-  return -ll/x.shape[0]
+  return -ll.mean()
 
 
 def _conditional_weibull_loss(model, x, t, e, elbo=True):
 
   alpha = model.discount
   shape, scale, logits = model.forward(x)
+
+  #print (shape, scale, logits)
 
   k_ = shape
   b_ = scale
@@ -192,7 +194,7 @@ def _conditional_weibull_loss(model, x, t, e, elbo=True):
   cens = np.where(e.cpu().data.numpy() == 0)[0]
   ll = lossf[uncens].sum() + alpha*losss[cens].sum()
 
-  return -ll/x.shape[0]
+  return -ll.mean()
 
 
 def conditional_loss(model, x, t, e, elbo=True):
@@ -280,6 +282,5 @@ def predict_cdf(model, x, t_horizon):
   torch.no_grad()
   if model.dist == 'Weibull':
     return _weibull_cdf(model, x, t_horizon)
-
   if model.dist == 'LogNormal':
     return _lognormal_cdf(model, x, t_horizon)

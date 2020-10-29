@@ -14,7 +14,7 @@
 # GNU General Public License for more details.
 
 # You should have received a copy of the GNU General Public License
-# along with Deep Survival Machines.  
+# along with Deep Survival Machines.
 # If not, see <https://www.gnu.org/licenses/>.
 
 
@@ -32,7 +32,7 @@ import torch
 
 
 def create_representation(inputdim, layers, activation):
-  """Helper function to generate the representation function for DSM.
+  r"""Helper function to generate the representation function for DSM.
 
   Deep Survival Machines learns a representation (\ Phi(X) \) for the input
   data. This representation is parameterized using a Non Linear Multilayer
@@ -116,7 +116,7 @@ class DeepSurvivalMachinesTorch(nn.Module):
       Default is 1.
   """
 
-  def __init__(self, inputdim, k, layers=None, init=False, dist='Weibull',
+  def __init__(self, inputdim, k, layers=None, dist='Weibull',
                temp=1000., discount=1.0, optimizer='Adam'):
     super(DeepSurvivalMachinesTorch, self).__init__()
 
@@ -134,11 +134,13 @@ class DeepSurvivalMachinesTorch(nn.Module):
       self.act = nn.SELU()
       self.scale = nn.Parameter(-torch.ones(k))
       self.shape = nn.Parameter(-torch.ones(k))
-
     elif self.dist == 'LogNormal':
       self.act = nn.Tanh()
       self.scale = nn.Parameter(torch.ones(k))
       self.shape = nn.Parameter(torch.ones(k))
+    else:
+      raise NotImplementedError('Distribution: '+self.dist+' not implemented'+
+                                ' yet.')
 
     self.embedding = create_representation(inputdim, layers, 'ReLU6')
 
@@ -152,10 +154,6 @@ class DeepSurvivalMachinesTorch(nn.Module):
       self.scaleg = nn.Sequential(nn.Linear(layers[-1], k, bias=True))
       self.shapeg = nn.Sequential(nn.Linear(layers[-1], k, bias=True))
 
-    if init is not False:
-      self.shape.data.fill_(init[0])
-      self.scale.data.fill_(init[1])
-
   def forward(self, x):
     """The forward function that is called when data is passed through DSM.
 
@@ -166,6 +164,112 @@ class DeepSurvivalMachinesTorch(nn.Module):
     xrep = self.embedding(x)
     return(self.act(self.shapeg(xrep))+self.shape.expand(x.shape[0], -1),
            self.act(self.scaleg(xrep))+self.scale.expand(x.shape[0], -1),
+           self.gate(xrep)/self.temp)
+
+  def get_shape_scale(self):
+    return(self.shape,
+           self.scale)
+
+class DeepRecurrentSurvivalMachinesTorch(DeepSurvivalMachinesTorch):
+  """A Torch implementation of Deep Recurrent Survival Machines model.
+
+  This is an implementation of Deep Recurrent Survival Machines model
+  in torch. It inherits from `DeepSurvivalMachinesTorch` and replaces the
+  input representation learning MLP with an LSTM or RNN, the parameters of the
+  underlying distributions and the forward function which is called whenever
+  data is passed to the module. Each of the parameters are nn.Parameters and
+  torch automatically keeps track and computes gradients for them.
+
+  .. warning::
+    Not designed to be used directly.
+    Please use the API inferface `dsm.dsm_api.DeepRecurrentSurvivalMachines`!!
+
+  Parameters
+  ----------
+  inputdim: int
+      Dimensionality of the input features.
+  k: int
+      The number of underlying parametric distributions.
+  layers: int
+      The number of hidden layers in the LSTM or RNN cell.
+  hidden: int
+      The number of neurons in each hidden layer.
+  init: tuple
+      A tuple for initialization of the parameters for the underlying
+      distributions. (shape, scale).
+  dist: str
+      Choice of the underlying survival distributions.
+      One of 'Weibull', 'LogNormal'.
+      Default is 'Weibull'.
+  temp: float
+      The logits for the gate are rescaled with this value.
+      Default is 1000.
+  discount: float
+      a float in [0,1] that determines how to discount the tail bias
+      from the uncensored instances.
+      Default is 1.
+  """
+
+  def __init__(self, inputdim, k, typ='LSTM', layers=1,
+               hidden=None, dist='Weibull',
+               temp=1000., discount=1.0, optimizer='Adam'):
+    super(DeepSurvivalMachinesTorch, self).__init__()
+
+    self.k = k
+    self.dist = dist
+    self.temp = float(temp)
+    self.discount = float(discount)
+    self.optimizer = optimizer
+    self.hidden = hidden
+    self.layers = layers
+    self.typ = typ
+
+    if self.dist == 'Weibull':
+      self.act = nn.SELU()
+      self.scale = nn.Parameter(-torch.ones(k))
+      self.shape = nn.Parameter(-torch.ones(k))
+    elif self.dist == 'LogNormal':
+      self.act = nn.Tanh()
+      self.scale = nn.Parameter(torch.ones(k))
+      self.shape = nn.Parameter(torch.ones(k))
+    else:
+      raise NotImplementedError('Distribution: '+self.dist+' not implemented'+
+                                ' yet.')
+
+    self.gate = nn.Sequential(nn.Linear(hidden, k, bias=False))
+    self.scaleg = nn.Sequential(nn.Linear(hidden, k, bias=True))
+    self.shapeg = nn.Sequential(nn.Linear(hidden, k, bias=True))
+
+    if self.typ == 'LSTM':
+      self.embedding = nn.LSTM(inputdim, hidden, layers,
+                               bias=False, batch_first=True)
+    if self.typ == 'RNN':
+      self.embedding = nn.RNN(inputdim, hidden, layers,
+                              bias=False, batch_first=True)
+
+    #self.embedding = nn.ReLU6(self.embedding)
+
+
+  def forward(self, x):
+    """The forward function that is called when data is passed through DSM.
+
+    Note: As compared to DSM, the input data for DRSM is a tensor. The forward
+    function involves unpacking the tensor in-order to directly use the
+    DSM loss functions.
+
+    Args:
+      x:
+        a torch.tensor of the input features.
+    """
+    x = x.detach().clone()
+    inputmask = ~torch.isnan(x[:, :, 0]).reshape(-1)
+    x[torch.isnan(x)] = 0
+    xrep, _ = self.embedding(x)
+    xrep = xrep.contiguous().view(-1, self.hidden)
+    xrep = xrep[inputmask]
+    #xrep = nn.ReLU6()(xrep)
+    return(self.act(self.shapeg(xrep))+self.shape.expand(xrep.shape[0], -1),
+           self.act(self.scaleg(xrep))+self.scale.expand(xrep.shape[0], -1),
            self.gate(xrep)/self.temp)
 
   def get_shape_scale(self):

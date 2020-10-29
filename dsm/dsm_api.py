@@ -28,7 +28,6 @@ from dsm.losses import predict_cdf
 from dsm.utilities import train_dsm
 
 import torch
-
 import numpy as np
 
 class DeepSurvivalMachines():
@@ -97,11 +96,11 @@ class DeepSurvivalMachines():
     print("Distribution Choice:", self.dist)
 
 
-  def fit(self, x, t, e, vsize=0.15, 
+  def fit(self, x, t, e, vsize=0.15,
           iters=1, learning_rate=1e-3, batch_size=100,
           elbo=True, optimizer="Adam", random_state=100):
 
-    """This method is used to train an instance of the DSM model.
+    r"""This method is used to train an instance of the DSM model.
 
     Parameters
     ----------
@@ -123,10 +122,10 @@ class DeepSurvivalMachines():
         learning is performed on mini-batches of input data. this parameter
         specifies the size of each mini-batch.
     elbo: bool
-        Whether to use the Evidence Lower Bound for Optimization.
+        Whether to use the Evidence Lower Bound for optimization.
         Default is True.
     optimizer: str
-        The choice of the gradient based optimization method. One of 
+        The choice of the gradient based optimization method. One of
         'Adam', 'RMSProp' or 'SGD'.
     random_state: float
         random seed that determines how the validation set is chosen.
@@ -155,7 +154,6 @@ class DeepSurvivalMachines():
       model = DeepSurvivalMachinesTorch(inputdim,
                                         k=self.k,
                                         layers=self.layers,
-                                        init=False, 
                                         dist=self.dist,
                                         temp=self.temp,
                                         discount=self.discount,
@@ -177,7 +175,7 @@ class DeepSurvivalMachines():
 
 
   def predict_risk(self, x, t):
-    """Returns the estimated risk of an event occuring before time \( t \)
+    r"""Returns the estimated risk of an event occuring before time \( t \)
       \( \widehat{\mathbb{P}}(T\leq t|X) \) for some input data \( x \).
 
     Parameters
@@ -201,7 +199,7 @@ class DeepSurvivalMachines():
 
 
   def predict_survival(self, x, t):
-    """Returns the estimated survival probability at time \( t \),
+    r"""Returns the estimated survival probability at time \( t \),
       \( \widehat{\mathbb{P}}(T > t|X) \) for some input data \( x \).
 
     Parameters
