@@ -110,7 +110,6 @@ class DeepSurvivalMachines():
         A numpy array of the event/censoring times, \( t \).
     e: np.ndarray
         A numpy array of the event/censoring indicators, \( \delta \).
-
         \( \delta = 1 \) means the event took place.
     vsize: float
         Amount of data to set aside as the validation set.

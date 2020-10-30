@@ -151,8 +151,6 @@ def _conditional_weibull_loss(model, x, t, e, elbo=True):
   alpha = model.discount
   shape, scale, logits = model.forward(x)
 
-  #print (shape, scale, logits)
-
   k_ = shape
   b_ = scale
 
@@ -217,7 +215,7 @@ def _weibull_cdf(model, x, t_horizon):
   b_ = scale
 
   t_horz = torch.tensor(t_horizon).double()
-  t_horz = t_horz.repeat(x.shape[0], 1)
+  t_horz = t_horz.repeat(shape.shape[0], 1)
 
   cdfs = []
   for j in range(len(t_horizon)):
@@ -251,7 +249,7 @@ def _lognormal_cdf(model, x, t_horizon):
   b_ = scale
 
   t_horz = torch.tensor(t_horizon).double()
-  t_horz = t_horz.repeat(x.shape[0], 1)
+  t_horz = t_horz.repeat(shape.shape[0], 1)
 
   cdfs = []
 
