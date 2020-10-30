@@ -63,7 +63,13 @@ well as the mixing weights are modelled using Neural Networks.</p>
 model and allows for learning of representations of the input covariates using
 <strong>Recurrent Neural Networks</strong> like <strong>LSTMs, GRUs</strong>. Deep Recurrent Survival
 Machines is a natural fit to model problems where there are time dependendent
-covariates.</p>
+covariates. Examples include situations where we are working with streaming
+data like vital signs, degradation monitoring signals in predictive
+maintainance. <strong>DRSM</strong> allows the learnt representations at each time step to
+involve historical context from previous time steps. <strong>DRSM</strong> implementation in
+<code><a title="dsm" href="#dsm">dsm</a></code> is carried out through an easy to use API that accepts lists of data
+streams and corresponding failure times. The module automatically takes care of
+appropriate batching and padding of variable length sequences.</p>
 <div class="admonition warning">
 <p class="admonition-title">Warning:&ensp;Not Implemented Yet!</p>
 </div>
@@ -188,7 +194,14 @@ Deep Recurrent Survival Machines
 model and allows for learning of representations of the input covariates using
 **Recurrent Neural Networks** like **LSTMs, GRUs**. Deep Recurrent Survival
 Machines is a natural fit to model problems where there are time dependendent
-covariates.
+covariates. Examples include situations where we are working with streaming
+data like vital signs, degradation monitoring signals in predictive
+maintainance. **DRSM** allows the learnt representations at each time step to
+involve historical context from previous time steps. **DRSM** implementation in
+`dsm` is carried out through an easy to use API that accepts lists of data
+streams and corresponding failure times. The module automatically takes care of
+appropriate batching and padding of variable length sequences.
+
 
 ..warning:: Not Implemented Yet!
 

@@ -80,6 +80,58 @@ def increase_censoring(e, t, p):
 
   return e, t
 
+def _load_framingham_dataset(sequential):
+  &#34;&#34;&#34;Helper function to load and preprocess the Framingham dataset.
+
+  The Framingham Dataset is a subset of 4,434 participants of the well known,
+  ongoing Framingham Heart study [1] for studying epidemiology for
+  hypertensive and arteriosclerotic cardiovascular disease. It is a popular
+  dataset for longitudinal survival analysis with time dependent covariates.
+
+  Parameters
+  ----------
+  sequential: bool
+    If True returns a list of np.arrays for each individual.
+    else, returns collapsed results for each time step. To train
+    recurrent neural models you would typically use True.
+
+  References
+  ----------
+  [1] Dawber, Thomas R., Gilcin F. Meadors, and Felix E. Moore Jr.
+  &#34;Epidemiological approaches to heart disease: the Framingham Study.&#34;
+  American Journal of Public Health and the Nations Health 41.3 (1951).
+
+  &#34;&#34;&#34;
+
+  data = pkgutil.get_data(__name__, &#39;datasets/framingham.csv&#39;)
+  data = pd.read_csv(io.BytesIO(data))
+
+  dat_cat = data[[&#39;SEX&#39;, &#39;CURSMOKE&#39;, &#39;DIABETES&#39;, &#39;BPMEDS&#39;,
+                  &#39;educ&#39;, &#39;PREVCHD&#39;, &#39;PREVAP&#39;, &#39;PREVMI&#39;,
+                  &#39;PREVSTRK&#39;, &#39;PREVHYP&#39;]]
+  dat_num = data[[&#39;TOTCHOL&#39;, &#39;AGE&#39;, &#39;SYSBP&#39;, &#39;DIABP&#39;,
+                  &#39;CIGPDAY&#39;, &#39;BMI&#39;, &#39;HEARTRTE&#39;, &#39;GLUCOSE&#39;]]
+
+  x1 = pd.get_dummies(dat_cat).values
+  x2 = dat_num.values
+  x = np.hstack([x1, x2])
+
+  time = (data[&#39;TIMEDTH&#39;] - data[&#39;TIME&#39;]).values
+  event = data[&#39;DEATH&#39;].values
+
+  x = SimpleImputer(missing_values=np.nan, strategy=&#39;mean&#39;).fit_transform(x)
+  x_ = StandardScaler().fit_transform(x)
+
+  if not sequential:
+    return x_, time, event
+  else:
+    x, t, e = [], [], []
+    for id_ in sorted(list(set(data[&#39;RANDID&#39;]))):
+      x.append(x_[data[&#39;RANDID&#39;] == id_])
+      t.append(time[data[&#39;RANDID&#39;] == id_])
+      e.append(event[data[&#39;RANDID&#39;] == id_])
+    return x, t, e
+
 def _load_pbc_dataset(sequential):
   &#34;&#34;&#34;Helper function to load and preprocess the PBC dataset
 
@@ -176,8 +228,8 @@ def load_dataset(dataset=&#39;SUPPORT&#39;, **kwargs):
   Parameters
   ----------
   dataset: str
-      The choice of dataset to load. Currently implemented is &#39;SUPPORT&#39;
-      and &#39;PBC&#39;.
+      The choice of dataset to load. Currently implemented is &#39;SUPPORT&#39;,
+      &#39;PBC&#39; and &#39;FRAMINGHAM&#39;.
   **kwargs: dict
       Dataset specific keyword arguments.
 
@@ -188,14 +240,16 @@ def load_dataset(dataset=&#39;SUPPORT&#39;, **kwargs):
       event times and the censoring indicators respectively.
 
   &#34;&#34;&#34;
+  sequential = kwargs.get(&#39;sequential&#39;, False)
 
   if dataset == &#39;SUPPORT&#39;:
     return _load_support_dataset()
   if dataset == &#39;PBC&#39;:
-    sequential = kwargs.get(&#39;sequential&#39;, False)
     return _load_pbc_dataset(sequential)
+  if dataset == &#39;FRAMINGHAM&#39;:
+    return _load_framingham_dataset(sequential)
   else:
-    return NotImplementedError(&#39;Dataset &#39;+dataset+&#39; not implemented.&#39;)</code></pre>
+    raise NotImplementedError(&#39;Dataset &#39;+dataset+&#39; not implemented.&#39;)</code></pre>
 </details>
 </section>
 <section>
@@ -239,8 +293,8 @@ def load_dataset(dataset=&#39;SUPPORT&#39;, **kwargs):
 <h2 id="parameters">Parameters</h2>
 <dl>
 <dt><strong><code>dataset</code></strong> :&ensp;<code>str</code></dt>
-<dd>The choice of dataset to load. Currently implemented is 'SUPPORT'
-and 'PBC'.</dd>
+<dd>The choice of dataset to load. Currently implemented is 'SUPPORT',
+'PBC' and 'FRAMINGHAM'.</dd>
 <dt><strong><code>**kwargs</code></strong> :&ensp;<code>dict</code></dt>
 <dd>Dataset specific keyword arguments.</dd>
 </dl>
@@ -260,8 +314,8 @@ event times and the censoring indicators respectively.</dd>
   Parameters
   ----------
   dataset: str
-      The choice of dataset to load. Currently implemented is &#39;SUPPORT&#39;
-      and &#39;PBC&#39;.
+      The choice of dataset to load. Currently implemented is &#39;SUPPORT&#39;,
+      &#39;PBC&#39; and &#39;FRAMINGHAM&#39;.
   **kwargs: dict
       Dataset specific keyword arguments.
 
@@ -272,14 +326,16 @@ event times and the censoring indicators respectively.</dd>
       event times and the censoring indicators respectively.
 
   &#34;&#34;&#34;
+  sequential = kwargs.get(&#39;sequential&#39;, False)
 
   if dataset == &#39;SUPPORT&#39;:
     return _load_support_dataset()
   if dataset == &#39;PBC&#39;:
-    sequential = kwargs.get(&#39;sequential&#39;, False)
     return _load_pbc_dataset(sequential)
+  if dataset == &#39;FRAMINGHAM&#39;:
+    return _load_framingham_dataset(sequential)
   else:
-    return NotImplementedError(&#39;Dataset &#39;+dataset+&#39; not implemented.&#39;)</code></pre>
+    raise NotImplementedError(&#39;Dataset &#39;+dataset+&#39; not implemented.&#39;)</code></pre>
 </details>
 </dd>
 </dl>

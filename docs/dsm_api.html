@@ -142,7 +142,6 @@ class DeepSurvivalMachines():
         A numpy array of the event/censoring times, \( t \).
     e: np.ndarray
         A numpy array of the event/censoring indicators, \( \delta \).
-
         \( \delta = 1 \) means the event took place.
     vsize: float
         Amount of data to set aside as the validation set.
@@ -259,6 +258,7 @@ class DeepSurvivalMachines():
                       &#34;before calling `predict_risk`.&#34;)
 
 class DeepRecurrentSurvivalMachines(DeepSurvivalMachines):
+
   __doc__ = &#34;..warning:: Not Implemented&#34;
   pass
 
@@ -321,6 +321,7 @@ class DeepConvolutionalSurvivalMachines(DeepRecurrentSurvivalMachines):
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class DeepRecurrentSurvivalMachines(DeepSurvivalMachines):
+
   __doc__ = &#34;..warning:: Not Implemented&#34;
   pass</code></pre>
 </details>
@@ -467,7 +468,6 @@ Default is 1.</dd>
         A numpy array of the event/censoring times, \( t \).
     e: np.ndarray
         A numpy array of the event/censoring indicators, \( \delta \).
-
         \( \delta = 1 \) means the event took place.
     vsize: float
         Amount of data to set aside as the validation set.
@@ -601,10 +601,8 @@ Default is 1.</dd>
 <dt><strong><code>t</code></strong> :&ensp;<code>np.ndarray</code></dt>
 <dd>A numpy array of the event/censoring times, <span><span class="MathJax_Preview"> t </span><script type="math/tex"> t </script></span>.</dd>
 <dt><strong><code>e</code></strong> :&ensp;<code>np.ndarray</code></dt>
-<dd>
-<p>A numpy array of the event/censoring indicators, <span><span class="MathJax_Preview"> \delta </span><script type="math/tex"> \delta </script></span>.</p>
-<p><span><span class="MathJax_Preview"> \delta = 1 </span><script type="math/tex"> \delta = 1 </script></span> means the event took place.</p>
-</dd>
+<dd>A numpy array of the event/censoring indicators, <span><span class="MathJax_Preview"> \delta </span><script type="math/tex"> \delta </script></span>.
+<span><span class="MathJax_Preview"> \delta = 1 </span><script type="math/tex"> \delta = 1 </script></span> means the event took place.</dd>
 <dt><strong><code>vsize</code></strong> :&ensp;<code>float</code></dt>
 <dd>Amount of data to set aside as the validation set.</dd>
 <dt><strong><code>iters</code></strong> :&ensp;<code>int</code></dt>
@@ -641,7 +639,6 @@ Default is True.</dd>
       A numpy array of the event/censoring times, \( t \).
   e: np.ndarray
       A numpy array of the event/censoring indicators, \( \delta \).
-
       \( \delta = 1 \) means the event took place.
   vsize: float
       Amount of data to set aside as the validation set.

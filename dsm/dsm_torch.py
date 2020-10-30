@@ -247,7 +247,6 @@ class DeepRecurrentSurvivalMachinesTorch(DeepSurvivalMachinesTorch):
       self.embedding = nn.RNN(inputdim, hidden, layers,
                               bias=False, batch_first=True)
 
-    #self.embedding = nn.ReLU6(self.embedding)
 
 
   def forward(self, x):
