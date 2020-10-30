@@ -196,8 +196,8 @@ def load_dataset(dataset='SUPPORT', **kwargs):
   Parameters
   ----------
   dataset: str
-      The choice of dataset to load. Currently implemented is 'SUPPORT'
-      and 'PBC'.
+      The choice of dataset to load. Currently implemented is 'SUPPORT',
+      'PBC' and 'FRAMINGHAM'.
   **kwargs: dict
       Dataset specific keyword arguments.
 
@@ -208,11 +208,13 @@ def load_dataset(dataset='SUPPORT', **kwargs):
       event times and the censoring indicators respectively.
 
   """
+  sequential = kwargs.get('sequential', False)
 
   if dataset == 'SUPPORT':
     return _load_support_dataset()
   if dataset == 'PBC':
-    sequential = kwargs.get('sequential', False)
     return _load_pbc_dataset(sequential)
+  if dataset == 'FRAMINGHAM':
+    return _load_framingham_dataset(sequential)
   else:
-    return NotImplementedError('Dataset '+dataset+' not implemented.')
+    raise NotImplementedError('Dataset '+dataset+' not implemented.')
