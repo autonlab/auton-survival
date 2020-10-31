@@ -26,231 +26,6 @@ Deep Survival Machines models." />
 <section id="section-intro">
 <p>Utility functions to load standard datasets to train and evaluate the
 Deep Survival Machines models.</p>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python"># coding=utf-8
-# Copyright 2020 Chirag Nagpal
-#
-# This file is part of Deep Survival Machines.
-
-# Deep Survival Machines is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-
-# Deep Survival Machines is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-
-# You should have received a copy of the GNU General Public License
-# along with Deep Survival Machines.
-# If not, see &lt;https://www.gnu.org/licenses/&gt;.
-
-
-&#34;&#34;&#34;Utility functions to load standard datasets to train and evaluate the
-Deep Survival Machines models.
-&#34;&#34;&#34;
-
-
-import io
-import pkgutil
-
-import pandas as pd
-import numpy as np
-
-from sklearn.impute import SimpleImputer
-from sklearn.preprocessing import StandardScaler
-
-def increase_censoring(e, t, p):
-
-  uncens = np.where(e == 1)[0]
-  mask = np.random.choice([False, True], len(uncens), p=[1-p, p])
-  toswitch = uncens[mask]
-
-  e[toswitch] = 0
-  t_ = t[toswitch]
-
-  newt = []
-  for t__ in t_:
-    newt.append(np.random.uniform(1, t__))
-  t[toswitch] = newt
-
-  return e, t
-
-def _load_framingham_dataset(sequential):
-  &#34;&#34;&#34;Helper function to load and preprocess the Framingham dataset.
-
-  The Framingham Dataset is a subset of 4,434 participants of the well known,
-  ongoing Framingham Heart study [1] for studying epidemiology for
-  hypertensive and arteriosclerotic cardiovascular disease. It is a popular
-  dataset for longitudinal survival analysis with time dependent covariates.
-
-  Parameters
-  ----------
-  sequential: bool
-    If True returns a list of np.arrays for each individual.
-    else, returns collapsed results for each time step. To train
-    recurrent neural models you would typically use True.
-
-  References
-  ----------
-  [1] Dawber, Thomas R., Gilcin F. Meadors, and Felix E. Moore Jr.
-  &#34;Epidemiological approaches to heart disease: the Framingham Study.&#34;
-  American Journal of Public Health and the Nations Health 41.3 (1951).
-
-  &#34;&#34;&#34;
-
-  data = pkgutil.get_data(__name__, &#39;datasets/framingham.csv&#39;)
-  data = pd.read_csv(io.BytesIO(data))
-
-  dat_cat = data[[&#39;SEX&#39;, &#39;CURSMOKE&#39;, &#39;DIABETES&#39;, &#39;BPMEDS&#39;,
-                  &#39;educ&#39;, &#39;PREVCHD&#39;, &#39;PREVAP&#39;, &#39;PREVMI&#39;,
-                  &#39;PREVSTRK&#39;, &#39;PREVHYP&#39;]]
-  dat_num = data[[&#39;TOTCHOL&#39;, &#39;AGE&#39;, &#39;SYSBP&#39;, &#39;DIABP&#39;,
-                  &#39;CIGPDAY&#39;, &#39;BMI&#39;, &#39;HEARTRTE&#39;, &#39;GLUCOSE&#39;]]
-
-  x1 = pd.get_dummies(dat_cat).values
-  x2 = dat_num.values
-  x = np.hstack([x1, x2])
-
-  time = (data[&#39;TIMEDTH&#39;] - data[&#39;TIME&#39;]).values
-  event = data[&#39;DEATH&#39;].values
-
-  x = SimpleImputer(missing_values=np.nan, strategy=&#39;mean&#39;).fit_transform(x)
-  x_ = StandardScaler().fit_transform(x)
-
-  if not sequential:
-    return x_, time, event
-  else:
-    x, t, e = [], [], []
-    for id_ in sorted(list(set(data[&#39;RANDID&#39;]))):
-      x.append(x_[data[&#39;RANDID&#39;] == id_])
-      t.append(time[data[&#39;RANDID&#39;] == id_])
-      e.append(event[data[&#39;RANDID&#39;] == id_])
-    return x, t, e
-
-def _load_pbc_dataset(sequential):
-  &#34;&#34;&#34;Helper function to load and preprocess the PBC dataset
-
-  The Primary biliary cirrhosis (PBC) Dataset [1] is well known
-  dataset for evaluating survival analysis models with time
-  dependent covariates.
-
-  Parameters
-  ----------
-  sequential: bool
-    If True returns a list of np.arrays for each individual.
-    else, returns collapsed results for each time step. To train
-    recurrent neural models you would typically use True.
-
-
-  References
-  ----------
-  [1] Fleming, Thomas R., and David P. Harrington. Counting processes and
-  survival analysis. Vol. 169. John Wiley &amp; Sons, 2011.
-
-  &#34;&#34;&#34;
-
-  data = pkgutil.get_data(__name__, &#39;datasets/pbc2.csv&#39;)
-  data = pd.read_csv(io.BytesIO(data))
-
-  data[&#39;histologic&#39;] = data[&#39;histologic&#39;].astype(str)
-  dat_cat = data[[&#39;drug&#39;, &#39;sex&#39;, &#39;ascites&#39;, &#39;hepatomegaly&#39;,
-                  &#39;spiders&#39;, &#39;edema&#39;, &#39;histologic&#39;]]
-  dat_num = data[[&#39;serBilir&#39;, &#39;serChol&#39;, &#39;albumin&#39;, &#39;alkaline&#39;,
-                  &#39;SGOT&#39;, &#39;platelets&#39;, &#39;prothrombin&#39;]]
-  age = data[&#39;age&#39;] + data[&#39;years&#39;]
-
-  x1 = pd.get_dummies(dat_cat).values
-  x2 = dat_num.values
-  x3 = age.values.reshape(-1, 1)
-  x = np.hstack([x1, x2, x3])
-
-  time = (data[&#39;years&#39;] - data[&#39;year&#39;]).values
-  event = data[&#39;status2&#39;].values
-
-  x = SimpleImputer(missing_values=np.nan, strategy=&#39;mean&#39;).fit_transform(x)
-  x_ = StandardScaler().fit_transform(x)
-
-  if not sequential:
-    return x_, time, event
-  else:
-    x, t, e = [], [], []
-    for id_ in sorted(list(set(data[&#39;id&#39;]))):
-      x.append(x_[data[&#39;id&#39;] == id_])
-      t.append(time[data[&#39;id&#39;] == id_])
-      e.append(event[data[&#39;id&#39;] == id_])
-    return x, t, e
-
-def _load_support_dataset():
-  &#34;&#34;&#34;Helper function to load and preprocess the SUPPORT dataset.
-
-  The SUPPORT Dataset comes from the Vanderbilt University study
-  to estimate survival for seriously ill hospitalized adults [1].
-
-  Please refer to http://biostat.mc.vanderbilt.edu/wiki/Main/SupportDesc.
-  for the original datasource.
-
-  References
-  ----------
-  [1]: Knaus WA, Harrell FE, Lynn J et al. (1995): The SUPPORT prognostic
-  model: Objective estimates of survival for seriously ill hospitalized
-  adults. Annals of Internal Medicine 122:191-203.
-
-  &#34;&#34;&#34;
-
-  data = pkgutil.get_data(__name__, &#39;datasets/support2.csv&#39;)
-  data = pd.read_csv(io.BytesIO(data))
-  x1 = data[[&#39;age&#39;, &#39;num.co&#39;, &#39;meanbp&#39;, &#39;wblc&#39;, &#39;hrt&#39;, &#39;resp&#39;, &#39;temp&#39;,
-             &#39;pafi&#39;, &#39;alb&#39;, &#39;bili&#39;, &#39;crea&#39;, &#39;sod&#39;, &#39;ph&#39;, &#39;glucose&#39;, &#39;bun&#39;,
-             &#39;urine&#39;, &#39;adlp&#39;, &#39;adls&#39;]]
-
-  catfeats = [&#39;sex&#39;, &#39;dzgroup&#39;, &#39;dzclass&#39;, &#39;income&#39;, &#39;race&#39;, &#39;ca&#39;]
-  x2 = pd.get_dummies(data[catfeats])
-
-  x = np.concatenate([x1, x2], axis=1)
-  t = data[&#39;d.time&#39;].values
-  e = data[&#39;death&#39;].values
-
-  x = SimpleImputer(missing_values=np.nan, strategy=&#39;mean&#39;).fit_transform(x)
-  x = StandardScaler().fit_transform(x)
-
-  remove = ~np.isnan(t)
-  return x[remove], t[remove], e[remove]
-
-
-def load_dataset(dataset=&#39;SUPPORT&#39;, **kwargs):
-  &#34;&#34;&#34;Helper function to load datasets to test Survival Analysis models.
-
-  Parameters
-  ----------
-  dataset: str
-      The choice of dataset to load. Currently implemented is &#39;SUPPORT&#39;,
-      &#39;PBC&#39; and &#39;FRAMINGHAM&#39;.
-  **kwargs: dict
-      Dataset specific keyword arguments.
-
-  Returns
-  ----------
-  tuple: (np.ndarray, np.ndarray, np.ndarray)
-      A tuple of the form of (x, t, e) where x, t, e are the input covariates,
-      event times and the censoring indicators respectively.
-
-  &#34;&#34;&#34;
-  sequential = kwargs.get(&#39;sequential&#39;, False)
-
-  if dataset == &#39;SUPPORT&#39;:
-    return _load_support_dataset()
-  if dataset == &#39;PBC&#39;:
-    return _load_pbc_dataset(sequential)
-  if dataset == &#39;FRAMINGHAM&#39;:
-    return _load_framingham_dataset(sequential)
-  else:
-    raise NotImplementedError(&#39;Dataset &#39;+dataset+&#39; not implemented.&#39;)</code></pre>
-</details>
 </section>
 <section>
 </section>
@@ -264,32 +39,33 @@ def load_dataset(dataset=&#39;SUPPORT&#39;, **kwargs):
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def increase_censoring(e, t, p):
-
-  uncens = np.where(e == 1)[0]
-  mask = np.random.choice([False, True], len(uncens), p=[1-p, p])
-  toswitch = uncens[mask]
-
-  e[toswitch] = 0
-  t_ = t[toswitch]
-
-  newt = []
-  for t__ in t_:
-    newt.append(np.random.uniform(1, t__))
-  t[toswitch] = newt
-
-  return e, t</code></pre>
-</details>
 </dd>
 <dt id="dsm.datasets.load_dataset"><code class="name flex">
 <span>def <span class="ident">load_dataset</span></span>(<span>dataset='SUPPORT', **kwargs)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Helper function to load datasets to test Survival Analysis models.</p>
+<p>Currently implemented datasets include:</p>
+<p><strong>SUPPORT</strong>: This dataset comes from the Vanderbilt University study
+to estimate survival for seriously ill hospitalized adults [1].
+(Refer to <a href="http://biostat.mc.vanderbilt.edu/wiki/Main/SupportDesc.">http://biostat.mc.vanderbilt.edu/wiki/Main/SupportDesc.</a>
+for the original datasource.)</p>
+<p><strong>PBC</strong>: The Primary biliary cirrhosis dataset [2] is well known
+dataset for evaluating survival analysis models with time
+dependent covariates.</p>
+<p><strong>FRAMINGHAM</strong>: This dataset is a subset of 4,434 participants of the well
+known, ongoing Framingham Heart study [3] for studying epidemiology for
+hypertensive and arteriosclerotic cardiovascular disease. It is a popular
+dataset for longitudinal survival analysis with time dependent covariates.</p>
+<h2 id="references">References</h2>
+<p>[1]: Knaus WA, Harrell FE, Lynn J et al. (1995): The SUPPORT prognostic
+model: Objective estimates of survival for seriously ill hospitalized
+adults. Annals of Internal Medicine 122:191-203.</p>
+<p>[2] Fleming, Thomas R., and David P. Harrington. Counting processes and
+survival analysis. Vol. 169. John Wiley &amp; Sons, 2011.</p>
+<p>[3] Dawber, Thomas R., Gilcin F. Meadors, and Felix E. Moore Jr.
+"Epidemiological approaches to heart disease: the Framingham Study."
+American Journal of Public Health and the Nations Health 41.3 (1951).</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
 <dt><strong><code>dataset</code></strong> :&ensp;<code>str</code></dt>
@@ -304,39 +80,6 @@ def load_dataset(dataset=&#39;SUPPORT&#39;, **kwargs):
 <dd>A tuple of the form of (x, t, e) where x, t, e are the input covariates,
 event times and the censoring indicators respectively.</dd>
 </dl></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def load_dataset(dataset=&#39;SUPPORT&#39;, **kwargs):
-  &#34;&#34;&#34;Helper function to load datasets to test Survival Analysis models.
-
-  Parameters
-  ----------
-  dataset: str
-      The choice of dataset to load. Currently implemented is &#39;SUPPORT&#39;,
-      &#39;PBC&#39; and &#39;FRAMINGHAM&#39;.
-  **kwargs: dict
-      Dataset specific keyword arguments.
-
-  Returns
-  ----------
-  tuple: (np.ndarray, np.ndarray, np.ndarray)
-      A tuple of the form of (x, t, e) where x, t, e are the input covariates,
-      event times and the censoring indicators respectively.
-
-  &#34;&#34;&#34;
-  sequential = kwargs.get(&#39;sequential&#39;, False)
-
-  if dataset == &#39;SUPPORT&#39;:
-    return _load_support_dataset()
-  if dataset == &#39;PBC&#39;:
-    return _load_pbc_dataset(sequential)
-  if dataset == &#39;FRAMINGHAM&#39;:
-    return _load_framingham_dataset(sequential)
-  else:
-    raise NotImplementedError(&#39;Dataset &#39;+dataset+&#39; not implemented.&#39;)</code></pre>
-</details>
 </dd>
 </dl>
 </section>
