@@ -3,7 +3,6 @@ from setuptools import setup, find_packages
 
 """
 First upload to test pypi:
-    mktmpenv (Python version should not matter)
     pip install torch tqdm pandas numpy twine
     python setup.py sdist
     twine upload --repository-url https://test.pypi.org/legacy/ dist/*
@@ -12,10 +11,6 @@ First upload to test pypi:
     
     and then upload it to PyPi.
     
-    enjoy!
-    
-    please add keywords and choose a name for your package search on pypi index first 
-    to check if the name is allready taken or available.
 """
 
 
@@ -29,7 +24,7 @@ with open(os.path.join(here, "README.md"), encoding="utf-8") as f:
 
 
 setup(
-    name="",  # add name of your package as the dsm name is already taken
+    name="",  # add name of your package as the dsm is already taken
     version="0.0.1",
     author="Chirag Nagpal",
     author_email="chiragn@cs.cmu.edu",
@@ -52,7 +47,7 @@ setup(
         "Intended Audience :: Education",
         "Intended Audience :: Science/Research",
         "Topic :: Scientific/Engineering",
-        "License :: OSI Approved :: BSD License",
+        "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
         "Programming Language :: Python :: 3",
     ],
     include_package_data=True,
