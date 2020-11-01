@@ -1,17 +1,6 @@
 import os
-from setuptools import setup, find_packages
 
-"""
-First upload to test pypi:
-    pip install torch tqdm pandas numpy twine
-    python setup.py sdist
-    twine upload --repository-url https://test.pypi.org/legacy/ dist/*
-    
-    do check if it is working properly or not.
-    
-    and then upload it to PyPi.
-    
-"""
+from setuptools import setup, find_packages
 
 
 def read(fname):
@@ -24,12 +13,10 @@ with open(os.path.join(here, "README.md"), encoding="utf-8") as f:
 
 
 setup(
-    name="",  # add name of your package as the dsm is already taken
+    name="dsm", 
     version="0.0.1",
-    author="Chirag Nagpal",
-    author_email="chiragn@cs.cmu.edu",
-    maintainer="Prince Roshan",
-    maintainer_email="princekrroshan01@gmail.com",
+    maintainer=["Chirag Nagpal","Prince Roshan"],
+    maintainer_email=["chiragn@cs.cmu.edu","princekrroshan01@gmail.com"],
     url="https://github.com/autonlab/DeepSurvivalMachines",
     description=(
         "Python package dsm provides an API to train the Deep Survival Machines and associated models for problems in survival analysis."
@@ -38,7 +25,7 @@ setup(
     long_description_content_type="text/markdown",
     license="GPLv3+",
     packages=find_packages(exclude=["tests*"]),
-    keywords=[""],  # add keywords
+    keywords=["dsm"],
     python_requires=">=3.6",
     install_requires=["torch", "numpy", "pandas", "tqdm", "scikit-learn"],
     classifiers=[
