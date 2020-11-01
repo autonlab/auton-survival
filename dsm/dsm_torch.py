@@ -25,10 +25,20 @@ The main interface is the DeepSurvivalMachines class which inherits
 from torch.nn.Module.
 
 Note: NOT DESIGNED TO BE CALLED DIRECTLY!!!
+
 """
+
 
 import torch.nn as nn
 import torch
+
+__pdoc__ = {}
+
+for clsn in ['DeepSurvivalMachinesTorch', 
+             'DeepRecurrentSurvivalMachinesTorch']:
+  for membr in ['training', 'dump_patches']:
+
+    __pdoc__[clsn+'.'+membr] = False
 
 
 def create_representation(inputdim, layers, activation):
@@ -54,6 +64,7 @@ def create_representation(inputdim, layers, activation):
   Returns
   ----------
   an MLP with torch.nn.Module with the specfied structure.
+
   """
 
   if activation == 'ReLU6':
@@ -114,6 +125,7 @@ class DeepSurvivalMachinesTorch(nn.Module):
       a float in [0,1] that determines how to discount the tail bias
       from the uncensored instances.
       Default is 1.
+
   """
 
   def __init__(self, inputdim, k, layers=None, dist='Weibull',
@@ -148,7 +160,6 @@ class DeepSurvivalMachinesTorch(nn.Module):
       self.gate = nn.Sequential(nn.Linear(inputdim, k, bias=False))
       self.scaleg = nn.Sequential(nn.Linear(inputdim, k, bias=True))
       self.shapeg = nn.Sequential(nn.Linear(inputdim, k, bias=True))
-
     else:
       self.gate = nn.Sequential(nn.Linear(layers[-1], k, bias=False))
       self.scaleg = nn.Sequential(nn.Linear(layers[-1], k, bias=True))
@@ -160,6 +171,7 @@ class DeepSurvivalMachinesTorch(nn.Module):
     Args:
       x:
         a torch.tensor of the input features.
+
     """
     xrep = self.embedding(x)
     return(self.act(self.shapeg(xrep))+self.shape.expand(x.shape[0], -1),
@@ -170,7 +182,7 @@ class DeepSurvivalMachinesTorch(nn.Module):
     return(self.shape,
            self.scale)
 
-class DeepRecurrentSurvivalMachinesTorch(DeepSurvivalMachinesTorch):
+class DeepRecurrentSurvivalMachinesTorch(nn.Module):
   """A Torch implementation of Deep Recurrent Survival Machines model.
 
   This is an implementation of Deep Recurrent Survival Machines model
@@ -208,12 +220,13 @@ class DeepRecurrentSurvivalMachinesTorch(DeepSurvivalMachinesTorch):
       a float in [0,1] that determines how to discount the tail bias
       from the uncensored instances.
       Default is 1.
+
   """
 
   def __init__(self, inputdim, k, typ='LSTM', layers=1,
                hidden=None, dist='Weibull',
                temp=1000., discount=1.0, optimizer='Adam'):
-    super(DeepSurvivalMachinesTorch, self).__init__()
+    super(DeepRecurrentSurvivalMachinesTorch, self).__init__()
 
     self.k = k
     self.dist = dist
@@ -259,6 +272,7 @@ class DeepRecurrentSurvivalMachinesTorch(DeepSurvivalMachinesTorch):
     Args:
       x:
         a torch.tensor of the input features.
+
     """
     x = x.detach().clone()
     inputmask = ~torch.isnan(x[:, :, 0]).reshape(-1)

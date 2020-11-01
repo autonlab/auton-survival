@@ -29,6 +29,7 @@ import torch
 import numpy as np
 
 import gc
+import logging
 
 
 def get_optimizer(model, lr):
@@ -51,21 +52,19 @@ def pretrain_dsm(model, t_train, e_train, t_valid, e_valid,
   premodel.double()
 
   optimizer = torch.optim.Adam(premodel.parameters(), lr=lr)
+
   oldcost = float('inf')
   patience = 0
-
   costs = []
   for _ in tqdm(range(n_iter)):
 
     optimizer.zero_grad()
-
     loss = unconditional_loss(premodel, t_train, e_train)
     loss.backward()
     optimizer.step()
 
     valid_loss = unconditional_loss(premodel, t_valid, e_valid)
     valid_loss = valid_loss.detach().cpu().numpy()
-
     costs.append(valid_loss)
 
     if np.abs(costs[-1] - oldcost) < thres:
@@ -77,26 +76,42 @@ def pretrain_dsm(model, t_train, e_train, t_valid, e_valid,
   return premodel
 
 def _reshape_tensor_with_nans(data):
-  """Helper function to unroll padded RNN inputs"""
+  """Helper function to unroll padded RNN inputs."""
   data = data.reshape(-1)
   return data[~torch.isnan(data)]
+
+def _get_padded_features(x):
+  """Helper function to pad variable length RNN inputs with nans."""
+  d = max([len(x_) for x_ in x])
+  padx = []
+  for i in range(len(x)):
+    pads = np.nan*np.ones((d - len(x[i]), x[i].shape[1]))  
+    padx.append(np.concatenate([x[i], pads]))
+  return np.array(padx)
+
+def _get_padded_targets(t):
+  """Helper function to pad variable length RNN inputs with nans."""
+  d = max([len(t_) for t_ in t])
+  padt = []
+  for i in range(len(t)):
+    pads = np.nan*np.ones(d - len(t[i]))
+    padt.append(np.concatenate([t[i], pads]))
+  return np.array(padt)[:, :, np.newaxis]
 
 def train_dsm(model,
               x_train, t_train, e_train,
               x_valid, t_valid, e_valid,
               n_iter=10000, lr=1e-3, elbo=True,
               bs=100):
+  """Function to train the torch instance of the model."""
 
-  print('Pretraining the Underlying Distributions...')
-
-  print(t_train.shape, e_train.shape)
-
+  logging.info('Pretraining the Underlying Distributions...')
+  # For padded variable length sequences we first unroll the input and
+  # mask out the padded nans.
   t_train_ = _reshape_tensor_with_nans(t_train)
   e_train_ = _reshape_tensor_with_nans(e_train)
   t_valid_ = _reshape_tensor_with_nans(t_valid)
   e_valid_ = _reshape_tensor_with_nans(e_valid)
-
-  print(t_train_.shape, e_train_.shape)
 
   premodel = pretrain_dsm(model,
                           t_train_,
@@ -108,8 +123,6 @@ def train_dsm(model,
                           thres=1e-4)
   model.shape.data.fill_(float(premodel.shape))
   model.scale.data.fill_(float(premodel.scale))
-
-  print(float(premodel.shape), float(premodel.scale))
 
   model.double()
   optimizer = torch.optim.Adam(model.parameters(), lr=lr)

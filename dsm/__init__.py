@@ -18,6 +18,17 @@
 # If not, see <https://www.gnu.org/licenses/>.
 
 """
+[![Build Status](https://travis-ci.org/chiragnagpal/DeepSurvivalMachines.svg?\
+branch=master)](https://travis-ci.org/chiragnagpal/DeepSurvivalMachines)
+&nbsp;&nbsp;&nbsp;\
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)]\
+(https://www.gnu.org/licenses/gpl-3.0)
+&nbsp;&nbsp;&nbsp;\
+[![GitHub Repo stars](https://img.shields.io/github/stars/autonlab/Deep\
+SurvivalMachines?style=social)](https://github.com/autonlab/DeepSurvival\
+Machines)
+
+
 Python package `dsm` provides an API to train the Deep Survival Machines
 and associated models for problems in survival analysis. The underlying model
 is implemented in `pytorch`.
@@ -54,11 +65,6 @@ underlying event outcome distribution as a mixure of some fixed \( k \)
 parametric distributions. The parameters of these mixture distributions as
 well as the mixing weights are modelled using Neural Networks.
 
-#### Usage Example
-    >>> from dsm import DeepSurvivalMachines
-    >>> model = DeepSurvivalMachines()
-    >>> model.fit()
-    >>> model.predict_risk()
 
 Deep Recurrent Survival Machines
 --------------------------------
@@ -71,9 +77,10 @@ covariates. Examples include situations where we are working with streaming
 data like vital signs, degradation monitoring signals in predictive
 maintainance. **DRSM** allows the learnt representations at each time step to
 involve historical context from previous time steps. **DRSM** implementation in
-`dsm` is carried out through an easy to use API that accepts lists of data
-streams and corresponding failure times. The module automatically takes care of
-appropriate batching and padding of variable length sequences.
+`dsm` is carried out through an easy to use API, 
+`DeepRecurrentSurvivalMachines` that accepts lists of data streams and
+corresponding failure times. The module automatically takes care of appropriate
+batching and padding of variable length sequences.
 
 
 ..warning:: Not Implemented Yet!
@@ -89,6 +96,21 @@ representations are then passed through an LSTM to model temporal dependencies
 before determining the underlying survival distributions.
 
 ..warning:: Not Implemented Yet!
+
+
+Example Usage
+-------------
+
+>>> from dsm import DeepSurvivalMachines
+>>> from dsm import datasets
+>>> # load the SUPPORT dataset.
+>>> x, t, e = datasets.load_dataset('SUPPORT')
+>>> # instantiate a DeepSurvivalMachines model.
+>>> model = DeepSurvivalMachines()
+>>> # fit the model to the dataset.
+>>> model.fit(x, t, e)
+>>> # estimate the predicted risks at the time
+>>> model.predict_risk(x, 10)
 
 References
 ----------
@@ -143,12 +165,13 @@ along with Foobar.  If not, see <https://www.gnu.org/licenses/>.
 
 
 
-<img style="float: right;" width ="200px" src="https://www.cmu.edu/brand/downloads/assets/images/wordmarks-600x600-min.jpg">
-<img style="float: right;padding-top:50px" src="https://www.autonlab.org/user/themes/auton/images/AutonLogo.png">
+<img style="float: right;" width ="200px" src="https://www.cmu.edu/brand/\
+downloads/assets/images/wordmarks-600x600-min.jpg">
+<img style="float: right;padding-top:50px" src="https://www.autonlab.org/\
+user/themes/auton/images/AutonLogo.png">
 
 <br><br><br><br><br>
 <br><br><br><br><br>
-
 
 """
 

@@ -89,9 +89,11 @@ def unconditional_loss(model, t, e):
 
   if model.dist == 'Weibull':
     return _weibull_loss(model, t, e)
-
   elif model.dist == 'LogNormal':
     return _lognormal_loss(model, t, e)
+  else:
+    raise NotImplementedError('Distribution: '+model.dist+
+                              ' not implemented yet.')
 
 def _conditional_lognormal_loss(model, x, t, e, elbo=True):
 
@@ -199,9 +201,11 @@ def conditional_loss(model, x, t, e, elbo=True):
 
   if model.dist == 'Weibull':
     return _conditional_weibull_loss(model, x, t, e, elbo)
-
   elif model.dist == 'LogNormal':
     return _conditional_lognormal_loss(model, x, t, e, elbo)
+  else:
+    raise NotImplementedError('Distribution: '+model.dist+
+                              ' not implemented yet.')
 
 
 def _weibull_cdf(model, x, t_horizon):
@@ -282,3 +286,6 @@ def predict_cdf(model, x, t_horizon):
     return _weibull_cdf(model, x, t_horizon)
   if model.dist == 'LogNormal':
     return _lognormal_cdf(model, x, t_horizon)
+  else:
+    raise NotImplementedError('Distribution: '+model.dist+
+                              ' not implemented yet.')

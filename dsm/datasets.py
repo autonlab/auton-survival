@@ -114,7 +114,6 @@ def _load_pbc_dataset(sequential):
     else, returns collapsed results for each time step. To train
     recurrent neural models you would typically use True.
 
-
   References
   ----------
   [1] Fleming, Thomas R., and David P. Harrington. Counting processes and
@@ -192,6 +191,36 @@ def _load_support_dataset():
 
 def load_dataset(dataset='SUPPORT', **kwargs):
   """Helper function to load datasets to test Survival Analysis models.
+
+  Currently implemented datasets include:
+
+  **SUPPORT**: This dataset comes from the Vanderbilt University study
+  to estimate survival for seriously ill hospitalized adults [1].
+  (Refer to http://biostat.mc.vanderbilt.edu/wiki/Main/SupportDesc.
+  for the original datasource.)
+
+  **PBC**: The Primary biliary cirrhosis dataset [2] is well known
+  dataset for evaluating survival analysis models with time
+  dependent covariates.
+
+  **FRAMINGHAM**: This dataset is a subset of 4,434 participants of the well
+  known, ongoing Framingham Heart study [3] for studying epidemiology for
+  hypertensive and arteriosclerotic cardiovascular disease. It is a popular
+  dataset for longitudinal survival analysis with time dependent covariates.
+
+  References
+  -----------
+
+  [1]: Knaus WA, Harrell FE, Lynn J et al. (1995): The SUPPORT prognostic
+  model: Objective estimates of survival for seriously ill hospitalized
+  adults. Annals of Internal Medicine 122:191-203.
+
+  [2] Fleming, Thomas R., and David P. Harrington. Counting processes and
+  survival analysis. Vol. 169. John Wiley & Sons, 2011.
+
+  [3] Dawber, Thomas R., Gilcin F. Meadors, and Felix E. Moore Jr.
+  "Epidemiological approaches to heart disease: the Framingham Study."
+  American Journal of Public Health and the Nations Health 41.3 (1951).
 
   Parameters
   ----------

@@ -24,13 +24,170 @@ provides a convenient API to train Deep Survival Machines.
 """
 
 from dsm.dsm_torch import DeepSurvivalMachinesTorch
+from dsm.dsm_torch import DeepRecurrentSurvivalMachinesTorch
 from dsm.losses import predict_cdf
-from dsm.utilities import train_dsm
+from dsm.utilities import train_dsm, _get_padded_features, _get_padded_targets
 
 import torch
 import numpy as np
 
-class DeepSurvivalMachines():
+__pdoc__ = {}
+__pdoc__["DSMBase"] = False
+__pdoc__["DeepSurvivalMachines.fit"] = True
+
+
+class DSMBase():
+  """Base Class for all DSM models"""
+
+  def __init__(self, k=3, layers=None, distribution="Weibull",
+               temp=1000., discount=1.0):
+    self.k = k
+    self.layers = layers
+    self.dist = distribution
+    self.temp = temp
+    self.discount = discount
+    self.fitted = False
+
+  def _gen_torch_model(self, inputdim, optimizer):
+    """Helper function to return a torch model."""
+    return DeepSurvivalMachinesTorch(inputdim,
+                                     k=self.k,
+                                     layers=self.layers,
+                                     dist=self.dist,
+                                     temp=self.temp,
+                                     discount=self.discount,
+                                     optimizer=optimizer)
+
+  def fit(self, x, t, e, vsize=0.15,
+          iters=1, learning_rate=1e-3, batch_size=100,
+          elbo=True, optimizer="Adam", random_state=100):
+
+    """This method is used to train an instance of the DSM model.
+
+    Parameters
+    ----------
+    x: np.ndarray
+        A numpy array of the input features, \( x \).
+    t: np.ndarray
+        A numpy array of the event/censoring times, \( t \).
+    e: np.ndarray
+        A numpy array of the event/censoring indicators, \( \delta \).
+        \( \delta = 1 \) means the event took place.
+    vsize: float
+        Amount of data to set aside as the validation set.
+    iters: int
+        The maximum number of training iterations on the training dataset.
+    learning_rate: float
+        The learning rate for the `Adam` optimizer.
+    batch_size: int
+        learning is performed on mini-batches of input data. this parameter
+        specifies the size of each mini-batch.
+    elbo: bool
+        Whether to use the Evidence Lower Bound for optimization.
+        Default is True.
+    optimizer: str
+        The choice of the gradient based optimization method. One of
+        'Adam', 'RMSProp' or 'SGD'.
+    random_state: float
+        random seed that determines how the validation set is chosen.
+
+    """
+
+    processed_data = self._prepocess_training_data(x, t, e, vsize,
+                                                   random_state)
+    x_train, t_train, e_train, x_val, t_val, e_val = processed_data
+
+    inputdim = x_train.shape[-1]
+
+    model = self._gen_torch_model(inputdim, optimizer)
+    model, _ = train_dsm(model,
+                         x_train, t_train, e_train,
+                         x_val, t_val, e_val,
+                         n_iter=iters,
+                         lr=learning_rate,
+                         elbo=elbo,
+                         bs=batch_size)
+
+    self.torch_model = model.eval()
+    self.fitted = True
+
+  def _prepocess_test_data(self, x):
+    return torch.from_numpy(x)
+
+  def _prepocess_training_data(self, x, t, e, vsize, random_state):
+
+    idx = list(range(x.shape[0]))
+    np.random.seed(random_state)
+    np.random.shuffle(idx)
+    x_train, t_train, e_train = x[idx], t[idx], e[idx]
+
+    x_train = torch.from_numpy(x_train).double()
+    t_train = torch.from_numpy(t_train).double()
+    e_train = torch.from_numpy(e_train).double()
+
+    vsize = int(vsize*x_train.shape[0])
+
+    x_val, t_val, e_val = x_train[-vsize:], t_train[-vsize:], e_train[-vsize:]
+    x_train = x_train[:-vsize]
+    t_train = t_train[:-vsize]
+    e_train = e_train[:-vsize]
+
+    return (x_train, t_train, e_train,
+            x_val, t_val, e_val)
+
+
+  def predict_risk(self, x, t):
+    """Returns the estimated risk of an event occuring before time \( t \)
+      \( \widehat{\mathbb{P}}(T\leq t|X) \) for some input data \( x \).
+
+    Parameters
+    ----------
+    x: np.ndarray
+        A numpy array of the input features, \( x \).
+    t: list or float
+        a list or float of the times at which survival probability is
+        to be computed
+    Returns:
+      np.array: numpy array of the risks at each time in t.
+
+    """
+
+    if self.fitted:
+      return 1-self.predict_survival(x, t)
+    else:
+      raise Exception("The model has not been fitted yet. Please fit the " +
+                      "model using the `fit` method on some training data " +
+                      "before calling `predict_survival`.")
+
+
+  def predict_survival(self, x, t):
+    """Returns the estimated survival probability at time \( t \),
+      \( \widehat{\mathbb{P}}(T > t|X) \) for some input data \( x \).
+
+    Parameters
+    ----------
+    x: np.ndarray
+        A numpy array of the input features, \( x \).
+    t: list or float
+        a list or float of the times at which survival probability is
+        to be computed
+    Returns:
+      np.array: numpy array of the survival probabilites at each time in t.
+
+    """
+    x = self._prepocess_test_data(x)
+    if not isinstance(t, list):
+      t = [t]
+    if self.fitted:
+      scores = predict_cdf(self.torch_model, x, t)
+      return np.exp(np.array(scores)).T
+    else:
+      raise Exception("The model has not been fitted yet. Please fit the " +
+                      "model using the `fit` method on some training data " +
+                      "before calling `predict_risk`.")
+
+
+class DeepSurvivalMachines(DSMBase):
   """A Deep Survival Machines model.
 
   This is the main interface to a Deep Survival Machines model.
@@ -74,17 +231,6 @@ class DeepSurvivalMachines():
 
   """
 
-  def __init__(self, k=3, layers=None, distribution="Weibull",
-               temp=1000., discount=1.0):
-    super(DeepSurvivalMachines, self).__init__()
-
-    self.k = k
-    self.layers = layers
-    self.dist = distribution
-    self.temp = temp
-    self.discount = discount
-    self.fitted = False
-
   def __call__(self):
     if self.fitted:
       print("A fitted instance of the Deep Survival Machines model")
@@ -96,43 +242,37 @@ class DeepSurvivalMachines():
     print("Distribution Choice:", self.dist)
 
 
-  def fit(self, x, t, e, vsize=0.15,
-          iters=1, learning_rate=1e-3, batch_size=100,
-          elbo=True, optimizer="Adam", random_state=100):
+class DeepRecurrentSurvivalMachines(DSMBase):
 
-    """This method is used to train an instance of the DSM model.
+  """The Deep Recurrent Survival Machines model to handle data with
+  time-dependent covariates.
 
-    Parameters
-    ----------
-    x: np.ndarray
-        A numpy array of the input features, \( x \).
-    t: np.ndarray
-        A numpy array of the event/censoring times, \( t \).
-    e: np.ndarray
-        A numpy array of the event/censoring indicators, \( \delta \).
-        \( \delta = 1 \) means the event took place.
-    vsize: float
-        Amount of data to set aside as the validation set.
-    iters: int
-        The maximum number of training iterations on the training dataset.
-    learning_rate: float
-        The learning rate for the `Adam` optimizer.
-    batch_size: int
-        learning is performed on mini-batches of input data. this parameter
-        specifies the size of each mini-batch.
-    elbo: bool
-        Whether to use the Evidence Lower Bound for optimization.
-        Default is True.
-    optimizer: str
-        The choice of the gradient based optimization method. One of
-        'Adam', 'RMSProp' or 'SGD'.
-    random_state: float
-        random seed that determines how the validation set is chosen.
-    """
+  """
+
+  def _gen_torch_model(self, inputdim, optimizer):
+    """Helper function to return a torch model."""
+    return DeepRecurrentSurvivalMachinesTorch(inputdim,
+                                              k=self.k,
+                                              layers=self.layers,
+                                              dist=self.dist,
+                                              temp=self.temp,
+                                              discount=self.discount,
+                                              optimizer=optimizer)
+
+  def _prepocess_test_data(self, x):
+    return torch.from_numpy(_get_padded_features(x))
+
+  def _prepocess_training_data(self, x, t, e, vsize, random_state):
+    """RNNs require different preprocessing for variable length sequences"""
 
     idx = list(range(x.shape[0]))
     np.random.seed(random_state)
     np.random.shuffle(idx)
+
+    x = _get_padded_features(x)
+    t = _get_padded_targets(t)
+    e = _get_padded_targets(e)
+
     x_train, t_train, e_train = x[idx], t[idx], e[idx]
 
     x_train = torch.from_numpy(x_train).double()
@@ -140,95 +280,15 @@ class DeepSurvivalMachines():
     e_train = torch.from_numpy(e_train).double()
 
     vsize = int(vsize*x_train.shape[0])
-
     x_val, t_val, e_val = x_train[-vsize:], t_train[-vsize:], e_train[-vsize:]
+
     x_train = x_train[:-vsize]
     t_train = t_train[:-vsize]
     e_train = e_train[:-vsize]
 
-    inputdim = x_train.shape[1]
+    return (x_train, t_train, e_train,
+            x_val, t_val, e_val)
 
-    if type(self).__name__ == "DeepSurvivalMachines":
-
-      model = DeepSurvivalMachinesTorch(inputdim,
-                                        k=self.k,
-                                        layers=self.layers,
-                                        dist=self.dist,
-                                        temp=self.temp,
-                                        discount=self.discount,
-                                        optimizer=optimizer)
-
-      model, _ = train_dsm(model, x_train, t_train, e_train,
-                           x_val, t_val, e_val,
-                           n_iter=iters,
-                           lr=learning_rate,
-                           elbo=elbo,
-                           bs=batch_size)
-
-      self.torch_model = model.eval()
-      self.fitted = True
-
-    else:
-      raise NotImplementedError("`fit` nethod not implemented for "+
-                                type(self).__name__)
-
-
-  def predict_risk(self, x, t):
-    """Returns the estimated risk of an event occuring before time \( t \)
-      \( \widehat{\mathbb{P}}(T\leq t|X) \) for some input data \( x \).
-
-    Parameters
-    ----------
-    x: np.ndarray
-        A numpy array of the input features, \( x \).
-    t: list or float
-        a list or float of the times at which survival probability is
-        to be computed
-    Returns:
-      np.array: numpy array of the risks at each time in t.
-    """
-
-    if self.fitted:
-      return 1-self.predict_survival(x, t)
-
-    else:
-      raise Exception("The model has not been fitted yet. Please fit the " +
-                      "model using the `fit` method on some training data " +
-                      "before calling `predict_survival`.")
-
-
-  def predict_survival(self, x, t):
-    """Returns the estimated survival probability at time \( t \),
-      \( \widehat{\mathbb{P}}(T > t|X) \) for some input data \( x \).
-
-    Parameters
-    ----------
-    x: np.ndarray
-        A numpy array of the input features, \( x \).
-    t: list or float
-        a list or float of the times at which survival probability is
-        to be computed
-    Returns:
-      np.array: numpy array of the survival probabilites at each time in t.
-    """
-
-    if not isinstance(t, list):
-      t = [t]
-
-    if self.fitted:
-      x = torch.from_numpy(x)
-      scores = predict_cdf(self.torch_model, x, t)
-      return np.exp(np.array(scores)).T
-
-    else:
-      raise Exception("The model has not been fitted yet. Please fit the " +
-                      "model using the `fit` method on some training data " +
-                      "before calling `predict_risk`.")
-
-class DeepRecurrentSurvivalMachines(DeepSurvivalMachines):
-
-  __doc__ = "..warning:: Not Implemented"
-  pass
 
 class DeepConvolutionalSurvivalMachines(DeepRecurrentSurvivalMachines):
   __doc__ = "..warning:: Not Implemented"
