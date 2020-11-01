@@ -11,12 +11,16 @@ here = os.path.abspath(os.path.dirname(__file__))
 with open(os.path.join(here, "README.md"), encoding="utf-8") as f:
     long_description = f.read()
 
+with open(os.path.join(here, "requirements.txt"), encoding="utf-8") as f:
+    all_reqs = f.read().split("\n")
+
+install_requires = [x.strip() for x in all_reqs]
 
 setup(
-    name="dsm", 
+    name="dsm",
     version="0.0.1",
-    maintainer=["Chirag Nagpal","Prince Roshan"],
-    maintainer_email=["chiragn@cs.cmu.edu","princekrroshan01@gmail.com"],
+    maintainer=["Chirag Nagpal", "Prince Roshan"],
+    maintainer_email=["chiragn@cs.cmu.edu", "princekrroshan01@gmail.com"],
     url="https://github.com/autonlab/DeepSurvivalMachines",
     description=(
         "Python package dsm provides an API to train the Deep Survival Machines and associated models for problems in survival analysis."
@@ -27,7 +31,7 @@ setup(
     packages=find_packages(exclude=["tests*"]),
     keywords=["dsm"],
     python_requires=">=3.6",
-    install_requires=["torch", "numpy", "pandas", "tqdm", "scikit-learn"],
+    install_requires=install_requires,
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         "Intended Audience :: Developers",
