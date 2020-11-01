@@ -18,8 +18,8 @@
 # If not, see <https://www.gnu.org/licenses/>.
 
 """
-[![Build Status](https://travis-ci.org/chiragnagpal/DeepSurvivalMachines.svg?\
-branch=master)](https://travis-ci.org/chiragnagpal/DeepSurvivalMachines)
+[![Build Status](https://travis-ci.org/autonlab/DeepSurvivalMachines.svg?\
+branch=master)](https://travis-ci.org/autonlab/DeepSurvivalMachines)
 &nbsp;&nbsp;&nbsp;\
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)]\
 (https://www.gnu.org/licenses/gpl-3.0)
