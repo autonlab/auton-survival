@@ -63,9 +63,10 @@ covariates. Examples include situations where we are working with streaming
 data like vital signs, degradation monitoring signals in predictive
 maintainance. <strong>DRSM</strong> allows the learnt representations at each time step to
 involve historical context from previous time steps. <strong>DRSM</strong> implementation in
-<code><a title="dsm" href="#dsm">dsm</a></code> is carried out through an easy to use API that accepts lists of data
-streams and corresponding failure times. The module automatically takes care of
-appropriate batching and padding of variable length sequences.</p>
+<code><a title="dsm" href="#dsm">dsm</a></code> is carried out through an easy to use API,
+<code>DeepRecurrentSurvivalMachines</code> that accepts lists of data streams and
+corresponding failure times. The module automatically takes care of appropriate
+batching and padding of variable length sequences.</p>
 <div class="admonition warning">
 <p class="admonition-title">Warning:&ensp;Not Implemented Yet!</p>
 </div>
@@ -145,11 +146,26 @@ provides a convenient API to train Deep Survival Machines.</p></div>
 </dd>
 <dt><code class="name"><a title="dsm.dsm_torch" href="dsm_torch.html">dsm.dsm_torch</a></code></dt>
 <dd>
-<div class="desc"><p>Torch model definitons for the Deep Survival Machines model …</p></div>
+<div class="desc"><p>Torch model definitons for the Deep Survival Machines model</p>
+<p>This includes definitons for the Torch Deep Survival Machines module.
+The main interface is the DeepSurvivalMachines class which inherits
+from torch.nn.Module.</p>
+<p>Note: NOT DESIGNED TO BE CALLED DIRECTLY!!!</p></div>
 </dd>
 <dt><code class="name"><a title="dsm.losses" href="losses.html">dsm.losses</a></code></dt>
 <dd>
-<div class="desc"><p>Loss function definitions for the Deep Survival Machines model …</p></div>
+<div class="desc"><p>Loss function definitions for the Deep Survival Machines model</p>
+<p>In this module we define the various losses for the censored and uncensored
+instances of data corresponding to Weibull and LogNormal distributions.
+These losses are optimized when training DSM.</p>
+<div class="admonition todo">
+<p class="admonition-title">TODO</p>
+<p>Use torch.distributions</p>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>NOT DESIGNED TO BE CALLED DIRECTLY!!!</p>
+</div></div>
 </dd>
 <dt><code class="name"><a title="dsm.utilities" href="utilities.html">dsm.utilities</a></code></dt>
 <dd>

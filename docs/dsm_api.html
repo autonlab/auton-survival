@@ -76,16 +76,16 @@ Default is 1.</dd>
 &gt;&gt;&gt; model = DeepSurvivalMachines()
 &gt;&gt;&gt; model.fit(x, t, e)
 </code></pre></div>
-<h3>Ancestors</h3>
-<ul class="hlist">
-<li>dsm.dsm_api.DSMBase</li>
-</ul>
 <h3>Methods</h3>
 <dl>
 <dt id="dsm.dsm_api.DeepSurvivalMachines.fit"><code class="name flex">
 <span>def <span class="ident">fit</span></span>(<span>self, x, t, e, vsize=0.15, iters=1, learning_rate=0.001, batch_size=100, elbo=True, optimizer='Adam', random_state=100)</span>
 </code></dt>
 <dd>
+<p class="inheritance">
+<em>Inherited from:</em>
+<code><a title="dsm.dsm_api.DSMBase" href="#dsm.dsm_api.DSMBase">DSMBase</a></code>.<code><a title="dsm.dsm_api.DSMBase.fit" href="#dsm.dsm_api.DSMBase.fit">fit</a></code>
+</p>
 <div class="desc"><p>This method is used to train an instance of the DSM model.</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
@@ -123,8 +123,21 @@ Default is True.</dd>
 <em>Inherited from:</em>
 <code><a title="dsm.dsm_api.DSMBase" href="#dsm.dsm_api.DSMBase">DSMBase</a></code>.<code><a title="dsm.dsm_api.DSMBase.predict_risk" href="#dsm.dsm_api.DSMBase.predict_risk">predict_risk</a></code>
 </p>
-<div class="desc inherited"><p>Returns the estimated risk of an event occuring before time <span><span class="MathJax_Preview"> t </span><script type="math/tex"> t </script></span>
-<span><span class="MathJax_Preview"> \widehat{\mathbb{P}}(T\leq t|X) </span><script type="math/tex"> \widehat{\mathbb{P}}(T\leq t|X) </script></span> for some input data <span><span class="MathJax_Preview"> x </span><script type="math/tex"> x </script></span> …</p></div>
+<div class="desc"><p>Returns the estimated risk of an event occuring before time <span><span class="MathJax_Preview"> t </span><script type="math/tex"> t </script></span>
+<span><span class="MathJax_Preview"> \widehat{\mathbb{P}}(T\leq t|X) </span><script type="math/tex"> \widehat{\mathbb{P}}(T\leq t|X) </script></span> for some input data <span><span class="MathJax_Preview"> x </span><script type="math/tex"> x </script></span>.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>x</code></strong> :&ensp;<code>np.ndarray</code></dt>
+<dd>A numpy array of the input features, <span><span class="MathJax_Preview"> x </span><script type="math/tex"> x </script></span>.</dd>
+<dt><strong><code>t</code></strong> :&ensp;<code>list</code> or <code>float</code></dt>
+<dd>a list or float of the times at which survival probability is
+to be computed</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>np.array</code></dt>
+<dd>numpy array of the risks at each time in t.</dd>
+</dl></div>
 </dd>
 <dt id="dsm.dsm_api.DeepSurvivalMachines.predict_survival"><code class="name flex">
 <span>def <span class="ident">predict_survival</span></span>(<span>self, x, t)</span>
@@ -134,8 +147,21 @@ Default is True.</dd>
 <em>Inherited from:</em>
 <code><a title="dsm.dsm_api.DSMBase" href="#dsm.dsm_api.DSMBase">DSMBase</a></code>.<code><a title="dsm.dsm_api.DSMBase.predict_survival" href="#dsm.dsm_api.DSMBase.predict_survival">predict_survival</a></code>
 </p>
-<div class="desc inherited"><p>Returns the estimated survival probability at time <span><span class="MathJax_Preview"> t </span><script type="math/tex"> t </script></span>,
-<span><span class="MathJax_Preview"> \widehat{\mathbb{P}}(T &gt; t|X) </span><script type="math/tex"> \widehat{\mathbb{P}}(T > t|X) </script></span> for some input data <span><span class="MathJax_Preview"> x </span><script type="math/tex"> x </script></span> …</p></div>
+<div class="desc"><p>Returns the estimated survival probability at time <span><span class="MathJax_Preview"> t </span><script type="math/tex"> t </script></span>,
+<span><span class="MathJax_Preview"> \widehat{\mathbb{P}}(T &gt; t|X) </span><script type="math/tex"> \widehat{\mathbb{P}}(T > t|X) </script></span> for some input data <span><span class="MathJax_Preview"> x </span><script type="math/tex"> x </script></span>.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>x</code></strong> :&ensp;<code>np.ndarray</code></dt>
+<dd>A numpy array of the input features, <span><span class="MathJax_Preview"> x </span><script type="math/tex"> x </script></span>.</dd>
+<dt><strong><code>t</code></strong> :&ensp;<code>list</code> or <code>float</code></dt>
+<dd>a list or float of the times at which survival probability is
+to be computed</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>np.array</code></dt>
+<dd>numpy array of the survival probabilites at each time in t.</dd>
+</dl></div>
 </dd>
 </dl>
 </dd>
@@ -146,20 +172,16 @@ Default is True.</dd>
 <dd>
 <div class="desc"><p>The Deep Recurrent Survival Machines model to handle data with
 time-dependent covariates.</p></div>
-<h3>Ancestors</h3>
-<ul class="hlist">
-<li>dsm.dsm_api.DSMBase</li>
-</ul>
-<h3>Subclasses</h3>
-<ul class="hlist">
-<li><a title="dsm.dsm_api.DeepConvolutionalSurvivalMachines" href="#dsm.dsm_api.DeepConvolutionalSurvivalMachines">DeepConvolutionalSurvivalMachines</a></li>
-</ul>
 <h3>Methods</h3>
 <dl>
 <dt id="dsm.dsm_api.DeepRecurrentSurvivalMachines.fit"><code class="name flex">
 <span>def <span class="ident">fit</span></span>(<span>self, x, t, e, vsize=0.15, iters=1, learning_rate=0.001, batch_size=100, elbo=True, optimizer='Adam', random_state=100)</span>
 </code></dt>
 <dd>
+<p class="inheritance">
+<em>Inherited from:</em>
+<code><a title="dsm.dsm_api.DSMBase" href="#dsm.dsm_api.DSMBase">DSMBase</a></code>.<code><a title="dsm.dsm_api.DSMBase.fit" href="#dsm.dsm_api.DSMBase.fit">fit</a></code>
+</p>
 <div class="desc"><p>This method is used to train an instance of the DSM model.</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
@@ -197,8 +219,21 @@ Default is True.</dd>
 <em>Inherited from:</em>
 <code><a title="dsm.dsm_api.DSMBase" href="#dsm.dsm_api.DSMBase">DSMBase</a></code>.<code><a title="dsm.dsm_api.DSMBase.predict_risk" href="#dsm.dsm_api.DSMBase.predict_risk">predict_risk</a></code>
 </p>
-<div class="desc inherited"><p>Returns the estimated risk of an event occuring before time <span><span class="MathJax_Preview"> t </span><script type="math/tex"> t </script></span>
-<span><span class="MathJax_Preview"> \widehat{\mathbb{P}}(T\leq t|X) </span><script type="math/tex"> \widehat{\mathbb{P}}(T\leq t|X) </script></span> for some input data <span><span class="MathJax_Preview"> x </span><script type="math/tex"> x </script></span> …</p></div>
+<div class="desc"><p>Returns the estimated risk of an event occuring before time <span><span class="MathJax_Preview"> t </span><script type="math/tex"> t </script></span>
+<span><span class="MathJax_Preview"> \widehat{\mathbb{P}}(T\leq t|X) </span><script type="math/tex"> \widehat{\mathbb{P}}(T\leq t|X) </script></span> for some input data <span><span class="MathJax_Preview"> x </span><script type="math/tex"> x </script></span>.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>x</code></strong> :&ensp;<code>np.ndarray</code></dt>
+<dd>A numpy array of the input features, <span><span class="MathJax_Preview"> x </span><script type="math/tex"> x </script></span>.</dd>
+<dt><strong><code>t</code></strong> :&ensp;<code>list</code> or <code>float</code></dt>
+<dd>a list or float of the times at which survival probability is
+to be computed</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>np.array</code></dt>
+<dd>numpy array of the risks at each time in t.</dd>
+</dl></div>
 </dd>
 <dt id="dsm.dsm_api.DeepRecurrentSurvivalMachines.predict_survival"><code class="name flex">
 <span>def <span class="ident">predict_survival</span></span>(<span>self, x, t)</span>
@@ -208,8 +243,21 @@ Default is True.</dd>
 <em>Inherited from:</em>
 <code><a title="dsm.dsm_api.DSMBase" href="#dsm.dsm_api.DSMBase">DSMBase</a></code>.<code><a title="dsm.dsm_api.DSMBase.predict_survival" href="#dsm.dsm_api.DSMBase.predict_survival">predict_survival</a></code>
 </p>
-<div class="desc inherited"><p>Returns the estimated survival probability at time <span><span class="MathJax_Preview"> t </span><script type="math/tex"> t </script></span>,
-<span><span class="MathJax_Preview"> \widehat{\mathbb{P}}(T &gt; t|X) </span><script type="math/tex"> \widehat{\mathbb{P}}(T > t|X) </script></span> for some input data <span><span class="MathJax_Preview"> x </span><script type="math/tex"> x </script></span> …</p></div>
+<div class="desc"><p>Returns the estimated survival probability at time <span><span class="MathJax_Preview"> t </span><script type="math/tex"> t </script></span>,
+<span><span class="MathJax_Preview"> \widehat{\mathbb{P}}(T &gt; t|X) </span><script type="math/tex"> \widehat{\mathbb{P}}(T > t|X) </script></span> for some input data <span><span class="MathJax_Preview"> x </span><script type="math/tex"> x </script></span>.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>x</code></strong> :&ensp;<code>np.ndarray</code></dt>
+<dd>A numpy array of the input features, <span><span class="MathJax_Preview"> x </span><script type="math/tex"> x </script></span>.</dd>
+<dt><strong><code>t</code></strong> :&ensp;<code>list</code> or <code>float</code></dt>
+<dd>a list or float of the times at which survival probability is
+to be computed</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>np.array</code></dt>
+<dd>numpy array of the survival probabilites at each time in t.</dd>
+</dl></div>
 </dd>
 </dl>
 </dd>
@@ -221,11 +269,6 @@ Default is True.</dd>
 <div class="desc"><div class="admonition warning">
 <p class="admonition-title">Warning:&ensp;Not Implemented</p>
 </div></div>
-<h3>Ancestors</h3>
-<ul class="hlist">
-<li><a title="dsm.dsm_api.DeepRecurrentSurvivalMachines" href="#dsm.dsm_api.DeepRecurrentSurvivalMachines">DeepRecurrentSurvivalMachines</a></li>
-<li>dsm.dsm_api.DSMBase</li>
-</ul>
 <h3>Methods</h3>
 <dl>
 <dt id="dsm.dsm_api.DeepConvolutionalSurvivalMachines.fit"><code class="name flex">
@@ -236,7 +279,34 @@ Default is True.</dd>
 <em>Inherited from:</em>
 <code><a title="dsm.dsm_api.DeepRecurrentSurvivalMachines" href="#dsm.dsm_api.DeepRecurrentSurvivalMachines">DeepRecurrentSurvivalMachines</a></code>.<code><a title="dsm.dsm_api.DeepRecurrentSurvivalMachines.fit" href="#dsm.dsm_api.DeepRecurrentSurvivalMachines.fit">fit</a></code>
 </p>
-<div class="desc inherited"><p>This method is used to train an instance of the DSM model …</p></div>
+<div class="desc"><p>This method is used to train an instance of the DSM model.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>x</code></strong> :&ensp;<code>np.ndarray</code></dt>
+<dd>A numpy array of the input features, <span><span class="MathJax_Preview"> x </span><script type="math/tex"> x </script></span>.</dd>
+<dt><strong><code>t</code></strong> :&ensp;<code>np.ndarray</code></dt>
+<dd>A numpy array of the event/censoring times, <span><span class="MathJax_Preview"> t </span><script type="math/tex"> t </script></span>.</dd>
+<dt><strong><code>e</code></strong> :&ensp;<code>np.ndarray</code></dt>
+<dd>A numpy array of the event/censoring indicators, <span><span class="MathJax_Preview"> \delta </span><script type="math/tex"> \delta </script></span>.
+<span><span class="MathJax_Preview"> \delta = 1 </span><script type="math/tex"> \delta = 1 </script></span> means the event took place.</dd>
+<dt><strong><code>vsize</code></strong> :&ensp;<code>float</code></dt>
+<dd>Amount of data to set aside as the validation set.</dd>
+<dt><strong><code>iters</code></strong> :&ensp;<code>int</code></dt>
+<dd>The maximum number of training iterations on the training dataset.</dd>
+<dt><strong><code>learning_rate</code></strong> :&ensp;<code>float</code></dt>
+<dd>The learning rate for the <code>Adam</code> optimizer.</dd>
+<dt><strong><code>batch_size</code></strong> :&ensp;<code>int</code></dt>
+<dd>learning is performed on mini-batches of input data. this parameter
+specifies the size of each mini-batch.</dd>
+<dt><strong><code>elbo</code></strong> :&ensp;<code>bool</code></dt>
+<dd>Whether to use the Evidence Lower Bound for optimization.
+Default is True.</dd>
+<dt><strong><code>optimizer</code></strong> :&ensp;<code>str</code></dt>
+<dd>The choice of the gradient based optimization method. One of
+'Adam', 'RMSProp' or 'SGD'.</dd>
+<dt><strong><code>random_state</code></strong> :&ensp;<code>float</code></dt>
+<dd>random seed that determines how the validation set is chosen.</dd>
+</dl></div>
 </dd>
 <dt id="dsm.dsm_api.DeepConvolutionalSurvivalMachines.predict_risk"><code class="name flex">
 <span>def <span class="ident">predict_risk</span></span>(<span>self, x, t)</span>
@@ -246,8 +316,21 @@ Default is True.</dd>
 <em>Inherited from:</em>
 <code><a title="dsm.dsm_api.DeepRecurrentSurvivalMachines" href="#dsm.dsm_api.DeepRecurrentSurvivalMachines">DeepRecurrentSurvivalMachines</a></code>.<code><a title="dsm.dsm_api.DeepRecurrentSurvivalMachines.predict_risk" href="#dsm.dsm_api.DeepRecurrentSurvivalMachines.predict_risk">predict_risk</a></code>
 </p>
-<div class="desc inherited"><p>Returns the estimated risk of an event occuring before time <span><span class="MathJax_Preview"> t </span><script type="math/tex"> t </script></span>
-<span><span class="MathJax_Preview"> \widehat{\mathbb{P}}(T\leq t|X) </span><script type="math/tex"> \widehat{\mathbb{P}}(T\leq t|X) </script></span> for some input data <span><span class="MathJax_Preview"> x </span><script type="math/tex"> x </script></span> …</p></div>
+<div class="desc"><p>Returns the estimated risk of an event occuring before time <span><span class="MathJax_Preview"> t </span><script type="math/tex"> t </script></span>
+<span><span class="MathJax_Preview"> \widehat{\mathbb{P}}(T\leq t|X) </span><script type="math/tex"> \widehat{\mathbb{P}}(T\leq t|X) </script></span> for some input data <span><span class="MathJax_Preview"> x </span><script type="math/tex"> x </script></span>.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>x</code></strong> :&ensp;<code>np.ndarray</code></dt>
+<dd>A numpy array of the input features, <span><span class="MathJax_Preview"> x </span><script type="math/tex"> x </script></span>.</dd>
+<dt><strong><code>t</code></strong> :&ensp;<code>list</code> or <code>float</code></dt>
+<dd>a list or float of the times at which survival probability is
+to be computed</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>np.array</code></dt>
+<dd>numpy array of the risks at each time in t.</dd>
+</dl></div>
 </dd>
 <dt id="dsm.dsm_api.DeepConvolutionalSurvivalMachines.predict_survival"><code class="name flex">
 <span>def <span class="ident">predict_survival</span></span>(<span>self, x, t)</span>
@@ -257,8 +340,21 @@ Default is True.</dd>
 <em>Inherited from:</em>
 <code><a title="dsm.dsm_api.DeepRecurrentSurvivalMachines" href="#dsm.dsm_api.DeepRecurrentSurvivalMachines">DeepRecurrentSurvivalMachines</a></code>.<code><a title="dsm.dsm_api.DeepRecurrentSurvivalMachines.predict_survival" href="#dsm.dsm_api.DeepRecurrentSurvivalMachines.predict_survival">predict_survival</a></code>
 </p>
-<div class="desc inherited"><p>Returns the estimated survival probability at time <span><span class="MathJax_Preview"> t </span><script type="math/tex"> t </script></span>,
-<span><span class="MathJax_Preview"> \widehat{\mathbb{P}}(T &gt; t|X) </span><script type="math/tex"> \widehat{\mathbb{P}}(T > t|X) </script></span> for some input data <span><span class="MathJax_Preview"> x </span><script type="math/tex"> x </script></span> …</p></div>
+<div class="desc"><p>Returns the estimated survival probability at time <span><span class="MathJax_Preview"> t </span><script type="math/tex"> t </script></span>,
+<span><span class="MathJax_Preview"> \widehat{\mathbb{P}}(T &gt; t|X) </span><script type="math/tex"> \widehat{\mathbb{P}}(T > t|X) </script></span> for some input data <span><span class="MathJax_Preview"> x </span><script type="math/tex"> x </script></span>.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>x</code></strong> :&ensp;<code>np.ndarray</code></dt>
+<dd>A numpy array of the input features, <span><span class="MathJax_Preview"> x </span><script type="math/tex"> x </script></span>.</dd>
+<dt><strong><code>t</code></strong> :&ensp;<code>list</code> or <code>float</code></dt>
+<dd>a list or float of the times at which survival probability is
+to be computed</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>np.array</code></dt>
+<dd>numpy array of the survival probabilites at each time in t.</dd>
+</dl></div>
 </dd>
 </dl>
 </dd>
