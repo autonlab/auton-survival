@@ -7,8 +7,7 @@ os:
   - linux
 # command to install dependencies
 install: 
-  - pip install wheel
-  - pip install .
+  - pip install git+https://github.com/autonlab/DeepSurvivalMachines.git
   - pip install --upgrade pytest 
   - pip install --upgrade pylint
 

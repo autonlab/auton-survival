@@ -38,10 +38,7 @@ well as the mixing weights are modelled using Neural Networks.
 Installation
 ------------
 
-    $ pip install wheel
-    $ git clone https://github.com/autonlab/DeepSurvivalMachines.git
-    $ cd DeepSurvivalMachines 
-    $ pip install .
+    $ pip install git+https://github.com/autonlab/DeepSurvivalMachines.git
 
 #### Usage Example
     >>> from dsm import DeepSurvivalMachines
