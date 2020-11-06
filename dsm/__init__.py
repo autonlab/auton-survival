@@ -17,16 +17,12 @@
 # along with Deep Survival Machines.
 # If not, see <https://www.gnu.org/licenses/>.
 
-"""
-[![Build Status](https://travis-ci.org/autonlab/DeepSurvivalMachines.svg?\
-branch=master)](https://travis-ci.org/autonlab/DeepSurvivalMachines)
-&nbsp;&nbsp;&nbsp;\
-[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)]\
-(https://www.gnu.org/licenses/gpl-3.0)
-&nbsp;&nbsp;&nbsp;\
-[![GitHub Repo stars](https://img.shields.io/github/stars/autonlab/Deep\
-SurvivalMachines?style=social)](https://github.com/autonlab/DeepSurvival\
-Machines)
+r"""
+[![Build Status](https://travis-ci.org/autonlab/DeepSurvivalMachines.svg?branch=master)](https://travis-ci.org/autonlab/DeepSurvivalMachines)
+&nbsp;&nbsp;&nbsp;
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+&nbsp;&nbsp;&nbsp;
+[![GitHub Repo stars](https://img.shields.io/github/stars/autonlab/DeepSurvivalMachines?style=social)](https://github.com/autonlab/DeepSurvivalMachines)
 
 
 Python package `dsm` provides an API to train the Deep Survival Machines
@@ -77,7 +73,7 @@ covariates. Examples include situations where we are working with streaming
 data like vital signs, degradation monitoring signals in predictive
 maintainance. **DRSM** allows the learnt representations at each time step to
 involve historical context from previous time steps. **DRSM** implementation in
-`dsm` is carried out through an easy to use API, 
+`dsm` is carried out through an easy to use API,
 `DeepRecurrentSurvivalMachines` that accepts lists of data streams and
 corresponding failure times. The module automatically takes care of appropriate
 batching and padding of variable length sequences.

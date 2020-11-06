@@ -62,7 +62,7 @@ class DSMBase():
           iters=1, learning_rate=1e-3, batch_size=100,
           elbo=True, optimizer="Adam", random_state=100):
 
-    """This method is used to train an instance of the DSM model.
+    r"""This method is used to train an instance of the DSM model.
 
     Parameters
     ----------
@@ -137,7 +137,7 @@ class DSMBase():
 
 
   def predict_risk(self, x, t):
-    """Returns the estimated risk of an event occuring before time \( t \)
+    r"""Returns the estimated risk of an event occuring before time \( t \)
       \( \widehat{\mathbb{P}}(T\leq t|X) \) for some input data \( x \).
 
     Parameters
@@ -161,7 +161,7 @@ class DSMBase():
 
 
   def predict_survival(self, x, t):
-    """Returns the estimated survival probability at time \( t \),
+    r"""Returns the estimated survival probability at time \( t \),
       \( \widehat{\mathbb{P}}(T > t|X) \) for some input data \( x \).
 
     Parameters
@@ -249,15 +249,23 @@ class DeepRecurrentSurvivalMachines(DSMBase):
 
   """
 
+  def __init__(self, k=3, layers=None, hidden=None, 
+               distribution='Weibull', temp=1000., discount=1.0, typ='LSTM'):
+    super(DeepRecurrentSurvivalMachines, self).__init__(k=k, layers=layers,
+                                                        distribution=distribution)
+    self.hidden = hidden
+    self.typ = typ
   def _gen_torch_model(self, inputdim, optimizer):
     """Helper function to return a torch model."""
     return DeepRecurrentSurvivalMachinesTorch(inputdim,
                                               k=self.k,
                                               layers=self.layers,
+                                              hidden=self.hidden,
                                               dist=self.dist,
                                               temp=self.temp,
                                               discount=self.discount,
-                                              optimizer=optimizer)
+                                              optimizer=optimizer,
+                                              typ=self.typ)
 
   def _prepocess_test_data(self, x):
     return torch.from_numpy(_get_padded_features(x))
@@ -272,6 +280,8 @@ class DeepRecurrentSurvivalMachines(DSMBase):
     x = _get_padded_features(x)
     t = _get_padded_targets(t)
     e = _get_padded_targets(e)
+
+    print (x.shape)
 
     x_train, t_train, e_train = x[idx], t[idx], e[idx]
 

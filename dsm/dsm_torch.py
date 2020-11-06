@@ -42,7 +42,7 @@ for clsn in ['DeepSurvivalMachinesTorch',
 
 
 def create_representation(inputdim, layers, activation):
-  """Helper function to generate the representation function for DSM.
+  r"""Helper function to generate the representation function for DSM.
 
   Deep Survival Machines learns a representation (\ Phi(X) \) for the input
   data. This representation is parameterized using a Non Linear Multilayer
@@ -258,9 +258,11 @@ class DeepRecurrentSurvivalMachinesTorch(nn.Module):
                                bias=False, batch_first=True)
     if self.typ == 'RNN':
       self.embedding = nn.RNN(inputdim, hidden, layers,
+                              bias=False, batch_first=True,
+                              nonlinearity='relu')
+    if self.typ == 'GRU':
+      self.embedding = nn.GRU(inputdim, hidden, layers,
                               bias=False, batch_first=True)
-
-
 
   def forward(self, x):
     """The forward function that is called when data is passed through DSM.
@@ -280,7 +282,7 @@ class DeepRecurrentSurvivalMachinesTorch(nn.Module):
     xrep, _ = self.embedding(x)
     xrep = xrep.contiguous().view(-1, self.hidden)
     xrep = xrep[inputmask]
-    #xrep = nn.ReLU6()(xrep)
+    xrep = nn.ReLU6()(xrep)
     return(self.act(self.shapeg(xrep))+self.shape.expand(xrep.shape[0], -1),
            self.act(self.scaleg(xrep))+self.scale.expand(xrep.shape[0], -1),
            self.gate(xrep)/self.temp)
