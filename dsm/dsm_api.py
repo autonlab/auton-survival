@@ -39,6 +39,7 @@ __pdoc__ = {}
 __pdoc__["DSMBase"] = False
 __pdoc__["DeepSurvivalMachines.fit"] = True
 
+CUDA = torch.cuda.is_available()
 
 class DSMBase():
   """Base Class for all DSM models"""
@@ -54,13 +55,18 @@ class DSMBase():
 
   def _gen_torch_model(self, inputdim, optimizer):
     """Helper function to return a torch model."""
-    return DeepSurvivalMachinesTorch(inputdim,
+    model = DeepSurvivalMachinesTorch(inputdim,
                                      k=self.k,
                                      layers=self.layers,
                                      dist=self.dist,
                                      temp=self.temp,
                                      discount=self.discount,
                                      optimizer=optimizer)
+    
+    if CUDA:
+        model = model.cuda()
+    
+    return model
 
   def fit(self, x, t, e, vsize=0.15,
           iters=1, learning_rate=1e-3, batch_size=100,
@@ -116,7 +122,10 @@ class DSMBase():
     self.fitted = True
 
   def _prepocess_test_data(self, x):
-    return torch.from_numpy(x)
+    data = torch.from_numpy(x)
+    if CUDA:
+         data = data.cuda()
+    return data
 
   def _prepocess_training_data(self, x, t, e, vsize, random_state):
 
@@ -135,6 +144,11 @@ class DSMBase():
     x_train = x_train[:-vsize]
     t_train = t_train[:-vsize]
     e_train = e_train[:-vsize]
+    
+    if CUDA:
+        x_train, t_train, e_train, x_val, t_val, e_val = x_train.cuda(), \
+            t_train.cuda(), e_train.cuda(), x_val.cuda(), t_val.cuda(),\
+            e_val.cuda()
 
     return (x_train, t_train, e_train,
             x_val, t_val, e_val)
@@ -260,9 +274,10 @@ class DeepRecurrentSurvivalMachines(DSMBase):
                                                         temp=temp, discount=discount)
     self.hidden = hidden
     self.typ = typ
+    
   def _gen_torch_model(self, inputdim, optimizer):
     """Helper function to return a torch model."""
-    return DeepRecurrentSurvivalMachinesTorch(inputdim,
+    model = DeepRecurrentSurvivalMachinesTorch(inputdim,
                                               k=self.k,
                                               layers=self.layers,
                                               hidden=self.hidden,
@@ -271,9 +286,17 @@ class DeepRecurrentSurvivalMachines(DSMBase):
                                               discount=self.discount,
                                               optimizer=optimizer,
                                               typ=self.typ)
+    if CUDA:
+        model = model.cuda()
+    
+    return model
 
   def _prepocess_test_data(self, x):
-    return torch.from_numpy(_get_padded_features(x))
+    data = torch.from_numpy(_get_padded_features(x))
+    if CUDA:
+         data = data.cuda()
+            
+    return data
 
   def _prepocess_training_data(self, x, t, e, vsize, random_state):
     """RNNs require different preprocessing for variable length sequences"""
@@ -301,6 +324,11 @@ class DeepRecurrentSurvivalMachines(DSMBase):
     t_train = t_train[:-vsize]
     e_train = e_train[:-vsize]
 
+    if CUDA:
+        x_train, t_train, e_train, x_val, t_val, e_val = x_train.cuda(), \
+            t_train.cuda(), e_train.cuda(), x_val.cuda(), t_val.cuda(),\
+            e_val.cuda()
+    
     return (x_train, t_train, e_train,
             x_val, t_val, e_val)
 
