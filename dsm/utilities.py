@@ -36,8 +36,6 @@ import numpy as np
 import gc
 import logging
 
-CUDA = torch.cuda.is_available()
-
 def get_optimizer(model, lr):
 
   if model.optimizer == 'Adam':
@@ -57,7 +55,7 @@ def pretrain_dsm(model, t_train, e_train, t_valid, e_valid,
                                        dist=model.dist)
   premodel.double()
     
-  if CUDA:
+  if model.cuda:
     premodel = premodel.cuda()
 
   optimizer = torch.optim.Adam(premodel.parameters(), lr=lr)
@@ -134,7 +132,7 @@ def train_dsm(model,
   model.scale.data.fill_(float(premodel.scale))
 
   model.double()
-  if CUDA:
+  if model.cuda:
     model = model.cuda()
     
   optimizer = torch.optim.Adam(model.parameters(), lr=lr)
