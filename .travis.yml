@@ -13,5 +13,4 @@ install:
 script:
   - tests/test_dsm.py
   
-after_success:
-  - codecov
+
