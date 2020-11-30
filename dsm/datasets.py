@@ -14,7 +14,7 @@
 # GNU General Public License for more details.
 
 # You should have received a copy of the GNU General Public License
-# along with Deep Survival Machines.  
+# along with Deep Survival Machines.
 # If not, see <https://www.gnu.org/licenses/>.
 
 
@@ -48,6 +48,58 @@ def increase_censoring(e, t, p):
 
   return e, t
 
+def _load_framingham_dataset(sequential):
+  """Helper function to load and preprocess the Framingham dataset.
+
+  The Framingham Dataset is a subset of 4,434 participants of the well known,
+  ongoing Framingham Heart study [1] for studying epidemiology for
+  hypertensive and arteriosclerotic cardiovascular disease. It is a popular
+  dataset for longitudinal survival analysis with time dependent covariates.
+
+  Parameters
+  ----------
+  sequential: bool
+    If True returns a list of np.arrays for each individual.
+    else, returns collapsed results for each time step. To train
+    recurrent neural models you would typically use True.
+
+  References
+  ----------
+  [1] Dawber, Thomas R., Gilcin F. Meadors, and Felix E. Moore Jr.
+  "Epidemiological approaches to heart disease: the Framingham Study."
+  American Journal of Public Health and the Nations Health 41.3 (1951).
+
+  """
+
+  data = pkgutil.get_data(__name__, 'datasets/framingham.csv')
+  data = pd.read_csv(io.BytesIO(data))
+
+  dat_cat = data[['SEX', 'CURSMOKE', 'DIABETES', 'BPMEDS',
+                  'educ', 'PREVCHD', 'PREVAP', 'PREVMI',
+                  'PREVSTRK', 'PREVHYP']]
+  dat_num = data[['TOTCHOL', 'AGE', 'SYSBP', 'DIABP',
+                  'CIGPDAY', 'BMI', 'HEARTRTE', 'GLUCOSE']]
+
+  x1 = pd.get_dummies(dat_cat).values
+  x2 = dat_num.values
+  x = np.hstack([x1, x2])
+
+  time = (data['TIMEDTH'] - data['TIME']).values
+  event = data['DEATH'].values
+
+  x = SimpleImputer(missing_values=np.nan, strategy='mean').fit_transform(x)
+  x_ = StandardScaler().fit_transform(x)
+
+  if not sequential:
+    return x_, time, event
+  else:
+    x, t, e = [], [], []
+    for id_ in sorted(list(set(data['RANDID']))):
+      x.append(x_[data['RANDID'] == id_])
+      t.append(time[data['RANDID'] == id_])
+      e.append(event[data['RANDID'] == id_])
+    return x, t, e
+
 def _load_pbc_dataset(sequential):
   """Helper function to load and preprocess the PBC dataset
 
@@ -61,7 +113,6 @@ def _load_pbc_dataset(sequential):
     If True returns a list of np.arrays for each individual.
     else, returns collapsed results for each time step. To train
     recurrent neural models you would typically use True.
-
 
   References
   ----------
@@ -141,10 +192,41 @@ def _load_support_dataset():
 def load_dataset(dataset='SUPPORT', **kwargs):
   """Helper function to load datasets to test Survival Analysis models.
 
+  Currently implemented datasets include:
+
+  **SUPPORT**: This dataset comes from the Vanderbilt University study
+  to estimate survival for seriously ill hospitalized adults [1].
+  (Refer to http://biostat.mc.vanderbilt.edu/wiki/Main/SupportDesc.
+  for the original datasource.)
+
+  **PBC**: The Primary biliary cirrhosis dataset [2] is well known
+  dataset for evaluating survival analysis models with time
+  dependent covariates.
+
+  **FRAMINGHAM**: This dataset is a subset of 4,434 participants of the well
+  known, ongoing Framingham Heart study [3] for studying epidemiology for
+  hypertensive and arteriosclerotic cardiovascular disease. It is a popular
+  dataset for longitudinal survival analysis with time dependent covariates.
+
+  References
+  -----------
+
+  [1]: Knaus WA, Harrell FE, Lynn J et al. (1995): The SUPPORT prognostic
+  model: Objective estimates of survival for seriously ill hospitalized
+  adults. Annals of Internal Medicine 122:191-203.
+
+  [2] Fleming, Thomas R., and David P. Harrington. Counting processes and
+  survival analysis. Vol. 169. John Wiley & Sons, 2011.
+
+  [3] Dawber, Thomas R., Gilcin F. Meadors, and Felix E. Moore Jr.
+  "Epidemiological approaches to heart disease: the Framingham Study."
+  American Journal of Public Health and the Nations Health 41.3 (1951).
+
   Parameters
   ----------
   dataset: str
-      The choice of dataset to load. Currently implemented is 'SUPPORT'.
+      The choice of dataset to load. Currently implemented is 'SUPPORT',
+      'PBC' and 'FRAMINGHAM'.
   **kwargs: dict
       Dataset specific keyword arguments.
 
@@ -155,11 +237,13 @@ def load_dataset(dataset='SUPPORT', **kwargs):
       event times and the censoring indicators respectively.
 
   """
+  sequential = kwargs.get('sequential', False)
 
   if dataset == 'SUPPORT':
     return _load_support_dataset()
   if dataset == 'PBC':
-    sequential = kwargs.get('sequential', False)
     return _load_pbc_dataset(sequential)
+  if dataset == 'FRAMINGHAM':
+    return _load_framingham_dataset(sequential)
   else:
-    return NotImplementedError('Dataset '+dataset+' not implemented.')
+    raise NotImplementedError('Dataset '+dataset+' not implemented.')

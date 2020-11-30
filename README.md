@@ -8,13 +8,13 @@ is implemented in `pytorch`.
 What is Survival Analysis?
 ------------------------
 
-**Survival Analysis** involves estimating when an event of interest, \( T \)
-would take place given some features or covariates \( X \). In statistics
+**Survival Analysis** involves estimating when an event of interest, _*T*_
+would take place given some features or covariates _*X*_. In statistics
 and ML, these scenarios are modelled as regression to estimate the conditional
-survival distribution, ℙ (T > t | X).   
+survival distribution, _*P*_(_T_>t|_X_).   
 As compared to typical regression problems, Survival Analysis differs in two major ways:
 
-* The Event distribution, \( T \) has positive support i.e. T ∈ [0, ∞).
+* The Event distribution, _*T*_ has positive support i.e. _*T*_ ∈ [0, ∞).
 * There is presence of censoring i.e. a large number of instances of data are
   lost to follow up.
 

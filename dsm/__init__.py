@@ -1,23 +1,35 @@
 # coding=utf-8
-# Copyright 2020 Chirag Nagpal
-#
-# This file is part of Deep Survival Machines.
+# MIT License
 
-# Deep Survival Machines is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# Copyright (c) 2020 Carnegie Mellon University, Auton Lab
 
-# Deep Survival Machines is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
 
-# You should have received a copy of the GNU General Public License
-# along with Deep Survival Machines.  
-# If not, see <https://www.gnu.org/licenses/>.
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
 
-"""
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+
+r"""
+[![Build Status](https://travis-ci.org/autonlab/DeepSurvivalMachines.svg?branch=master)](https://travis-ci.org/autonlab/DeepSurvivalMachines)
+&nbsp;&nbsp;&nbsp;
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+&nbsp;&nbsp;&nbsp;
+[![GitHub Repo stars](https://img.shields.io/github/stars/autonlab/DeepSurvivalMachines?style=social)](https://github.com/autonlab/DeepSurvivalMachines)
+
+
 Python package `dsm` provides an API to train the Deep Survival Machines
 and associated models for problems in survival analysis. The underlying model
 is implemented in `pytorch`.
@@ -54,11 +66,6 @@ underlying event outcome distribution as a mixure of some fixed \( k \)
 parametric distributions. The parameters of these mixture distributions as
 well as the mixing weights are modelled using Neural Networks.
 
-#### Usage Example
-    >>> from dsm import DeepSurvivalMachines
-    >>> model = DeepSurvivalMachines()
-    >>> model.fit()
-    >>> model.predict_risk()
 
 Deep Recurrent Survival Machines
 --------------------------------
@@ -67,7 +74,15 @@ Deep Recurrent Survival Machines
 model and allows for learning of representations of the input covariates using
 **Recurrent Neural Networks** like **LSTMs, GRUs**. Deep Recurrent Survival
 Machines is a natural fit to model problems where there are time dependendent
-covariates.
+covariates. Examples include situations where we are working with streaming
+data like vital signs, degradation monitoring signals in predictive
+maintainance. **DRSM** allows the learnt representations at each time step to
+involve historical context from previous time steps. **DRSM** implementation in
+`dsm` is carried out through an easy to use API,
+`DeepRecurrentSurvivalMachines` that accepts lists of data streams and
+corresponding failure times. The module automatically takes care of appropriate
+batching and padding of variable length sequences.
+
 
 ..warning:: Not Implemented Yet!
 
@@ -82,6 +97,21 @@ representations are then passed through an LSTM to model temporal dependencies
 before determining the underlying survival distributions.
 
 ..warning:: Not Implemented Yet!
+
+
+Example Usage
+-------------
+
+>>> from dsm import DeepSurvivalMachines
+>>> from dsm import datasets
+>>> # load the SUPPORT dataset.
+>>> x, t, e = datasets.load_dataset('SUPPORT')
+>>> # instantiate a DeepSurvivalMachines model.
+>>> model = DeepSurvivalMachines()
+>>> # fit the model to the dataset.
+>>> model.fit(x, t, e)
+>>> # estimate the predicted risks at the time
+>>> model.predict_risk(x, 10)
 
 References
 ----------
@@ -118,30 +148,36 @@ Contributing
 
 License
 -------
-Copyright 2020 [Chirag Nagpal](http://cs.cmu.edu/~chiragn),
-[Auton Lab](http://www.autonlab.org).
+MIT License
 
-Deep Survival Machines is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
+Copyright (c) 2020 Carnegie Mellon University, [Auton Lab](http://autonlab.org)
 
-Deep Survival Machines is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
 
-You should have received a copy of the GNU General Public License
-along with Foobar.  If not, see <https://www.gnu.org/licenses/>.
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
 
 
-
-<img style="float: right;" width ="200px" src="https://www.cmu.edu/brand/downloads/assets/images/wordmarks-600x600-min.jpg">
-<img style="float: right;padding-top:50px" src="https://www.autonlab.org/user/themes/auton/images/AutonLogo.png"> 
+<img style="float: right;" width ="200px" src="https://www.cmu.edu/brand/\
+downloads/assets/images/wordmarks-600x600-min.jpg">
+<img style="float: right;padding-top:50px" src="https://www.autonlab.org/\
+user/themes/auton/images/AutonLogo.png">
 
 <br><br><br><br><br>
 <br><br><br><br><br>
-
 
 """
 

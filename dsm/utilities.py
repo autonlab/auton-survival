@@ -1,24 +1,30 @@
 # coding=utf-8
-# Copyright 2020 Chirag Nagpal
-#
-# This file is part of Deep Survival Machines.
+# MIT License
 
-# Deep Survival Machines is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# Copyright (c) 2020 Carnegie Mellon University, Auton Lab
 
-# Deep Survival Machines is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
 
-# You should have received a copy of the GNU General Public License
-# along with Deep Survival Machines.
-# If not, see <https://www.gnu.org/licenses/>.
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
 
 """Utility functions to train the Deep Survival Machines models"""
 
+from dsm.dsm_torch import DeepSurvivalMachinesTorch
 from dsm.losses import unconditional_loss, conditional_loss
 
 from tqdm import tqdm
@@ -28,8 +34,8 @@ import torch
 import numpy as np
 
 import gc
+import logging
 
-from dsm.dsm_torch import DeepSurvivalMachinesTorch
 
 def get_optimizer(model, lr):
 
@@ -40,32 +46,30 @@ def get_optimizer(model, lr):
   elif model.optimizer == 'RMSProp':
     return torch.optim.RMSprop(model.parameters(), lr=lr)
   else:
-    raise NotImplementedError("Optimizer "+model.optimizer+
-                              " is not implemented")
-    
+    raise NotImplementedError('Optimizer '+model.optimizer+
+                              ' is not implemented')
+
 def pretrain_dsm(model, t_train, e_train, t_valid, e_valid,
                  n_iter=10000, lr=1e-2, thres=1e-4):
 
   premodel = DeepSurvivalMachinesTorch(1, 1,
-                                       init=False, dist=model.dist)
+                                       dist=model.dist)
   premodel.double()
 
   optimizer = torch.optim.Adam(premodel.parameters(), lr=lr)
-  oldcost = -float('inf')
-  patience = 0
 
+  oldcost = float('inf')
+  patience = 0
   costs = []
   for _ in tqdm(range(n_iter)):
 
     optimizer.zero_grad()
-
     loss = unconditional_loss(premodel, t_train, e_train)
     loss.backward()
     optimizer.step()
 
     valid_loss = unconditional_loss(premodel, t_valid, e_valid)
     valid_loss = valid_loss.detach().cpu().numpy()
-
     costs.append(valid_loss)
 
     if np.abs(costs[-1] - oldcost) < thres:
@@ -76,33 +80,54 @@ def pretrain_dsm(model, t_train, e_train, t_valid, e_valid,
 
   return premodel
 
+def _reshape_tensor_with_nans(data):
+  """Helper function to unroll padded RNN inputs."""
+  data = data.reshape(-1)
+  return data[~torch.isnan(data)]
+
+def _get_padded_features(x):
+  """Helper function to pad variable length RNN inputs with nans."""
+  d = max([len(x_) for x_ in x])
+  padx = []
+  for i in range(len(x)):
+    pads = np.nan*np.ones((d - len(x[i]), x[i].shape[1]))  
+    padx.append(np.concatenate([x[i], pads]))
+  return np.array(padx)
+
+def _get_padded_targets(t):
+  """Helper function to pad variable length RNN inputs with nans."""
+  d = max([len(t_) for t_ in t])
+  padt = []
+  for i in range(len(t)):
+    pads = np.nan*np.ones(d - len(t[i]))
+    padt.append(np.concatenate([t[i], pads]))
+  return np.array(padt)[:, :, np.newaxis]
 
 def train_dsm(model,
               x_train, t_train, e_train,
               x_valid, t_valid, e_valid,
               n_iter=10000, lr=1e-3, elbo=True,
               bs=100):
+  """Function to train the torch instance of the model."""
 
-  print('Pretraining the Underlying Distributions...')
+  logging.info('Pretraining the Underlying Distributions...')
+  # For padded variable length sequences we first unroll the input and
+  # mask out the padded nans.
+  t_train_ = _reshape_tensor_with_nans(t_train)
+  e_train_ = _reshape_tensor_with_nans(e_train)
+  t_valid_ = _reshape_tensor_with_nans(t_valid)
+  e_valid_ = _reshape_tensor_with_nans(e_valid)
 
   premodel = pretrain_dsm(model,
-                          t_train,
-                          e_train,
-                          t_valid,
-                          e_valid,
+                          t_train_,
+                          e_train_,
+                          t_valid_,
+                          e_valid_,
                           n_iter=10000,
                           lr=1e-2,
                           thres=1e-4)
   model.shape.data.fill_(float(premodel.shape))
   model.scale.data.fill_(float(premodel.scale))
-
-  # print(premodel.shape, premodel.scale)
-  # print(model.shape, model.scale)
-
-  # init=(float(premodel.shape[0]),
-  # float(premodel.scale[0])),
-  # print(torch.exp(-premodel.scale).cpu().data.numpy()[0],
-  #       torch.exp(premodel.shape).cpu().data.numpy()[0])
 
   model.double()
   optimizer = torch.optim.Adam(model.parameters(), lr=lr)
@@ -118,19 +143,24 @@ def train_dsm(model,
   for i in tqdm(range(n_iter)):
     for j in range(nbatches):
 
+      xb = x_train[j*bs:(j+1)*bs]
+      tb = t_train[j*bs:(j+1)*bs]
+      eb = e_train[j*bs:(j+1)*bs]
+
       optimizer.zero_grad()
       loss = conditional_loss(model,
-                              x_train[j*bs:(j+1)*bs],
-                              t_train[j*bs:(j+1)*bs],
-                              e_train[j*bs:(j+1)*bs],
+                              xb,
+                              _reshape_tensor_with_nans(tb),
+                              _reshape_tensor_with_nans(eb),
                               elbo=elbo)
+      #print ("Train Loss:", float(loss))
       loss.backward()
       optimizer.step()
 
     valid_loss = conditional_loss(model,
                                   x_valid,
-                                  t_valid,
-                                  e_valid,
+                                  t_valid_,
+                                  e_valid_,
                                   elbo=False)
 
     valid_loss = valid_loss.detach().cpu().numpy()

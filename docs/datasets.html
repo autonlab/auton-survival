@@ -26,129 +26,6 @@ Deep Survival Machines models." />
 <section id="section-intro">
 <p>Utility functions to load standard datasets to train and evaluate the
 Deep Survival Machines models.</p>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python"># coding=utf-8
-# Copyright 2020 Chirag Nagpal, Auton Lab.
-#
-# Licensed under the Apache License, Version 2.0 (the &#34;License&#34;);
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an &#34;AS IS&#34; BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
-&#34;&#34;&#34;Utility functions to load standard datasets to train and evaluate the
-Deep Survival Machines models.
-&#34;&#34;&#34;
-
-
-import io
-import pkgutil
-
-import pandas as pd
-import numpy as np
-
-from sklearn.impute import SimpleImputer
-from sklearn.preprocessing import StandardScaler
-
-def increase_censoring(e, t, p):
-
-  uncens = np.where(e == 1)[0]
-  mask = np.random.choice([False, True], len(uncens), p=[1-p, p])
-  toswitch = uncens[mask]
-
-  e[toswitch] = 0
-  t_ = t[toswitch]
-
-  newt = []
-  for t__ in t_:
-    newt.append(np.random.uniform(1, t__))
-  t[toswitch] = newt
-
-  return e, t
-
-def _load_pbc_dataset():
-  &#34;&#34;&#34;Helper function to load and preprocess the PBC dataset
-
-  The Primary biliary cirrhosis (PBC) Dataset [1] is well known
-  dataset for evaluating survival analysis models with time
-  dependent covariates.
-
-  References
-  ----------
-  [1] Fleming, Thomas R., and David P. Harrington. Counting processes and
-  survival analysis. Vol. 169. John Wiley &amp; Sons, 2011.
-
-  &#34;&#34;&#34;
-
-  raise NotImplementedError(&#39;&#39;)
-
-def _load_support_dataset():
-  &#34;&#34;&#34;Helper function to load and preprocess the SUPPORT dataset.
-
-  The SUPPORT Dataset comes from the Vanderbilt University study
-  to estimate survival for seriously ill hospitalized adults [1].
-
-  Please refer to http://biostat.mc.vanderbilt.edu/wiki/Main/SupportDesc.
-  for the original datasource.
-
-  References
-  ----------
-  [1]: Knaus WA, Harrell FE, Lynn J et al. (1995): The SUPPORT prognostic
-  model: Objective estimates of survival for seriously ill hospitalized
-  adults. Annals of Internal Medicine 122:191-203.
-
-  &#34;&#34;&#34;
-
-  data = pkgutil.get_data(__name__, &#39;datasets/support2.csv&#39;)
-  data = pd.read_csv(io.BytesIO(data))
-  x1 = data[[&#39;age&#39;, &#39;num.co&#39;, &#39;meanbp&#39;, &#39;wblc&#39;, &#39;hrt&#39;, &#39;resp&#39;, &#39;temp&#39;,
-             &#39;pafi&#39;, &#39;alb&#39;, &#39;bili&#39;, &#39;crea&#39;, &#39;sod&#39;, &#39;ph&#39;, &#39;glucose&#39;, &#39;bun&#39;,
-             &#39;urine&#39;, &#39;adlp&#39;, &#39;adls&#39;]]
-
-  catfeats = [&#39;sex&#39;, &#39;dzgroup&#39;, &#39;dzclass&#39;, &#39;income&#39;, &#39;race&#39;, &#39;ca&#39;]
-  x2 = pd.get_dummies(data[catfeats])
-
-  x = np.concatenate([x1, x2], axis=1)
-  t = data[&#39;d.time&#39;].values
-  e = data[&#39;death&#39;].values
-
-  x = SimpleImputer(missing_values=np.nan, strategy=&#39;mean&#39;).fit_transform(x)
-  x = StandardScaler().fit_transform(x)
-
-  remove = ~np.isnan(t)
-  return x[remove], t[remove], e[remove]
-
-
-def load_dataset(dataset=&#39;SUPPORT&#39;):
-  &#34;&#34;&#34;Helper function to load datasets to test Survival Analysis models.
-
-  Parameters
-  ----------
-  dataset: str
-      The choice of dataset to load. Currently implemented is &#39;SUPPORT&#39;.
-
-  Returns
-  ----------
-  tuple: (np.ndarray, np.ndarray, np.ndarray)
-      A tuple of the form of (x, t, e) where x, t, e are the input covariates,
-      event times and the censoring indicators respectively.
-
-  &#34;&#34;&#34;
-
-  if dataset == &#39;SUPPORT&#39;:
-    return _load_support_dataset()
-  else:
-    return NotImplementedError(&#39;Dataset &#39;+dataset+&#39; not implemented.&#39;)</code></pre>
-</details>
 </section>
 <section>
 </section>
@@ -162,36 +39,40 @@ def load_dataset(dataset=&#39;SUPPORT&#39;):
 </code></dt>
 <dd>
 <div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def increase_censoring(e, t, p):
-
-  uncens = np.where(e == 1)[0]
-  mask = np.random.choice([False, True], len(uncens), p=[1-p, p])
-  toswitch = uncens[mask]
-
-  e[toswitch] = 0
-  t_ = t[toswitch]
-
-  newt = []
-  for t__ in t_:
-    newt.append(np.random.uniform(1, t__))
-  t[toswitch] = newt
-
-  return e, t</code></pre>
-</details>
 </dd>
 <dt id="dsm.datasets.load_dataset"><code class="name flex">
-<span>def <span class="ident">load_dataset</span></span>(<span>dataset='SUPPORT')</span>
+<span>def <span class="ident">load_dataset</span></span>(<span>dataset='SUPPORT', **kwargs)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Helper function to load datasets to test Survival Analysis models.</p>
+<p>Currently implemented datasets include:</p>
+<p><strong>SUPPORT</strong>: This dataset comes from the Vanderbilt University study
+to estimate survival for seriously ill hospitalized adults [1].
+(Refer to <a href="http://biostat.mc.vanderbilt.edu/wiki/Main/SupportDesc.">http://biostat.mc.vanderbilt.edu/wiki/Main/SupportDesc.</a>
+for the original datasource.)</p>
+<p><strong>PBC</strong>: The Primary biliary cirrhosis dataset [2] is well known
+dataset for evaluating survival analysis models with time
+dependent covariates.</p>
+<p><strong>FRAMINGHAM</strong>: This dataset is a subset of 4,434 participants of the well
+known, ongoing Framingham Heart study [3] for studying epidemiology for
+hypertensive and arteriosclerotic cardiovascular disease. It is a popular
+dataset for longitudinal survival analysis with time dependent covariates.</p>
+<h2 id="references">References</h2>
+<p>[1]: Knaus WA, Harrell FE, Lynn J et al. (1995): The SUPPORT prognostic
+model: Objective estimates of survival for seriously ill hospitalized
+adults. Annals of Internal Medicine 122:191-203.</p>
+<p>[2] Fleming, Thomas R., and David P. Harrington. Counting processes and
+survival analysis. Vol. 169. John Wiley &amp; Sons, 2011.</p>
+<p>[3] Dawber, Thomas R., Gilcin F. Meadors, and Felix E. Moore Jr.
+"Epidemiological approaches to heart disease: the Framingham Study."
+American Journal of Public Health and the Nations Health 41.3 (1951).</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
 <dt><strong><code>dataset</code></strong> :&ensp;<code>str</code></dt>
-<dd>The choice of dataset to load. Currently implemented is 'SUPPORT'.</dd>
+<dd>The choice of dataset to load. Currently implemented is 'SUPPORT',
+'PBC' and 'FRAMINGHAM'.</dd>
+<dt><strong><code>**kwargs</code></strong> :&ensp;<code>dict</code></dt>
+<dd>Dataset specific keyword arguments.</dd>
 </dl>
 <h2 id="returns">Returns</h2>
 <dl>
@@ -199,31 +80,6 @@ def load_dataset(dataset=&#39;SUPPORT&#39;):
 <dd>A tuple of the form of (x, t, e) where x, t, e are the input covariates,
 event times and the censoring indicators respectively.</dd>
 </dl></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def load_dataset(dataset=&#39;SUPPORT&#39;):
-  &#34;&#34;&#34;Helper function to load datasets to test Survival Analysis models.
-
-  Parameters
-  ----------
-  dataset: str
-      The choice of dataset to load. Currently implemented is &#39;SUPPORT&#39;.
-
-  Returns
-  ----------
-  tuple: (np.ndarray, np.ndarray, np.ndarray)
-      A tuple of the form of (x, t, e) where x, t, e are the input covariates,
-      event times and the censoring indicators respectively.
-
-  &#34;&#34;&#34;
-
-  if dataset == &#39;SUPPORT&#39;:
-    return _load_support_dataset()
-  else:
-    return NotImplementedError(&#39;Dataset &#39;+dataset+&#39; not implemented.&#39;)</code></pre>
-</details>
 </dd>
 </dl>
 </section>

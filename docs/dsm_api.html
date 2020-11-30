@@ -26,243 +26,6 @@ provides a convenient API to train Deep Survival Machines." />
 <section id="section-intro">
 <p>This module is a wrapper around torch implementations and
 provides a convenient API to train Deep Survival Machines.</p>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python"># coding=utf-8
-# Copyright 2020 Chirag Nagpal, Auton Lab.
-#
-# Licensed under the Apache License, Version 2.0 (the &#34;License&#34;);
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an &#34;AS IS&#34; BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
-&#34;&#34;&#34;
-This module is a wrapper around torch implementations and
-provides a convenient API to train Deep Survival Machines.
-&#34;&#34;&#34;
-
-from dsm.dsm_torch import DeepSurvivalMachinesTorch
-from dsm.losses import predict_cdf
-from dsm.utilities import train_dsm
-
-import torch
-
-import numpy as np
-
-class DeepSurvivalMachines():
-  &#34;&#34;&#34;A Deep Survival Machines model.
-
-  This is the main interface to a Deep Survival Machines model.
-  A model is instantiated with approporiate set of hyperparameters and
-  fit on numpy arrays consisting of the features, event/censoring times
-  and the event/censoring indicators.
-
-  For full details on Deep Survival Machines, refer to our paper [1].
-
-  References
-  ----------
-  [1] &lt;a href=&#34;https://arxiv.org/abs/2003.01176&#34;&gt;Deep Survival Machines: 
-  Fully Parametric Survival Regression and
-  Representation Learning for Censored Data with Competing Risks.&#34;
-  arXiv preprint arXiv:2003.01176 (2020)&lt;/a&gt;
-
-  Parameters
-  ----------
-  k: int
-      The number of underlying parametric distributions.
-  layers: list
-      A list of integers consisting of the number of neurons in each
-      hidden layer.
-  distribution: str
-      Choice of the underlying survival distributions.
-      One of &#39;Weibull&#39;, &#39;LogNormal&#39;.
-      Default is &#39;Weibull&#39;.
-  temp: float
-      The logits for the gate are rescaled with this value.
-      Default is 1000.
-  discount: float
-      a float in [0,1] that determines how to discount the tail bias
-      from the uncensored instances.
-      Default is 1.
-
-  Example
-  -------
-  &gt;&gt;&gt; from dsm import DeepSurvivalMachines
-  &gt;&gt;&gt; model = DeepSurvivalMachines()
-  &gt;&gt;&gt; model.fit(x, t, e)
-
-  &#34;&#34;&#34;
-
-  def __init__(self, k=3, layers=None, distribution=&#34;Weibull&#34;,
-               temp=1000., discount=1.0):
-    super(DeepSurvivalMachines, self).__init__()
-
-    self.k = k
-    self.layers = layers
-    self.dist = distribution
-    self.temp = temp
-    self.discount = discount
-    self.fitted = False
-
-  def __call__(self):
-    if self.fitted:
-      print(&#34;A fitted instance of the Deep Survival Machines model&#34;)
-    else:
-      print(&#34;An unfitted instance of the Deep Survival Machines model&#34;)
-
-    print(&#34;Number of underlying distributions (k):&#34;, self.k)
-    print(&#34;Hidden Layers:&#34;, self.layers)
-    print(&#34;Distribution Choice:&#34;, self.dist)
-
-
-  def fit(self, x, t, e, vsize=0.15, 
-          iters=1, learning_rate=1e-3, batch_size=100,
-          elbo=True, optimizer=&#34;Adam&#34;, random_state=100):
-
-    &#34;&#34;&#34;This method is used to train an instance of the DSM model.
-
-    Parameters
-    ----------
-    x: np.ndarray
-        A numpy array of the input features, \( x \).
-    t: np.ndarray
-        A numpy array of the event/censoring times, \( t \).
-    e: np.ndarray
-        A numpy array of the event/censoring indicators, \( \delta \).
-
-        \( \delta = 1 \) means the event took place.
-    vsize: float
-        Amount of data to set aside as the validation set.
-    iters: int
-        The maximum number of training iterations on the training dataset.
-    learning_rate: float
-        The learning rate for the `Adam` optimizer.
-    batch_size: int
-        learning is performed on mini-batches of input data. this parameter
-        specifies the size of each mini-batch.
-    elbo: bool
-        Whether to use the Evidence Lower Bound for Optimization.
-        Default is True.
-    optimizer: str
-        The choice of the gradient based optimization method. One of 
-        &#39;Adam&#39;, &#39;RMSProp&#39; or &#39;SGD&#39;.
-    random_state: float
-        random seed that determines how the validation set is chosen.
-    &#34;&#34;&#34;
-
-    idx = list(range(x.shape[0]))
-    np.random.seed(random_state)
-    np.random.shuffle(idx)
-    x_train, t_train, e_train = x[idx], t[idx], e[idx]
-
-    x_train = torch.from_numpy(x_train).double()
-    t_train = torch.from_numpy(t_train).double()
-    e_train = torch.from_numpy(e_train).double()
-
-    vsize = int(vsize*x_train.shape[0])
-
-    x_val, t_val, e_val = x_train[-vsize:], t_train[-vsize:], e_train[-vsize:]
-    x_train = x_train[:-vsize]
-    t_train = t_train[:-vsize]
-    e_train = e_train[:-vsize]
-
-    inputdim = x_train.shape[1]
-
-    if type(self).__name__ == &#34;DeepSurvivalMachines&#34;:
-
-      model = DeepSurvivalMachinesTorch(inputdim,
-                                        k=self.k,
-                                        layers=self.layers,
-                                        init=False, 
-                                        dist=self.dist,
-                                        temp=self.temp,
-                                        discount=self.discount,
-                                        optimizer=optimizer)
-
-      model, _ = train_dsm(model, x_train, t_train, e_train,
-                           x_val, t_val, e_val,
-                           n_iter=iters,
-                           lr=learning_rate,
-                           elbo=elbo,
-                           bs=batch_size)
-
-      self.torch_model = model.eval()
-      self.fitted = True
-
-    else:
-      raise NotImplementedError(&#34;`fit` nethod not implemented for &#34;+
-                                type(self).__name__)
-
-
-  def predict_risk(self, x, t):
-    &#34;&#34;&#34;Returns the estimated risk of an event occuring before time \( t \),
-      \( \widehat{\mathbb{P}}(T\leq t|X) \) for some input data \( x \).
-
-    Parameters
-    ----------
-    x: np.ndarray
-        A numpy array of the input features, \( x \).
-    t: list or float
-        a list or float of the times at which survival probability is
-        to be computed
-    Returns:
-      np.array: numpy array of the risks at each time in t.
-    &#34;&#34;&#34;
-
-    if self.fitted:
-      return 1-self.predict_survival(x, t)
-
-    else:
-      raise Exception(&#34;The model has not been fitted yet. Please fit the &#34; +
-                      &#34;model using the `fit` method on some training data &#34; +
-                      &#34;before calling `predict_survival`.&#34;)
-
-
-  def predict_survival(self, x, t):
-    &#34;&#34;&#34;Returns the estimated survival probability at time \( t \),
-      \( \widehat{\mathbb{P}}(T &gt; t|X) \) for some input data \( x \).
-
-    Parameters
-    ----------
-    x: np.ndarray
-        A numpy array of the input features, \( x \).
-    t: list or float
-        a list or float of the times at which survival probability is
-        to be computed
-    Returns:
-      np.array: numpy array of the survival probabilites at each time in t.
-    &#34;&#34;&#34;
-
-    if not isinstance(t, list):
-      t = [t]
-
-    if self.fitted:
-      x = torch.from_numpy(x)
-      scores = predict_cdf(self.torch_model, x, t)
-      return np.exp(np.array(scores)).T
-
-    else:
-      raise Exception(&#34;The model has not been fitted yet. Please fit the &#34; +
-                      &#34;model using the `fit` method on some training data &#34; +
-                      &#34;before calling `predict_risk`.&#34;)
-
-class DeepRecurrentSurvivalMachines(DeepSurvivalMachines):
-  __doc__ = &#34;..warning:: Not Implemented&#34;
-  pass
-
-class DeepConvolutionalSurvivalMachines(DeepRecurrentSurvivalMachines):
-  __doc__ = &#34;..warning:: Not Implemented&#34;
-  pass</code></pre>
-</details>
 </section>
 <section>
 </section>
@@ -273,73 +36,6 @@ class DeepConvolutionalSurvivalMachines(DeepRecurrentSurvivalMachines):
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
-<dt id="dsm.dsm_api.DeepConvolutionalSurvivalMachines"><code class="flex name class">
-<span>class <span class="ident">DeepConvolutionalSurvivalMachines</span></span>
-<span>(</span><span>k=3, layers=None, distribution='Weibull', temp=1000.0, discount=1.0)</span>
-</code></dt>
-<dd>
-<div class="desc"><div class="admonition warning">
-<p class="admonition-title">Warning:&ensp;Not Implemented</p>
-</div></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">class DeepConvolutionalSurvivalMachines(DeepRecurrentSurvivalMachines):
-  __doc__ = &#34;..warning:: Not Implemented&#34;
-  pass</code></pre>
-</details>
-<h3>Ancestors</h3>
-<ul class="hlist">
-<li><a title="dsm.dsm_api.DeepRecurrentSurvivalMachines" href="#dsm.dsm_api.DeepRecurrentSurvivalMachines">DeepRecurrentSurvivalMachines</a></li>
-<li><a title="dsm.dsm_api.DeepSurvivalMachines" href="#dsm.dsm_api.DeepSurvivalMachines">DeepSurvivalMachines</a></li>
-</ul>
-<h3>Inherited members</h3>
-<ul class="hlist">
-<li><code><b><a title="dsm.dsm_api.DeepRecurrentSurvivalMachines" href="#dsm.dsm_api.DeepRecurrentSurvivalMachines">DeepRecurrentSurvivalMachines</a></b></code>:
-<ul class="hlist">
-<li><code><a title="dsm.dsm_api.DeepRecurrentSurvivalMachines.fit" href="#dsm.dsm_api.DeepSurvivalMachines.fit">fit</a></code></li>
-<li><code><a title="dsm.dsm_api.DeepRecurrentSurvivalMachines.predict_risk" href="#dsm.dsm_api.DeepSurvivalMachines.predict_risk">predict_risk</a></code></li>
-<li><code><a title="dsm.dsm_api.DeepRecurrentSurvivalMachines.predict_survival" href="#dsm.dsm_api.DeepSurvivalMachines.predict_survival">predict_survival</a></code></li>
-</ul>
-</li>
-</ul>
-</dd>
-<dt id="dsm.dsm_api.DeepRecurrentSurvivalMachines"><code class="flex name class">
-<span>class <span class="ident">DeepRecurrentSurvivalMachines</span></span>
-<span>(</span><span>k=3, layers=None, distribution='Weibull', temp=1000.0, discount=1.0)</span>
-</code></dt>
-<dd>
-<div class="desc"><div class="admonition warning">
-<p class="admonition-title">Warning:&ensp;Not Implemented</p>
-</div></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">class DeepRecurrentSurvivalMachines(DeepSurvivalMachines):
-  __doc__ = &#34;..warning:: Not Implemented&#34;
-  pass</code></pre>
-</details>
-<h3>Ancestors</h3>
-<ul class="hlist">
-<li><a title="dsm.dsm_api.DeepSurvivalMachines" href="#dsm.dsm_api.DeepSurvivalMachines">DeepSurvivalMachines</a></li>
-</ul>
-<h3>Subclasses</h3>
-<ul class="hlist">
-<li><a title="dsm.dsm_api.DeepConvolutionalSurvivalMachines" href="#dsm.dsm_api.DeepConvolutionalSurvivalMachines">DeepConvolutionalSurvivalMachines</a></li>
-</ul>
-<h3>Inherited members</h3>
-<ul class="hlist">
-<li><code><b><a title="dsm.dsm_api.DeepSurvivalMachines" href="#dsm.dsm_api.DeepSurvivalMachines">DeepSurvivalMachines</a></b></code>:
-<ul class="hlist">
-<li><code><a title="dsm.dsm_api.DeepSurvivalMachines.fit" href="#dsm.dsm_api.DeepSurvivalMachines.fit">fit</a></code></li>
-<li><code><a title="dsm.dsm_api.DeepSurvivalMachines.predict_risk" href="#dsm.dsm_api.DeepSurvivalMachines.predict_risk">predict_risk</a></code></li>
-<li><code><a title="dsm.dsm_api.DeepSurvivalMachines.predict_survival" href="#dsm.dsm_api.DeepSurvivalMachines.predict_survival">predict_survival</a></code></li>
-</ul>
-</li>
-</ul>
-</dd>
 <dt id="dsm.dsm_api.DeepSurvivalMachines"><code class="flex name class">
 <span>class <span class="ident">DeepSurvivalMachines</span></span>
 <span>(</span><span>k=3, layers=None, distribution='Weibull', temp=1000.0, discount=1.0)</span>
@@ -380,217 +76,16 @@ Default is 1.</dd>
 &gt;&gt;&gt; model = DeepSurvivalMachines()
 &gt;&gt;&gt; model.fit(x, t, e)
 </code></pre></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">class DeepSurvivalMachines():
-  &#34;&#34;&#34;A Deep Survival Machines model.
-
-  This is the main interface to a Deep Survival Machines model.
-  A model is instantiated with approporiate set of hyperparameters and
-  fit on numpy arrays consisting of the features, event/censoring times
-  and the event/censoring indicators.
-
-  For full details on Deep Survival Machines, refer to our paper [1].
-
-  References
-  ----------
-  [1] &lt;a href=&#34;https://arxiv.org/abs/2003.01176&#34;&gt;Deep Survival Machines: 
-  Fully Parametric Survival Regression and
-  Representation Learning for Censored Data with Competing Risks.&#34;
-  arXiv preprint arXiv:2003.01176 (2020)&lt;/a&gt;
-
-  Parameters
-  ----------
-  k: int
-      The number of underlying parametric distributions.
-  layers: list
-      A list of integers consisting of the number of neurons in each
-      hidden layer.
-  distribution: str
-      Choice of the underlying survival distributions.
-      One of &#39;Weibull&#39;, &#39;LogNormal&#39;.
-      Default is &#39;Weibull&#39;.
-  temp: float
-      The logits for the gate are rescaled with this value.
-      Default is 1000.
-  discount: float
-      a float in [0,1] that determines how to discount the tail bias
-      from the uncensored instances.
-      Default is 1.
-
-  Example
-  -------
-  &gt;&gt;&gt; from dsm import DeepSurvivalMachines
-  &gt;&gt;&gt; model = DeepSurvivalMachines()
-  &gt;&gt;&gt; model.fit(x, t, e)
-
-  &#34;&#34;&#34;
-
-  def __init__(self, k=3, layers=None, distribution=&#34;Weibull&#34;,
-               temp=1000., discount=1.0):
-    super(DeepSurvivalMachines, self).__init__()
-
-    self.k = k
-    self.layers = layers
-    self.dist = distribution
-    self.temp = temp
-    self.discount = discount
-    self.fitted = False
-
-  def __call__(self):
-    if self.fitted:
-      print(&#34;A fitted instance of the Deep Survival Machines model&#34;)
-    else:
-      print(&#34;An unfitted instance of the Deep Survival Machines model&#34;)
-
-    print(&#34;Number of underlying distributions (k):&#34;, self.k)
-    print(&#34;Hidden Layers:&#34;, self.layers)
-    print(&#34;Distribution Choice:&#34;, self.dist)
-
-
-  def fit(self, x, t, e, vsize=0.15, 
-          iters=1, learning_rate=1e-3, batch_size=100,
-          elbo=True, optimizer=&#34;Adam&#34;, random_state=100):
-
-    &#34;&#34;&#34;This method is used to train an instance of the DSM model.
-
-    Parameters
-    ----------
-    x: np.ndarray
-        A numpy array of the input features, \( x \).
-    t: np.ndarray
-        A numpy array of the event/censoring times, \( t \).
-    e: np.ndarray
-        A numpy array of the event/censoring indicators, \( \delta \).
-
-        \( \delta = 1 \) means the event took place.
-    vsize: float
-        Amount of data to set aside as the validation set.
-    iters: int
-        The maximum number of training iterations on the training dataset.
-    learning_rate: float
-        The learning rate for the `Adam` optimizer.
-    batch_size: int
-        learning is performed on mini-batches of input data. this parameter
-        specifies the size of each mini-batch.
-    elbo: bool
-        Whether to use the Evidence Lower Bound for Optimization.
-        Default is True.
-    optimizer: str
-        The choice of the gradient based optimization method. One of 
-        &#39;Adam&#39;, &#39;RMSProp&#39; or &#39;SGD&#39;.
-    random_state: float
-        random seed that determines how the validation set is chosen.
-    &#34;&#34;&#34;
-
-    idx = list(range(x.shape[0]))
-    np.random.seed(random_state)
-    np.random.shuffle(idx)
-    x_train, t_train, e_train = x[idx], t[idx], e[idx]
-
-    x_train = torch.from_numpy(x_train).double()
-    t_train = torch.from_numpy(t_train).double()
-    e_train = torch.from_numpy(e_train).double()
-
-    vsize = int(vsize*x_train.shape[0])
-
-    x_val, t_val, e_val = x_train[-vsize:], t_train[-vsize:], e_train[-vsize:]
-    x_train = x_train[:-vsize]
-    t_train = t_train[:-vsize]
-    e_train = e_train[:-vsize]
-
-    inputdim = x_train.shape[1]
-
-    if type(self).__name__ == &#34;DeepSurvivalMachines&#34;:
-
-      model = DeepSurvivalMachinesTorch(inputdim,
-                                        k=self.k,
-                                        layers=self.layers,
-                                        init=False, 
-                                        dist=self.dist,
-                                        temp=self.temp,
-                                        discount=self.discount,
-                                        optimizer=optimizer)
-
-      model, _ = train_dsm(model, x_train, t_train, e_train,
-                           x_val, t_val, e_val,
-                           n_iter=iters,
-                           lr=learning_rate,
-                           elbo=elbo,
-                           bs=batch_size)
-
-      self.torch_model = model.eval()
-      self.fitted = True
-
-    else:
-      raise NotImplementedError(&#34;`fit` nethod not implemented for &#34;+
-                                type(self).__name__)
-
-
-  def predict_risk(self, x, t):
-    &#34;&#34;&#34;Returns the estimated risk of an event occuring before time \( t \),
-      \( \widehat{\mathbb{P}}(T\leq t|X) \) for some input data \( x \).
-
-    Parameters
-    ----------
-    x: np.ndarray
-        A numpy array of the input features, \( x \).
-    t: list or float
-        a list or float of the times at which survival probability is
-        to be computed
-    Returns:
-      np.array: numpy array of the risks at each time in t.
-    &#34;&#34;&#34;
-
-    if self.fitted:
-      return 1-self.predict_survival(x, t)
-
-    else:
-      raise Exception(&#34;The model has not been fitted yet. Please fit the &#34; +
-                      &#34;model using the `fit` method on some training data &#34; +
-                      &#34;before calling `predict_survival`.&#34;)
-
-
-  def predict_survival(self, x, t):
-    &#34;&#34;&#34;Returns the estimated survival probability at time \( t \),
-      \( \widehat{\mathbb{P}}(T &gt; t|X) \) for some input data \( x \).
-
-    Parameters
-    ----------
-    x: np.ndarray
-        A numpy array of the input features, \( x \).
-    t: list or float
-        a list or float of the times at which survival probability is
-        to be computed
-    Returns:
-      np.array: numpy array of the survival probabilites at each time in t.
-    &#34;&#34;&#34;
-
-    if not isinstance(t, list):
-      t = [t]
-
-    if self.fitted:
-      x = torch.from_numpy(x)
-      scores = predict_cdf(self.torch_model, x, t)
-      return np.exp(np.array(scores)).T
-
-    else:
-      raise Exception(&#34;The model has not been fitted yet. Please fit the &#34; +
-                      &#34;model using the `fit` method on some training data &#34; +
-                      &#34;before calling `predict_risk`.&#34;)</code></pre>
-</details>
-<h3>Subclasses</h3>
-<ul class="hlist">
-<li><a title="dsm.dsm_api.DeepRecurrentSurvivalMachines" href="#dsm.dsm_api.DeepRecurrentSurvivalMachines">DeepRecurrentSurvivalMachines</a></li>
-</ul>
 <h3>Methods</h3>
 <dl>
 <dt id="dsm.dsm_api.DeepSurvivalMachines.fit"><code class="name flex">
 <span>def <span class="ident">fit</span></span>(<span>self, x, t, e, vsize=0.15, iters=1, learning_rate=0.001, batch_size=100, elbo=True, optimizer='Adam', random_state=100)</span>
 </code></dt>
 <dd>
+<p class="inheritance">
+<em>Inherited from:</em>
+<code><a title="dsm.dsm_api.DSMBase" href="#dsm.dsm_api.DSMBase">DSMBase</a></code>.<code><a title="dsm.dsm_api.DSMBase.fit" href="#dsm.dsm_api.DSMBase.fit">fit</a></code>
+</p>
 <div class="desc"><p>This method is used to train an instance of the DSM model.</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
@@ -599,10 +94,8 @@ Default is 1.</dd>
 <dt><strong><code>t</code></strong> :&ensp;<code>np.ndarray</code></dt>
 <dd>A numpy array of the event/censoring times, <span><span class="MathJax_Preview"> t </span><script type="math/tex"> t </script></span>.</dd>
 <dt><strong><code>e</code></strong> :&ensp;<code>np.ndarray</code></dt>
-<dd>
-<p>A numpy array of the event/censoring indicators, <span><span class="MathJax_Preview"> \delta </span><script type="math/tex"> \delta </script></span>.</p>
-<p><span><span class="MathJax_Preview"> \delta = 1 </span><script type="math/tex"> \delta = 1 </script></span> means the event took place.</p>
-</dd>
+<dd>A numpy array of the event/censoring indicators, <span><span class="MathJax_Preview"> \delta </span><script type="math/tex"> \delta </script></span>.
+<span><span class="MathJax_Preview"> \delta = 1 </span><script type="math/tex"> \delta = 1 </script></span> means the event took place.</dd>
 <dt><strong><code>vsize</code></strong> :&ensp;<code>float</code></dt>
 <dd>Amount of data to set aside as the validation set.</dd>
 <dt><strong><code>iters</code></strong> :&ensp;<code>int</code></dt>
@@ -613,7 +106,7 @@ Default is 1.</dd>
 <dd>learning is performed on mini-batches of input data. this parameter
 specifies the size of each mini-batch.</dd>
 <dt><strong><code>elbo</code></strong> :&ensp;<code>bool</code></dt>
-<dd>Whether to use the Evidence Lower Bound for Optimization.
+<dd>Whether to use the Evidence Lower Bound for optimization.
 Default is True.</dd>
 <dt><strong><code>optimizer</code></strong> :&ensp;<code>str</code></dt>
 <dd>The choice of the gradient based optimization method. One of
@@ -621,94 +114,16 @@ Default is True.</dd>
 <dt><strong><code>random_state</code></strong> :&ensp;<code>float</code></dt>
 <dd>random seed that determines how the validation set is chosen.</dd>
 </dl></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def fit(self, x, t, e, vsize=0.15, 
-        iters=1, learning_rate=1e-3, batch_size=100,
-        elbo=True, optimizer=&#34;Adam&#34;, random_state=100):
-
-  &#34;&#34;&#34;This method is used to train an instance of the DSM model.
-
-  Parameters
-  ----------
-  x: np.ndarray
-      A numpy array of the input features, \( x \).
-  t: np.ndarray
-      A numpy array of the event/censoring times, \( t \).
-  e: np.ndarray
-      A numpy array of the event/censoring indicators, \( \delta \).
-
-      \( \delta = 1 \) means the event took place.
-  vsize: float
-      Amount of data to set aside as the validation set.
-  iters: int
-      The maximum number of training iterations on the training dataset.
-  learning_rate: float
-      The learning rate for the `Adam` optimizer.
-  batch_size: int
-      learning is performed on mini-batches of input data. this parameter
-      specifies the size of each mini-batch.
-  elbo: bool
-      Whether to use the Evidence Lower Bound for Optimization.
-      Default is True.
-  optimizer: str
-      The choice of the gradient based optimization method. One of 
-      &#39;Adam&#39;, &#39;RMSProp&#39; or &#39;SGD&#39;.
-  random_state: float
-      random seed that determines how the validation set is chosen.
-  &#34;&#34;&#34;
-
-  idx = list(range(x.shape[0]))
-  np.random.seed(random_state)
-  np.random.shuffle(idx)
-  x_train, t_train, e_train = x[idx], t[idx], e[idx]
-
-  x_train = torch.from_numpy(x_train).double()
-  t_train = torch.from_numpy(t_train).double()
-  e_train = torch.from_numpy(e_train).double()
-
-  vsize = int(vsize*x_train.shape[0])
-
-  x_val, t_val, e_val = x_train[-vsize:], t_train[-vsize:], e_train[-vsize:]
-  x_train = x_train[:-vsize]
-  t_train = t_train[:-vsize]
-  e_train = e_train[:-vsize]
-
-  inputdim = x_train.shape[1]
-
-  if type(self).__name__ == &#34;DeepSurvivalMachines&#34;:
-
-    model = DeepSurvivalMachinesTorch(inputdim,
-                                      k=self.k,
-                                      layers=self.layers,
-                                      init=False, 
-                                      dist=self.dist,
-                                      temp=self.temp,
-                                      discount=self.discount,
-                                      optimizer=optimizer)
-
-    model, _ = train_dsm(model, x_train, t_train, e_train,
-                         x_val, t_val, e_val,
-                         n_iter=iters,
-                         lr=learning_rate,
-                         elbo=elbo,
-                         bs=batch_size)
-
-    self.torch_model = model.eval()
-    self.fitted = True
-
-  else:
-    raise NotImplementedError(&#34;`fit` nethod not implemented for &#34;+
-                              type(self).__name__)</code></pre>
-</details>
 </dd>
 <dt id="dsm.dsm_api.DeepSurvivalMachines.predict_risk"><code class="name flex">
 <span>def <span class="ident">predict_risk</span></span>(<span>self, x, t)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Returns the estimated risk of an event occuring before time <span><span class="MathJax_Preview"> t </span><script type="math/tex"> t </script></span>,
+<p class="inheritance">
+<em>Inherited from:</em>
+<code><a title="dsm.dsm_api.DSMBase" href="#dsm.dsm_api.DSMBase">DSMBase</a></code>.<code><a title="dsm.dsm_api.DSMBase.predict_risk" href="#dsm.dsm_api.DSMBase.predict_risk">predict_risk</a></code>
+</p>
+<div class="desc"><p>Returns the estimated risk of an event occuring before time <span><span class="MathJax_Preview"> t </span><script type="math/tex"> t </script></span>
 <span><span class="MathJax_Preview"> \widehat{\mathbb{P}}(T\leq t|X) </span><script type="math/tex"> \widehat{\mathbb{P}}(T\leq t|X) </script></span> for some input data <span><span class="MathJax_Preview"> x </span><script type="math/tex"> x </script></span>.</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
@@ -723,38 +138,15 @@ to be computed</dd>
 <dt><code>np.array</code></dt>
 <dd>numpy array of the risks at each time in t.</dd>
 </dl></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def predict_risk(self, x, t):
-  &#34;&#34;&#34;Returns the estimated risk of an event occuring before time \( t \),
-    \( \widehat{\mathbb{P}}(T\leq t|X) \) for some input data \( x \).
-
-  Parameters
-  ----------
-  x: np.ndarray
-      A numpy array of the input features, \( x \).
-  t: list or float
-      a list or float of the times at which survival probability is
-      to be computed
-  Returns:
-    np.array: numpy array of the risks at each time in t.
-  &#34;&#34;&#34;
-
-  if self.fitted:
-    return 1-self.predict_survival(x, t)
-
-  else:
-    raise Exception(&#34;The model has not been fitted yet. Please fit the &#34; +
-                    &#34;model using the `fit` method on some training data &#34; +
-                    &#34;before calling `predict_survival`.&#34;)</code></pre>
-</details>
 </dd>
 <dt id="dsm.dsm_api.DeepSurvivalMachines.predict_survival"><code class="name flex">
 <span>def <span class="ident">predict_survival</span></span>(<span>self, x, t)</span>
 </code></dt>
 <dd>
+<p class="inheritance">
+<em>Inherited from:</em>
+<code><a title="dsm.dsm_api.DSMBase" href="#dsm.dsm_api.DSMBase">DSMBase</a></code>.<code><a title="dsm.dsm_api.DSMBase.predict_survival" href="#dsm.dsm_api.DSMBase.predict_survival">predict_survival</a></code>
+</p>
 <div class="desc"><p>Returns the estimated survival probability at time <span><span class="MathJax_Preview"> t </span><script type="math/tex"> t </script></span>,
 <span><span class="MathJax_Preview"> \widehat{\mathbb{P}}(T &gt; t|X) </span><script type="math/tex"> \widehat{\mathbb{P}}(T > t|X) </script></span> for some input data <span><span class="MathJax_Preview"> x </span><script type="math/tex"> x </script></span>.</p>
 <h2 id="parameters">Parameters</h2>
@@ -770,38 +162,199 @@ to be computed</dd>
 <dt><code>np.array</code></dt>
 <dd>numpy array of the survival probabilites at each time in t.</dd>
 </dl></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def predict_survival(self, x, t):
-  &#34;&#34;&#34;Returns the estimated survival probability at time \( t \),
-    \( \widehat{\mathbb{P}}(T &gt; t|X) \) for some input data \( x \).
-
-  Parameters
-  ----------
-  x: np.ndarray
-      A numpy array of the input features, \( x \).
-  t: list or float
-      a list or float of the times at which survival probability is
-      to be computed
-  Returns:
-    np.array: numpy array of the survival probabilites at each time in t.
-  &#34;&#34;&#34;
-
-  if not isinstance(t, list):
-    t = [t]
-
-  if self.fitted:
-    x = torch.from_numpy(x)
-    scores = predict_cdf(self.torch_model, x, t)
-    return np.exp(np.array(scores)).T
-
-  else:
-    raise Exception(&#34;The model has not been fitted yet. Please fit the &#34; +
-                    &#34;model using the `fit` method on some training data &#34; +
-                    &#34;before calling `predict_risk`.&#34;)</code></pre>
-</details>
+</dd>
+</dl>
+</dd>
+<dt id="dsm.dsm_api.DeepRecurrentSurvivalMachines"><code class="flex name class">
+<span>class <span class="ident">DeepRecurrentSurvivalMachines</span></span>
+<span>(</span><span>k=3, layers=None, hidden=None, distribution='Weibull', temp=1000.0, discount=1.0, typ='LSTM')</span>
+</code></dt>
+<dd>
+<div class="desc"><p>The Deep Recurrent Survival Machines model to handle data with
+time-dependent covariates.</p></div>
+<h3>Methods</h3>
+<dl>
+<dt id="dsm.dsm_api.DeepRecurrentSurvivalMachines.fit"><code class="name flex">
+<span>def <span class="ident">fit</span></span>(<span>self, x, t, e, vsize=0.15, iters=1, learning_rate=0.001, batch_size=100, elbo=True, optimizer='Adam', random_state=100)</span>
+</code></dt>
+<dd>
+<p class="inheritance">
+<em>Inherited from:</em>
+<code><a title="dsm.dsm_api.DSMBase" href="#dsm.dsm_api.DSMBase">DSMBase</a></code>.<code><a title="dsm.dsm_api.DSMBase.fit" href="#dsm.dsm_api.DSMBase.fit">fit</a></code>
+</p>
+<div class="desc"><p>This method is used to train an instance of the DSM model.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>x</code></strong> :&ensp;<code>np.ndarray</code></dt>
+<dd>A numpy array of the input features, <span><span class="MathJax_Preview"> x </span><script type="math/tex"> x </script></span>.</dd>
+<dt><strong><code>t</code></strong> :&ensp;<code>np.ndarray</code></dt>
+<dd>A numpy array of the event/censoring times, <span><span class="MathJax_Preview"> t </span><script type="math/tex"> t </script></span>.</dd>
+<dt><strong><code>e</code></strong> :&ensp;<code>np.ndarray</code></dt>
+<dd>A numpy array of the event/censoring indicators, <span><span class="MathJax_Preview"> \delta </span><script type="math/tex"> \delta </script></span>.
+<span><span class="MathJax_Preview"> \delta = 1 </span><script type="math/tex"> \delta = 1 </script></span> means the event took place.</dd>
+<dt><strong><code>vsize</code></strong> :&ensp;<code>float</code></dt>
+<dd>Amount of data to set aside as the validation set.</dd>
+<dt><strong><code>iters</code></strong> :&ensp;<code>int</code></dt>
+<dd>The maximum number of training iterations on the training dataset.</dd>
+<dt><strong><code>learning_rate</code></strong> :&ensp;<code>float</code></dt>
+<dd>The learning rate for the <code>Adam</code> optimizer.</dd>
+<dt><strong><code>batch_size</code></strong> :&ensp;<code>int</code></dt>
+<dd>learning is performed on mini-batches of input data. this parameter
+specifies the size of each mini-batch.</dd>
+<dt><strong><code>elbo</code></strong> :&ensp;<code>bool</code></dt>
+<dd>Whether to use the Evidence Lower Bound for optimization.
+Default is True.</dd>
+<dt><strong><code>optimizer</code></strong> :&ensp;<code>str</code></dt>
+<dd>The choice of the gradient based optimization method. One of
+'Adam', 'RMSProp' or 'SGD'.</dd>
+<dt><strong><code>random_state</code></strong> :&ensp;<code>float</code></dt>
+<dd>random seed that determines how the validation set is chosen.</dd>
+</dl></div>
+</dd>
+<dt id="dsm.dsm_api.DeepRecurrentSurvivalMachines.predict_risk"><code class="name flex">
+<span>def <span class="ident">predict_risk</span></span>(<span>self, x, t)</span>
+</code></dt>
+<dd>
+<p class="inheritance">
+<em>Inherited from:</em>
+<code><a title="dsm.dsm_api.DSMBase" href="#dsm.dsm_api.DSMBase">DSMBase</a></code>.<code><a title="dsm.dsm_api.DSMBase.predict_risk" href="#dsm.dsm_api.DSMBase.predict_risk">predict_risk</a></code>
+</p>
+<div class="desc"><p>Returns the estimated risk of an event occuring before time <span><span class="MathJax_Preview"> t </span><script type="math/tex"> t </script></span>
+<span><span class="MathJax_Preview"> \widehat{\mathbb{P}}(T\leq t|X) </span><script type="math/tex"> \widehat{\mathbb{P}}(T\leq t|X) </script></span> for some input data <span><span class="MathJax_Preview"> x </span><script type="math/tex"> x </script></span>.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>x</code></strong> :&ensp;<code>np.ndarray</code></dt>
+<dd>A numpy array of the input features, <span><span class="MathJax_Preview"> x </span><script type="math/tex"> x </script></span>.</dd>
+<dt><strong><code>t</code></strong> :&ensp;<code>list</code> or <code>float</code></dt>
+<dd>a list or float of the times at which survival probability is
+to be computed</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>np.array</code></dt>
+<dd>numpy array of the risks at each time in t.</dd>
+</dl></div>
+</dd>
+<dt id="dsm.dsm_api.DeepRecurrentSurvivalMachines.predict_survival"><code class="name flex">
+<span>def <span class="ident">predict_survival</span></span>(<span>self, x, t)</span>
+</code></dt>
+<dd>
+<p class="inheritance">
+<em>Inherited from:</em>
+<code><a title="dsm.dsm_api.DSMBase" href="#dsm.dsm_api.DSMBase">DSMBase</a></code>.<code><a title="dsm.dsm_api.DSMBase.predict_survival" href="#dsm.dsm_api.DSMBase.predict_survival">predict_survival</a></code>
+</p>
+<div class="desc"><p>Returns the estimated survival probability at time <span><span class="MathJax_Preview"> t </span><script type="math/tex"> t </script></span>,
+<span><span class="MathJax_Preview"> \widehat{\mathbb{P}}(T &gt; t|X) </span><script type="math/tex"> \widehat{\mathbb{P}}(T > t|X) </script></span> for some input data <span><span class="MathJax_Preview"> x </span><script type="math/tex"> x </script></span>.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>x</code></strong> :&ensp;<code>np.ndarray</code></dt>
+<dd>A numpy array of the input features, <span><span class="MathJax_Preview"> x </span><script type="math/tex"> x </script></span>.</dd>
+<dt><strong><code>t</code></strong> :&ensp;<code>list</code> or <code>float</code></dt>
+<dd>a list or float of the times at which survival probability is
+to be computed</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>np.array</code></dt>
+<dd>numpy array of the survival probabilites at each time in t.</dd>
+</dl></div>
+</dd>
+</dl>
+</dd>
+<dt id="dsm.dsm_api.DeepConvolutionalSurvivalMachines"><code class="flex name class">
+<span>class <span class="ident">DeepConvolutionalSurvivalMachines</span></span>
+<span>(</span><span>k=3, layers=None, hidden=None, distribution='Weibull', temp=1000.0, discount=1.0, typ='LSTM')</span>
+</code></dt>
+<dd>
+<div class="desc"><div class="admonition warning">
+<p class="admonition-title">Warning:&ensp;Not Implemented</p>
+</div></div>
+<h3>Methods</h3>
+<dl>
+<dt id="dsm.dsm_api.DeepConvolutionalSurvivalMachines.fit"><code class="name flex">
+<span>def <span class="ident">fit</span></span>(<span>self, x, t, e, vsize=0.15, iters=1, learning_rate=0.001, batch_size=100, elbo=True, optimizer='Adam', random_state=100)</span>
+</code></dt>
+<dd>
+<p class="inheritance">
+<em>Inherited from:</em>
+<code><a title="dsm.dsm_api.DeepRecurrentSurvivalMachines" href="#dsm.dsm_api.DeepRecurrentSurvivalMachines">DeepRecurrentSurvivalMachines</a></code>.<code><a title="dsm.dsm_api.DeepRecurrentSurvivalMachines.fit" href="#dsm.dsm_api.DeepRecurrentSurvivalMachines.fit">fit</a></code>
+</p>
+<div class="desc"><p>This method is used to train an instance of the DSM model.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>x</code></strong> :&ensp;<code>np.ndarray</code></dt>
+<dd>A numpy array of the input features, <span><span class="MathJax_Preview"> x </span><script type="math/tex"> x </script></span>.</dd>
+<dt><strong><code>t</code></strong> :&ensp;<code>np.ndarray</code></dt>
+<dd>A numpy array of the event/censoring times, <span><span class="MathJax_Preview"> t </span><script type="math/tex"> t </script></span>.</dd>
+<dt><strong><code>e</code></strong> :&ensp;<code>np.ndarray</code></dt>
+<dd>A numpy array of the event/censoring indicators, <span><span class="MathJax_Preview"> \delta </span><script type="math/tex"> \delta </script></span>.
+<span><span class="MathJax_Preview"> \delta = 1 </span><script type="math/tex"> \delta = 1 </script></span> means the event took place.</dd>
+<dt><strong><code>vsize</code></strong> :&ensp;<code>float</code></dt>
+<dd>Amount of data to set aside as the validation set.</dd>
+<dt><strong><code>iters</code></strong> :&ensp;<code>int</code></dt>
+<dd>The maximum number of training iterations on the training dataset.</dd>
+<dt><strong><code>learning_rate</code></strong> :&ensp;<code>float</code></dt>
+<dd>The learning rate for the <code>Adam</code> optimizer.</dd>
+<dt><strong><code>batch_size</code></strong> :&ensp;<code>int</code></dt>
+<dd>learning is performed on mini-batches of input data. this parameter
+specifies the size of each mini-batch.</dd>
+<dt><strong><code>elbo</code></strong> :&ensp;<code>bool</code></dt>
+<dd>Whether to use the Evidence Lower Bound for optimization.
+Default is True.</dd>
+<dt><strong><code>optimizer</code></strong> :&ensp;<code>str</code></dt>
+<dd>The choice of the gradient based optimization method. One of
+'Adam', 'RMSProp' or 'SGD'.</dd>
+<dt><strong><code>random_state</code></strong> :&ensp;<code>float</code></dt>
+<dd>random seed that determines how the validation set is chosen.</dd>
+</dl></div>
+</dd>
+<dt id="dsm.dsm_api.DeepConvolutionalSurvivalMachines.predict_risk"><code class="name flex">
+<span>def <span class="ident">predict_risk</span></span>(<span>self, x, t)</span>
+</code></dt>
+<dd>
+<p class="inheritance">
+<em>Inherited from:</em>
+<code><a title="dsm.dsm_api.DeepRecurrentSurvivalMachines" href="#dsm.dsm_api.DeepRecurrentSurvivalMachines">DeepRecurrentSurvivalMachines</a></code>.<code><a title="dsm.dsm_api.DeepRecurrentSurvivalMachines.predict_risk" href="#dsm.dsm_api.DeepRecurrentSurvivalMachines.predict_risk">predict_risk</a></code>
+</p>
+<div class="desc"><p>Returns the estimated risk of an event occuring before time <span><span class="MathJax_Preview"> t </span><script type="math/tex"> t </script></span>
+<span><span class="MathJax_Preview"> \widehat{\mathbb{P}}(T\leq t|X) </span><script type="math/tex"> \widehat{\mathbb{P}}(T\leq t|X) </script></span> for some input data <span><span class="MathJax_Preview"> x </span><script type="math/tex"> x </script></span>.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>x</code></strong> :&ensp;<code>np.ndarray</code></dt>
+<dd>A numpy array of the input features, <span><span class="MathJax_Preview"> x </span><script type="math/tex"> x </script></span>.</dd>
+<dt><strong><code>t</code></strong> :&ensp;<code>list</code> or <code>float</code></dt>
+<dd>a list or float of the times at which survival probability is
+to be computed</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>np.array</code></dt>
+<dd>numpy array of the risks at each time in t.</dd>
+</dl></div>
+</dd>
+<dt id="dsm.dsm_api.DeepConvolutionalSurvivalMachines.predict_survival"><code class="name flex">
+<span>def <span class="ident">predict_survival</span></span>(<span>self, x, t)</span>
+</code></dt>
+<dd>
+<p class="inheritance">
+<em>Inherited from:</em>
+<code><a title="dsm.dsm_api.DeepRecurrentSurvivalMachines" href="#dsm.dsm_api.DeepRecurrentSurvivalMachines">DeepRecurrentSurvivalMachines</a></code>.<code><a title="dsm.dsm_api.DeepRecurrentSurvivalMachines.predict_survival" href="#dsm.dsm_api.DeepRecurrentSurvivalMachines.predict_survival">predict_survival</a></code>
+</p>
+<div class="desc"><p>Returns the estimated survival probability at time <span><span class="MathJax_Preview"> t </span><script type="math/tex"> t </script></span>,
+<span><span class="MathJax_Preview"> \widehat{\mathbb{P}}(T &gt; t|X) </span><script type="math/tex"> \widehat{\mathbb{P}}(T > t|X) </script></span> for some input data <span><span class="MathJax_Preview"> x </span><script type="math/tex"> x </script></span>.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>x</code></strong> :&ensp;<code>np.ndarray</code></dt>
+<dd>A numpy array of the input features, <span><span class="MathJax_Preview"> x </span><script type="math/tex"> x </script></span>.</dd>
+<dt><strong><code>t</code></strong> :&ensp;<code>list</code> or <code>float</code></dt>
+<dd>a list or float of the times at which survival probability is
+to be computed</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>np.array</code></dt>
+<dd>numpy array of the survival probabilites at each time in t.</dd>
+</dl></div>
 </dd>
 </dl>
 </dd>
@@ -822,17 +375,27 @@ to be computed</dd>
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
 <li>
-<h4><code><a title="dsm.dsm_api.DeepConvolutionalSurvivalMachines" href="#dsm.dsm_api.DeepConvolutionalSurvivalMachines">DeepConvolutionalSurvivalMachines</a></code></h4>
-</li>
-<li>
-<h4><code><a title="dsm.dsm_api.DeepRecurrentSurvivalMachines" href="#dsm.dsm_api.DeepRecurrentSurvivalMachines">DeepRecurrentSurvivalMachines</a></code></h4>
-</li>
-<li>
 <h4><code><a title="dsm.dsm_api.DeepSurvivalMachines" href="#dsm.dsm_api.DeepSurvivalMachines">DeepSurvivalMachines</a></code></h4>
 <ul class="">
 <li><code><a title="dsm.dsm_api.DeepSurvivalMachines.fit" href="#dsm.dsm_api.DeepSurvivalMachines.fit">fit</a></code></li>
 <li><code><a title="dsm.dsm_api.DeepSurvivalMachines.predict_risk" href="#dsm.dsm_api.DeepSurvivalMachines.predict_risk">predict_risk</a></code></li>
 <li><code><a title="dsm.dsm_api.DeepSurvivalMachines.predict_survival" href="#dsm.dsm_api.DeepSurvivalMachines.predict_survival">predict_survival</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="dsm.dsm_api.DeepRecurrentSurvivalMachines" href="#dsm.dsm_api.DeepRecurrentSurvivalMachines">DeepRecurrentSurvivalMachines</a></code></h4>
+<ul class="">
+<li><code><a title="dsm.dsm_api.DeepRecurrentSurvivalMachines.fit" href="#dsm.dsm_api.DeepRecurrentSurvivalMachines.fit">fit</a></code></li>
+<li><code><a title="dsm.dsm_api.DeepRecurrentSurvivalMachines.predict_risk" href="#dsm.dsm_api.DeepRecurrentSurvivalMachines.predict_risk">predict_risk</a></code></li>
+<li><code><a title="dsm.dsm_api.DeepRecurrentSurvivalMachines.predict_survival" href="#dsm.dsm_api.DeepRecurrentSurvivalMachines.predict_survival">predict_survival</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="dsm.dsm_api.DeepConvolutionalSurvivalMachines" href="#dsm.dsm_api.DeepConvolutionalSurvivalMachines">DeepConvolutionalSurvivalMachines</a></code></h4>
+<ul class="">
+<li><code><a title="dsm.dsm_api.DeepConvolutionalSurvivalMachines.fit" href="#dsm.dsm_api.DeepConvolutionalSurvivalMachines.fit">fit</a></code></li>
+<li><code><a title="dsm.dsm_api.DeepConvolutionalSurvivalMachines.predict_risk" href="#dsm.dsm_api.DeepConvolutionalSurvivalMachines.predict_risk">predict_risk</a></code></li>
+<li><code><a title="dsm.dsm_api.DeepConvolutionalSurvivalMachines.predict_survival" href="#dsm.dsm_api.DeepConvolutionalSurvivalMachines.predict_survival">predict_survival</a></code></li>
 </ul>
 </li>
 </ul>

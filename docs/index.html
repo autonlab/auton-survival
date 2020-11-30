@@ -5,8 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.9.1" />
 <title>dsm API documentation</title>
-<meta name="description" content="Python package `dsm` provides an API to train the Deep Survival Machines
-and associated models for problems in survival analysis. The underlying
+<meta name="description" content="[![Build Status](https://travis-ci.org/autonlab/DeepSurvivalMachines.svg?branch=master)](https://travis-ci.org/autonlab/DeepSurvivalMachines)
 …" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
@@ -25,6 +24,11 @@ and associated models for problems in survival analysis. The underlying
 <h1 class="title">Package <code>dsm</code></h1>
 </header>
 <section id="section-intro">
+<p><a href="https://travis-ci.org/autonlab/DeepSurvivalMachines"><img alt="Build Status" src="https://travis-ci.org/autonlab/DeepSurvivalMachines.svg?branch=master"></a>
+&nbsp;&nbsp;&nbsp;
+<a href="https://opensource.org/licenses/MIT"><img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-yellow.svg"></a>
+&nbsp;&nbsp;&nbsp;
+<a href="https://github.com/autonlab/DeepSurvivalMachines"><img alt="GitHub Repo stars" src="https://img.shields.io/github/stars/autonlab/DeepSurvivalMachines?style=social"></a></p>
 <p>Python package <code><a title="dsm" href="#dsm">dsm</a></code> provides an API to train the Deep Survival Machines
 and associated models for problems in survival analysis. The underlying model
 is implemented in <code>pytorch</code>.</p>
@@ -52,18 +56,19 @@ Analysis'. The key idea behind Deep Survival Machines is to model the
 underlying event outcome distribution as a mixure of some fixed <span><span class="MathJax_Preview"> k </span><script type="math/tex"> k </script></span>
 parametric distributions. The parameters of these mixture distributions as
 well as the mixing weights are modelled using Neural Networks.</p>
-<h4 id="usage-example">Usage Example</h4>
-<pre><code>&gt;&gt;&gt; from dsm import DeepSurvivalMachines
-&gt;&gt;&gt; model = DeepSurvivalMachines()
-&gt;&gt;&gt; model.fit()
-&gt;&gt;&gt; model.predict_risk()
-</code></pre>
 <h2 id="deep-recurrent-survival-machines">Deep Recurrent Survival Machines</h2>
 <p><strong>Deep Recurrent Survival Machines (DRSM)</strong> builds on the original <strong>DSM</strong>
 model and allows for learning of representations of the input covariates using
 <strong>Recurrent Neural Networks</strong> like <strong>LSTMs, GRUs</strong>. Deep Recurrent Survival
 Machines is a natural fit to model problems where there are time dependendent
-covariates.</p>
+covariates. Examples include situations where we are working with streaming
+data like vital signs, degradation monitoring signals in predictive
+maintainance. <strong>DRSM</strong> allows the learnt representations at each time step to
+involve historical context from previous time steps. <strong>DRSM</strong> implementation in
+<code><a title="dsm" href="#dsm">dsm</a></code> is carried out through an easy to use API,
+<code>DeepRecurrentSurvivalMachines</code> that accepts lists of data streams and
+corresponding failure times. The module automatically takes care of appropriate
+batching and padding of variable length sequences.</p>
 <div class="admonition warning">
 <p class="admonition-title">Warning:&ensp;Not Implemented Yet!</p>
 </div>
@@ -77,6 +82,18 @@ before determining the underlying survival distributions.</p>
 <div class="admonition warning">
 <p class="admonition-title">Warning:&ensp;Not Implemented Yet!</p>
 </div>
+<h2 id="example-usage">Example Usage</h2>
+<pre><code class="language-python-repl">&gt;&gt;&gt; from dsm import DeepSurvivalMachines
+&gt;&gt;&gt; from dsm import datasets
+&gt;&gt;&gt; # load the SUPPORT dataset.
+&gt;&gt;&gt; x, t, e = datasets.load_dataset('SUPPORT')
+&gt;&gt;&gt; # instantiate a DeepSurvivalMachines model.
+&gt;&gt;&gt; model = DeepSurvivalMachines()
+&gt;&gt;&gt; # fit the model to the dataset.
+&gt;&gt;&gt; model.fit(x, t, e)
+&gt;&gt;&gt; # estimate the predicted risks at the time
+&gt;&gt;&gt; model.predict_risk(x, 10)
+</code></pre>
 <h2 id="references">References</h2>
 <p>Please cite the following papers if you are using the <code><a title="dsm" href="#dsm">dsm</a></code> package.</p>
 <p>[1] <a href="https://arxiv.org/abs/2003.01176">Deep Survival Machines:
@@ -84,7 +101,8 @@ Fully Parametric Survival Regression and
 Representation Learning for Censored Data with Competing Risks."
 arXiv preprint arXiv:2003.01176 (2020)</a></a></p>
 <pre><code>  @article{nagpal2020deep,
-  title={Deep Survival Machines: Fully Parametric Survival Regression and  Representation Learning for Censored Data with Competing Risks},
+  title={Deep Survival Machines: Fully Parametric Survival Regression and\
+  Representation Learning for Censored Data with Competing Risks},
   author={Nagpal, Chirag and Li, Xinyu and Dubrawski, Artur},
   journal={arXiv preprint arXiv:2003.01176},
   year={2020}
@@ -97,154 +115,29 @@ arXiv preprint arXiv:2003.01176 (2020)</a></a></p>
 <h2 id="contributing">Contributing</h2>
 <p><code><a title="dsm" href="#dsm">dsm</a></code> is <a href="https://github.com/chiragnagpal/deepsurvivalmachines">on GitHub</a>. Bug reports and pull requests are welcome.</p>
 <h2 id="license">License</h2>
-<p>Copyright 2020 <a href="http://cs.cmu.edu/~chiragn">Chirag Nagpal</a>,
-<a href="http://www.autonlab.org">Auton Lab</a>.</p>
-<p>Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at</p>
-<p><a href="http://www.apache.org/licenses/LICENSE-2.0">http://www.apache.org/licenses/LICENSE-2.0</a></p>
-<p>Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.</p>
-<p><img style="float: right;" width ="200px" src="https://www.cmu.edu/brand/downloads/assets/images/wordmarks-600x600-min.jpg">
-<img style="float: right;padding-top:50px" src="https://www.autonlab.org/user/themes/auton/images/AutonLogo.png"> </p>
+<p>MIT License</p>
+<p>Copyright (c) 2020 Carnegie Mellon University, <a href="http://autonlab.org">Auton Lab</a></p>
+<p>Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:</p>
+<p>The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.</p>
+<p>THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.</p>
+<p><img style="float: right;" width ="200px" src="https://www.cmu.edu/brand/\
+downloads/assets/images/wordmarks-600x600-min.jpg">
+<img style="float: right;padding-top:50px" src="https://www.autonlab.org/\
+user/themes/auton/images/AutonLogo.png"></p>
 <p><br><br><br><br><br>
 <br><br><br><br><br></p>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">&#34;&#34;&#34;
-Python package `dsm` provides an API to train the Deep Survival Machines
-and associated models for problems in survival analysis. The underlying model
-is implemented in `pytorch`.
-
-What is Survival Analysis?
-------------------------
-
-**Survival Analysis** involves estimating when an event of interest, \( T \)
-would take places given some features or covariates \( X \). In statistics
-and ML these scenarious are modelled as regression to estimate the conditional
-survival distribution, \( \mathbb{P}(T&gt;t|X) \). As compared to typical
-regression problems, Survival Analysis differs in two major ways:
-
-* The Event distribution, \( T \) has positive support ie.
-  \( T \in [0, \infty) \).
-* There is presence of censoring ie. a large number of instances of data are
-  lost to follow up.
-
-Deep Survival Machines
-----------------------
-
-.. figure:: https://ndownloader.figshare.com/files/25259852
-   :figwidth: 20 %
-   :alt: map to buried treasure
-
-   This is the caption of the figure (a simple paragraph).
-
-**Deep Survival Machines (DSM)** is a fully parametric approach to model 
-Time-to-Event outcomes in the presence of Censoring first introduced in 
-[\[1\]](https://arxiv.org/abs/2003.01176). 
-In the context of Healthcare ML and Biostatistics, this is known as &#39;Survival
-Analysis&#39;. The key idea behind Deep Survival Machines is to model the
-underlying event outcome distribution as a mixure of some fixed \( k \)
-parametric distributions. The parameters of these mixture distributions as
-well as the mixing weights are modelled using Neural Networks.
-
-#### Usage Example
-    &gt;&gt;&gt; from dsm import DeepSurvivalMachines
-    &gt;&gt;&gt; model = DeepSurvivalMachines()
-    &gt;&gt;&gt; model.fit()
-    &gt;&gt;&gt; model.predict_risk()
-
-Deep Recurrent Survival Machines
---------------------------------
-
-**Deep Recurrent Survival Machines (DRSM)** builds on the original **DSM**
-model and allows for learning of representations of the input covariates using
-**Recurrent Neural Networks** like **LSTMs, GRUs**. Deep Recurrent Survival
-Machines is a natural fit to model problems where there are time dependendent
-covariates.
-
-..warning:: Not Implemented Yet!
-
-Deep Convolutional Survival Machines
-------------------------------------
-
-Predictive maintenance and medical imaging sometimes requires to work with
-image streams. Deep Convolutional Survival Machines extends **DSM** and
-**DRSM** to learn representations of the input image data using
-convolutional layers. If working with streaming data, the learnt
-representations are then passed through an LSTM to model temporal dependencies
-before determining the underlying survival distributions.
-
-..warning:: Not Implemented Yet!
-
-References
-----------
-
-Please cite the following papers if you are using the `dsm` package.
-
-[1] [Deep Survival Machines: 
-Fully Parametric Survival Regression and
-Representation Learning for Censored Data with Competing Risks.&#34;
-arXiv preprint arXiv:2003.01176 (2020)](https://arxiv.org/abs/2003.01176)&lt;/a&gt;
-
-```
-  @article{nagpal2020deep,
-  title={Deep Survival Machines: Fully Parametric Survival Regression and\
-  Representation Learning for Censored Data with Competing Risks},
-  author={Nagpal, Chirag and Li, Xinyu and Dubrawski, Artur},
-  journal={arXiv preprint arXiv:2003.01176},
-  year={2020}
-  }
-```
-
-Compatibility
--------------
-`dsm` requires `python` 3.5+ and `pytorch` 1.1+.
-
-To evaluate performance using standard metrics
-`dsm` requires `scikit-survival`.
-
-Contributing
-------------
-`dsm` is [on GitHub]. Bug reports and pull requests are welcome.
-
-[on GitHub]: https://github.com/chiragnagpal/deepsurvivalmachines
-
-License
--------
-Copyright 2020 [Chirag Nagpal](http://cs.cmu.edu/~chiragn),
-[Auton Lab](http://www.autonlab.org).
-
-Licensed under the Apache License, Version 2.0 (the &#34;License&#34;);
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an &#34;AS IS&#34; BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-
-
-
-&lt;img style=&#34;float: right;&#34; width =&#34;200px&#34; src=&#34;https://www.cmu.edu/brand/downloads/assets/images/wordmarks-600x600-min.jpg&#34;&gt;
-&lt;img style=&#34;float: right;padding-top:50px&#34; src=&#34;https://www.autonlab.org/user/themes/auton/images/AutonLogo.png&#34;&gt; 
-
-&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;
-&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;
-
-
-&#34;&#34;&#34;
-
-from dsm.dsm_api import DeepSurvivalMachines, DeepRecurrentSurvivalMachines</code></pre>
-</details>
 </section>
 <section>
 <h2 class="section-title" id="header-submodules">Sub-modules</h2>
@@ -261,11 +154,26 @@ provides a convenient API to train Deep Survival Machines.</p></div>
 </dd>
 <dt><code class="name"><a title="dsm.dsm_torch" href="dsm_torch.html">dsm.dsm_torch</a></code></dt>
 <dd>
-<div class="desc"><p>Torch model definitons for the Deep Survival Machines model …</p></div>
+<div class="desc"><p>Torch model definitons for the Deep Survival Machines model</p>
+<p>This includes definitons for the Torch Deep Survival Machines module.
+The main interface is the DeepSurvivalMachines class which inherits
+from torch.nn.Module.</p>
+<p>Note: NOT DESIGNED TO BE CALLED DIRECTLY!!!</p></div>
 </dd>
 <dt><code class="name"><a title="dsm.losses" href="losses.html">dsm.losses</a></code></dt>
 <dd>
-<div class="desc"><p>Loss function definitions for the Deep Survival Machines model …</p></div>
+<div class="desc"><p>Loss function definitions for the Deep Survival Machines model</p>
+<p>In this module we define the various losses for the censored and uncensored
+instances of data corresponding to Weibull and LogNormal distributions.
+These losses are optimized when training DSM.</p>
+<div class="admonition todo">
+<p class="admonition-title">TODO</p>
+<p>Use torch.distributions</p>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>NOT DESIGNED TO BE CALLED DIRECTLY!!!</p>
+</div></div>
 </dd>
 <dt><code class="name"><a title="dsm.utilities" href="utilities.html">dsm.utilities</a></code></dt>
 <dd>
@@ -285,12 +193,10 @@ provides a convenient API to train Deep Survival Machines.</p></div>
 <div class="toc">
 <ul>
 <li><a href="#what-is-survival-analysis">What is Survival Analysis?</a></li>
-<li><a href="#deep-survival-machines">Deep Survival Machines</a><ul>
-<li><a href="#usage-example">Usage Example</a></li>
-</ul>
-</li>
+<li><a href="#deep-survival-machines">Deep Survival Machines</a></li>
 <li><a href="#deep-recurrent-survival-machines">Deep Recurrent Survival Machines</a></li>
 <li><a href="#deep-convolutional-survival-machines">Deep Convolutional Survival Machines</a></li>
+<li><a href="#example-usage">Example Usage</a></li>
 <li><a href="#references">References</a></li>
 <li><a href="#compatibility">Compatibility</a></li>
 <li><a href="#contributing">Contributing</a></li>
