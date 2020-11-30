@@ -1,3 +1,4 @@
+[![codecov](https://codecov.io/gh/shikhareddy/DeepSurvivalMachines/branch/master/graph/badge.svg?token=55W3J3O8CP)](https://codecov.io/gh/shikhareddy/DeepSurvivalMachines)
 
 Package: `dsm`
 -------------
