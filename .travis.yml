@@ -15,3 +15,8 @@ install:
 script:
   - python -m pytest tests/
   - pylint --fail-under=8 dsm/
+  - py.test  --cov-report term --cov=app/test/
+
+after_success:
+  - codecov
+
