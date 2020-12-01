@@ -16,8 +16,8 @@ install:
 script:
   - python -m pytest tests/
   - pylint --fail-under=8 dsm/
-  - py.test  --cov-report term --cov=app/test/
+  - coverage run -m unittest discover
 
 after_success:
-  - codecov
+  - bash <(curl -s https://codecov.io/bash)
 
