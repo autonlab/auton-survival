@@ -40,10 +40,10 @@ well as the mixing weights are modelled using Neural Networks.
     >>> model.fit()
     >>> model.predict_risk()
 
-Deep Recurrent Survival Machines
+Recurrent Deep Survival Machines
 --------------------------------
 
-**Deep Recurrent Survival Machines (DRSM)** builds on the original **DSM**
+**Recurrent Deep Survival Machines (RDSM)** builds on the original **DSM**
 model and allows for learning of representations of the input covariates using
 **Recurrent Neural Networks** like **LSTMs, GRUs**. Deep Recurrent Survival
 Machines is a natural fit to model problems where there are time dependendent
