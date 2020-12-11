@@ -133,7 +133,8 @@ class DeepSurvivalMachinesTorch(nn.Module):
   """
 
   def __init__(self, inputdim, k, layers=None, dist='Weibull',
-               temp=1000., discount=1.0, optimizer='Adam'):
+               temp=1000., discount=1.0, optimizer='Adam',
+               risks=1):
     super(DeepSurvivalMachinesTorch, self).__init__()
 
     self.k = k
@@ -141,19 +142,30 @@ class DeepSurvivalMachinesTorch(nn.Module):
     self.temp = float(temp)
     self.discount = float(discount)
     self.optimizer = optimizer
+    self.risks = risks
 
     if layers is None:
       layers = []
     self.layers = layers
 
-    if self.dist == 'Weibull':
+    if self.dist in ['Weibull']:
       self.act = nn.SELU()
-      self.scale = nn.Parameter(-torch.ones(k))
-      self.shape = nn.Parameter(-torch.ones(k))
-    elif self.dist == 'LogNormal':
+      self.shape = nn.ParameterDict({str(r+1): nn.Parameter(-torch.ones(k))
+                                     for r in range(self.risks)})
+      self.scale = nn.ParameterDict({str(r+1):nn.Parameter(-torch.ones(k))
+                                     for r in range(self.risks)})
+    elif self.dist in ['Normal']:
+      self.act = nn.Identity()
+      self.shape = nn.ParameterDict({str(r+1): nn.Parameter(torch.ones(k))
+                                     for r in range(self.risks)})
+      self.scale = nn.ParameterDict({str(r+1): nn.Parameter(torch.ones(k))
+                                     for r in range(self.risks)})
+    elif self.dist in ['LogNormal']:
       self.act = nn.Tanh()
-      self.scale = nn.Parameter(torch.ones(k))
-      self.shape = nn.Parameter(torch.ones(k))
+      self.shape = nn.ParameterDict({str(r+1): nn.Parameter(torch.ones(k))
+                                     for r in range(self.risks)})
+      self.scale = nn.ParameterDict({str(r+1): nn.Parameter(torch.ones(k))
+                                     for r in range(self.risks)})
     else:
       raise NotImplementedError('Distribution: '+self.dist+' not implemented'+
                                 ' yet.')
@@ -161,15 +173,24 @@ class DeepSurvivalMachinesTorch(nn.Module):
     self.embedding = create_representation(inputdim, layers, 'ReLU6')
 
     if len(layers) == 0:
-      self.gate = nn.Sequential(nn.Linear(inputdim, k, bias=False))
-      self.scaleg = nn.Sequential(nn.Linear(inputdim, k, bias=True))
-      self.shapeg = nn.Sequential(nn.Linear(inputdim, k, bias=True))
+      lastdim = inputdim
     else:
-      self.gate = nn.Sequential(nn.Linear(layers[-1], k, bias=False))
-      self.scaleg = nn.Sequential(nn.Linear(layers[-1], k, bias=True))
-      self.shapeg = nn.Sequential(nn.Linear(layers[-1], k, bias=True))
+      lastdim = layers[-1]
 
-  def forward(self, x):
+    self.gate = nn.ModuleDict({str(r+1): nn.Sequential(
+        nn.Linear(lastdim, k, bias=False)
+        ) for r in range(self.risks)})
+
+    self.scaleg = nn.ModuleDict({str(r+1): nn.Sequential(
+        nn.Linear(lastdim, k, bias=True)
+        ) for r in range(self.risks)})
+
+    self.shapeg = nn.ModuleDict({str(r+1): nn.Sequential(
+        nn.Linear(lastdim, k, bias=True)
+        ) for r in range(self.risks)})
+
+
+  def forward(self, x, risk='1'):
     """The forward function that is called when data is passed through DSM.
 
     Args:
@@ -178,13 +199,14 @@ class DeepSurvivalMachinesTorch(nn.Module):
 
     """
     xrep = self.embedding(x)
-    return(self.act(self.shapeg(xrep))+self.shape.expand(x.shape[0], -1),
-           self.act(self.scaleg(xrep))+self.scale.expand(x.shape[0], -1),
-           self.gate(xrep)/self.temp)
+    dim = x.shape[0]
+    return(self.act(self.shapeg[risk](xrep))+self.shape[risk].expand(dim, -1),
+           self.act(self.scaleg[risk](xrep))+self.scale[risk].expand(dim, -1),
+           self.gate[risk](xrep)/self.temp)
 
-  def get_shape_scale(self):
-    return(self.shape,
-           self.scale)
+  def get_shape_scale(self, risk='1'):
+    return(self.shape[risk],
+           self.scale[risk])
 
 class DeepRecurrentSurvivalMachinesTorch(nn.Module):
   """A Torch implementation of Deep Recurrent Survival Machines model.
@@ -229,7 +251,8 @@ class DeepRecurrentSurvivalMachinesTorch(nn.Module):
 
   def __init__(self, inputdim, k, typ='LSTM', layers=1,
                hidden=None, dist='Weibull',
-               temp=1000., discount=1.0, optimizer='Adam'):
+               temp=1000., discount=1.0,
+               optimizer='Adam', risks=1):
     super(DeepRecurrentSurvivalMachinesTorch, self).__init__()
 
     self.k = k
@@ -240,22 +263,41 @@ class DeepRecurrentSurvivalMachinesTorch(nn.Module):
     self.hidden = hidden
     self.layers = layers
     self.typ = typ
+    self.risks = risks
 
-    if self.dist == 'Weibull':
+    if self.dist in ['Weibull']:
       self.act = nn.SELU()
-      self.scale = nn.Parameter(-torch.ones(k))
-      self.shape = nn.Parameter(-torch.ones(k))
-    elif self.dist == 'LogNormal':
+      self.shape = nn.ParameterDict({str(r+1): nn.Parameter(-torch.ones(k))
+                                     for r in range(self.risks)})
+      self.scale = nn.ParameterDict({str(r+1):nn.Parameter(-torch.ones(k))
+                                     for r in range(self.risks)})
+    elif self.dist in ['Normal']:
+      self.act = nn.Identity()
+      self.shape = nn.ParameterDict({str(r+1): nn.Parameter(torch.ones(k))
+                                     for r in range(self.risks)})
+      self.scale = nn.ParameterDict({str(r+1): nn.Parameter(torch.ones(k))
+                                     for r in range(self.risks)})
+    elif self.dist in ['LogNormal']:
       self.act = nn.Tanh()
-      self.scale = nn.Parameter(torch.ones(k))
-      self.shape = nn.Parameter(torch.ones(k))
+      self.shape = nn.ParameterDict({str(r+1): nn.Parameter(torch.ones(k))
+                                     for r in range(self.risks)})
+      self.scale = nn.ParameterDict({str(r+1): nn.Parameter(torch.ones(k))
+                                     for r in range(self.risks)})
     else:
       raise NotImplementedError('Distribution: '+self.dist+' not implemented'+
                                 ' yet.')
 
-    self.gate = nn.Sequential(nn.Linear(hidden, k, bias=False))
-    self.scaleg = nn.Sequential(nn.Linear(hidden, k, bias=True))
-    self.shapeg = nn.Sequential(nn.Linear(hidden, k, bias=True))
+    self.gate = nn.ModuleDict({str(r+1): nn.Sequential(
+        nn.Linear(hidden, k, bias=False)
+        ) for r in range(self.risks)})
+
+    self.scaleg = nn.ModuleDict({str(r+1): nn.Sequential(
+        nn.Linear(hidden, k, bias=True)
+        ) for r in range(self.risks)})
+
+    self.shapeg = nn.ModuleDict({str(r+1): nn.Sequential(
+        nn.Linear(hidden, k, bias=True)
+        ) for r in range(self.risks)})
 
     if self.typ == 'LSTM':
       self.embedding = nn.LSTM(inputdim, hidden, layers,
@@ -268,7 +310,7 @@ class DeepRecurrentSurvivalMachinesTorch(nn.Module):
       self.embedding = nn.GRU(inputdim, hidden, layers,
                               bias=False, batch_first=True)
 
-  def forward(self, x):
+  def forward(self, x, risk='1'):
     """The forward function that is called when data is passed through DSM.
 
     Note: As compared to DSM, the input data for DRSM is a tensor. The forward
@@ -287,10 +329,11 @@ class DeepRecurrentSurvivalMachinesTorch(nn.Module):
     xrep = xrep.contiguous().view(-1, self.hidden)
     xrep = xrep[inputmask]
     xrep = nn.ReLU6()(xrep)
-    return(self.act(self.shapeg(xrep))+self.shape.expand(xrep.shape[0], -1),
-           self.act(self.scaleg(xrep))+self.scale.expand(xrep.shape[0], -1),
-           self.gate(xrep)/self.temp)
+    dim = xrep.shape[0]
+    return(self.act(self.shapeg[risk](xrep))+self.shape[risk].expand(dim, -1),
+           self.act(self.scaleg[risk](xrep))+self.scale[risk].expand(dim, -1),
+           self.gate[risk](xrep)/self.temp)
 
-  def get_shape_scale(self):
-    return(self.shape,
-           self.scale)
+  def get_shape_scale(self, risk='1'):
+    return(self.shape[risk],
+           self.scale[risk])

@@ -30,6 +30,7 @@ provides a convenient API to train Deep Survival Machines.
 from dsm.dsm_torch import DeepSurvivalMachinesTorch
 from dsm.dsm_torch import DeepRecurrentSurvivalMachinesTorch
 from dsm.losses import predict_cdf
+import dsm.losses as losses
 from dsm.utilities import train_dsm, _get_padded_features, _get_padded_targets
 
 import torch
@@ -52,8 +53,8 @@ class DSMBase():
     self.fitted = False
 
     self.cuda = cuda
-
-  def _gen_torch_model(self, inputdim, optimizer):
+    
+  def _gen_torch_model(self, inputdim, optimizer, risks):
     """Helper function to return a torch model."""
     model = DeepSurvivalMachinesTorch(inputdim,
                                      k=self.k,
@@ -61,8 +62,8 @@ class DSMBase():
                                      dist=self.dist,
                                      temp=self.temp,
                                      discount=self.discount,
-                                     optimizer=optimizer)
-    
+                                     optimizer=optimizer,
+                                     risks=risks)
     if self.cuda:
         model = model.cuda()
     
@@ -108,8 +109,8 @@ class DSMBase():
     x_train, t_train, e_train, x_val, t_val, e_val = processed_data
 
     inputdim = x_train.shape[-1]
-
-    model = self._gen_torch_model(inputdim, optimizer)
+    maxrisk = int(e_train.max())
+    model = self._gen_torch_model(inputdim, optimizer, risks=maxrisk)
     model, _ = train_dsm(model,
                          x_train, t_train, e_train,
                          x_val, t_val, e_val,
@@ -158,8 +159,27 @@ class DSMBase():
     return (x_train, t_train, e_train,
             x_val, t_val, e_val)
 
+  def predict_mean(self, x, risk=1):
+    r"""Returns the mean Time-to-Event \( t \)
 
-  def predict_risk(self, x, t):
+    Parameters
+    ----------
+    x: np.ndarray
+        A numpy array of the input features, \( x \).
+    Returns:
+      np.array: numpy array of the mean time to event.
+
+    """
+
+    if self.fitted:
+      x = self._prepocess_test_data(x)
+      scores = losses.predict_mean(self.torch_model, x, risk=str(risk))
+      return scores
+    else:
+      raise Exception("The model has not been fitted yet. Please fit the " +
+                      "model using the `fit` method on some training data " +
+                      "before calling `predict_mean`.")
+  def predict_risk(self, x, t, risk=1):
     r"""Returns the estimated risk of an event occuring before time \( t \)
       \( \widehat{\mathbb{P}}(T\leq t|X) \) for some input data \( x \).
 
@@ -176,14 +196,14 @@ class DSMBase():
     """
 
     if self.fitted:
-      return 1-self.predict_survival(x, t)
+      return 1-self.predict_survival(x, t, risk=str(risk))
     else:
       raise Exception("The model has not been fitted yet. Please fit the " +
                       "model using the `fit` method on some training data " +
-                      "before calling `predict_survival`.")
+                      "before calling `predict_risk`.")
 
 
-  def predict_survival(self, x, t):
+  def predict_survival(self, x, t, risk=1):
     r"""Returns the estimated survival probability at time \( t \),
       \( \widehat{\mathbb{P}}(T > t|X) \) for some input data \( x \).
 
@@ -202,7 +222,7 @@ class DSMBase():
     if not isinstance(t, list):
       t = [t]
     if self.fitted:
-      scores = predict_cdf(self.torch_model, x, t)
+      scores = predict_cdf(self.torch_model, x, t, risk=str(risk))
       return np.exp(np.array(scores)).T
     else:
       raise Exception("The model has not been fitted yet. Please fit the " +
@@ -273,16 +293,17 @@ class DeepRecurrentSurvivalMachines(DSMBase):
   """
 
   def __init__(self, k=3, layers=None, hidden=None, 
-               distribution='Weibull', temp=1000., discount=1.0, typ='LSTM',
-               cuda=False):
-    super(DeepRecurrentSurvivalMachines, self).__init__(k=k, layers=layers,
+               distribution='Weibull', temp=1000., discount=1.0, typ='LSTM', cuda=False):
+    super(DeepRecurrentSurvivalMachines, self).__init__(k=k,
+                                                        layers=layers,
                                                         distribution=distribution,
-                                                        temp=temp, discount=discount,
+                                                        temp=temp,
+                                                        discount=discount, 
                                                         cuda=cuda)
     self.hidden = hidden
     self.typ = typ
-    
-  def _gen_torch_model(self, inputdim, optimizer):
+
+  def _gen_torch_model(self, inputdim, optimizer, risks):
     """Helper function to return a torch model."""
     model = DeepRecurrentSurvivalMachinesTorch(inputdim,
                                               k=self.k,
@@ -292,10 +313,11 @@ class DeepRecurrentSurvivalMachines(DSMBase):
                                               temp=self.temp,
                                               discount=self.discount,
                                               optimizer=optimizer,
-                                              typ=self.typ)
+                                              typ=self.typ,
+                                              risks=risks)
     if self.cuda:
         model = model.cuda()
-    
+
     return model
 
   def _prepocess_test_data(self, x):
@@ -315,8 +337,6 @@ class DeepRecurrentSurvivalMachines(DSMBase):
     x = _get_padded_features(x)
     t = _get_padded_targets(t)
     e = _get_padded_targets(e)
-
-    print (x.shape)
 
     x_train, t_train, e_train = x[idx], t[idx], e[idx]
 
