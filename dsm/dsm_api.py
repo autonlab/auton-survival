@@ -43,7 +43,7 @@ class DSMBase():
   """Base Class for all DSM models"""
 
   def __init__(self, k=3, layers=None, distribution="Weibull",
-               temp=1000., discount=1.0, cuda = torch.cuda.is_available()):
+               temp=1000., discount=1.0, cuda = False):
     self.k = k
     self.layers = layers
     self.dist = distribution
@@ -274,7 +274,7 @@ class DeepRecurrentSurvivalMachines(DSMBase):
 
   def __init__(self, k=3, layers=None, hidden=None, 
                distribution='Weibull', temp=1000., discount=1.0, typ='LSTM',
-               cuda=torch.cuda.is_available()):
+               cuda=False):
     super(DeepRecurrentSurvivalMachines, self).__init__(k=k, layers=layers,
                                                         distribution=distribution,
                                                         temp=temp, discount=discount,
