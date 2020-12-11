@@ -7,11 +7,10 @@ from dsm import datasets
 import numpy as np
 
 class TestDSM(unittest.TestCase):
-  
   def test_support_dataset(self):
 
     x, t, e = datasets.load_dataset('SUPPORT')
-    median_of_t = np.median(t)
+    t_median = np.median(t[e==1])
 
     self.assertIsInstance(x, np.ndarray)
     self.assertIsInstance(t, np.ndarray)
@@ -26,14 +25,14 @@ class TestDSM(unittest.TestCase):
     model.fit(x, t, e, iters=10)
     self.assertIsInstance(model.torch_model,
                           DeepSurvivalMachinesTorch)
-    risk_factor = model.predict_risk(x,median_of_t)
-    survival_factor = model.predict_survival(x,median_of_t)
-    self.assertEqual((risk_factor+survival_factor).all(), 1)
+    risk_score = model.predict_risk(x, t_median)
+    survival_probability = model.predict_survival(x, t_median)
+    np.testing.assert_equal((risk_score + survival_probability), 1.0)
 
   def test_pbc_dataset(self):
 
     x, t, e = datasets.load_dataset('PBC')
-    median_of_t = np.median(t)
+    t_median = np.median(t[e==1])
     
     self.assertIsInstance(x, np.ndarray)
     self.assertIsInstance(t, np.ndarray)
@@ -48,14 +47,14 @@ class TestDSM(unittest.TestCase):
     model.fit(x, t, e, iters=10)
     self.assertIsInstance(model.torch_model,
                           DeepSurvivalMachinesTorch)
-    risk_factor = model.predict_risk(x,median_of_t)
-    survival_factor = model.predict_survival(x,median_of_t)
-    self.assertEqual((risk_factor+survival_factor).all(), 1)
-
+    risk_score = model.predict_risk(x, t_median)
+    survival_probability = model.predict_survival(x, t_median)
+    np.testing.assert_equal((risk_score + survival_probability), 1.0)
+    
   def test_framingham_dataset(self):
 
     x, t, e = datasets.load_dataset('FRAMINGHAM')
-    median_of_t = np.median(t)
+    t_median = np.median(t[e==1])
     
     self.assertIsInstance(x, np.ndarray)
     self.assertIsInstance(t, np.ndarray)
@@ -70,7 +69,6 @@ class TestDSM(unittest.TestCase):
     model.fit(x, t, e, iters=10)
     self.assertIsInstance(model.torch_model,
                           DeepSurvivalMachinesTorch)
-    risk_factor = model.predict_risk(x,median_of_t)
-    survival_factor = model.predict_survival(x,median_of_t)
-    self.assertEqual((risk_factor+survival_factor).all(), 1)
-
+    risk_score = model.predict_risk(x, t_median)
+    survival_probability = model.predict_survival(x, t_median)
+    np.testing.assert_equal((risk_score + survival_probability), 1.0)
