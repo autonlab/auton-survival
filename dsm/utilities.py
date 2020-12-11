@@ -53,7 +53,8 @@ def pretrain_dsm(model, t_train, e_train, t_valid, e_valid,
                  n_iter=10000, lr=1e-2, thres=1e-4):
 
   premodel = DeepSurvivalMachinesTorch(1, 1,
-                                       dist=model.dist)
+                                       dist=model.dist,
+                                       risks=model.risks)
   premodel.double()
 
   optimizer = torch.optim.Adam(premodel.parameters(), lr=lr)
@@ -64,14 +65,18 @@ def pretrain_dsm(model, t_train, e_train, t_valid, e_valid,
   for _ in tqdm(range(n_iter)):
 
     optimizer.zero_grad()
-    loss = unconditional_loss(premodel, t_train, e_train)
+    loss = 0
+    for r in range(model.risks):
+      loss += unconditional_loss(premodel, t_train, e_train, str(r+1))
     loss.backward()
     optimizer.step()
 
-    valid_loss = unconditional_loss(premodel, t_valid, e_valid)
+    valid_loss = 0
+    for r in range(model.risks): 
+      valid_loss += unconditional_loss(premodel, t_valid, e_valid, str(r+1))
     valid_loss = valid_loss.detach().cpu().numpy()
     costs.append(valid_loss)
-
+    #print(valid_loss)
     if np.abs(costs[-1] - oldcost) < thres:
       patience += 1
       if patience == 3:
@@ -126,8 +131,12 @@ def train_dsm(model,
                           n_iter=10000,
                           lr=1e-2,
                           thres=1e-4)
-  model.shape.data.fill_(float(premodel.shape))
-  model.scale.data.fill_(float(premodel.scale))
+
+  for r in range(model.risks):
+    model.shape[str(r+1)].data.fill_(float(premodel.shape[str(r+1)]))
+    model.scale[str(r+1)].data.fill_(float(premodel.scale[str(r+1)]))
+
+  print(premodel.shape, premodel.scale)
 
   model.double()
   optimizer = torch.optim.Adam(model.parameters(), lr=lr)
@@ -148,20 +157,24 @@ def train_dsm(model,
       eb = e_train[j*bs:(j+1)*bs]
 
       optimizer.zero_grad()
-      loss = conditional_loss(model,
-                              xb,
-                              _reshape_tensor_with_nans(tb),
-                              _reshape_tensor_with_nans(eb),
-                              elbo=elbo)
+      loss = 0
+      for r in range(model.risks):
+        loss += conditional_loss(model,
+                                 xb,
+                                 _reshape_tensor_with_nans(tb),
+                                 _reshape_tensor_with_nans(eb),
+                                 elbo=elbo,
+                                 risk=str(r+1))
       #print ("Train Loss:", float(loss))
       loss.backward()
       optimizer.step()
-
-    valid_loss = conditional_loss(model,
-                                  x_valid,
-                                  t_valid_,
-                                  e_valid_,
-                                  elbo=False)
+      valid_loss = 0
+      for r in range(model.risks):
+        valid_loss += conditional_loss(model,
+                                       x_valid,
+                                       t_valid_,
+                                       e_valid_,
+                                       elbo=False)
 
     valid_loss = valid_loss.detach().cpu().numpy()
     costs.append(float(valid_loss))
