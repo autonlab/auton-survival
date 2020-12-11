@@ -35,6 +35,8 @@ Note: NOT DESIGNED TO BE CALLED DIRECTLY!!!
 
 import torch.nn as nn
 import torch
+import torchvision
+import torch.nn.functional as F
 
 __pdoc__ = {}
 
@@ -330,6 +332,133 @@ class DeepRecurrentSurvivalMachinesTorch(nn.Module):
     xrep = xrep[inputmask]
     xrep = nn.ReLU6()(xrep)
     dim = xrep.shape[0]
+    return(self.act(self.shapeg[risk](xrep))+self.shape[risk].expand(dim, -1),
+           self.act(self.scaleg[risk](xrep))+self.scale[risk].expand(dim, -1),
+           self.gate[risk](xrep)/self.temp)
+
+  def get_shape_scale(self, risk='1'):
+    return(self.shape[risk],
+           self.scale[risk])
+           
+class DeepConvolutionalSurvivalMachinesTorch(nn.Module):
+  """A Torch implementation of Deep Convolutional Survival Machines model.
+
+  This is an implementation of Deep Convolutional Survival Machines model
+  in torch. It inherits from `DeepSurvivalMachinesTorch` and replaces the
+  input representation learning MLP with an simple convnet, the parameters of the
+  underlying distributions and the forward function which is called whenever
+  data is passed to the module. Each of the parameters are nn.Parameters and
+  torch automatically keeps track and computes gradients for them.
+
+  .. warning::
+    Not designed to be used directly.
+    Please use the API inferface `dsm.dsm_api.DeepConvolutionalSurvivalMachines`!!
+
+  Parameters
+  ----------
+  inputdim: int
+      Dimensionality of the input features.
+  k: int
+      The number of underlying parametric distributions.
+  layers: int
+      The number of hidden layers in the LSTM or RNN cell.
+  hidden: int
+      The number of neurons in each hidden layer.
+  init: tuple
+      A tuple for initialization of the parameters for the underlying
+      distributions. (shape, scale).
+  dist: str
+      Choice of the underlying survival distributions.
+      One of 'Weibull', 'LogNormal'.
+      Default is 'Weibull'.
+  temp: float
+      The logits for the gate are rescaled with this value.
+      Default is 1000.
+  discount: float
+      a float in [0,1] that determines how to discount the tail bias
+      from the uncensored instances.
+      Default is 1.
+
+  """
+
+  def __init__(self, inputdim, k, typ='ResNet', layers=1,
+               hidden=None, dist='Weibull',
+               temp=1000., discount=1.0, optimizer='Adam', risks=1):
+    super(DeepConvolutionalSurvivalMachinesTorch, self).__init__()
+
+    self.k = k
+    self.dist = dist
+    self.temp = float(temp)
+    self.discount = float(discount)
+    self.optimizer = optimizer
+    self.hidden = hidden
+    self.layers = layers
+    self.typ = typ
+    self.risks = risks
+
+    if self.dist in ['Weibull']:
+      self.act = nn.SELU()
+      self.shape = nn.ParameterDict({str(r+1): nn.Parameter(-torch.ones(k))
+                                     for r in range(self.risks)})
+      self.scale = nn.ParameterDict({str(r+1):nn.Parameter(-torch.ones(k))
+                                     for r in range(self.risks)})
+    elif self.dist in ['Normal']:
+      self.act = nn.Identity()
+      self.shape = nn.ParameterDict({str(r+1): nn.Parameter(torch.ones(k))
+                                     for r in range(self.risks)})
+      self.scale = nn.ParameterDict({str(r+1): nn.Parameter(torch.ones(k))
+                                     for r in range(self.risks)})
+    elif self.dist in ['LogNormal']:
+      self.act = nn.Tanh()
+      self.shape = nn.ParameterDict({str(r+1): nn.Parameter(torch.ones(k))
+                                     for r in range(self.risks)})
+      self.scale = nn.ParameterDict({str(r+1): nn.Parameter(torch.ones(k))
+                                     for r in range(self.risks)})
+    else:
+      raise NotImplementedError('Distribution: '+self.dist+' not implemented'+
+                                ' yet.')
+
+    self.gate = nn.ModuleDict({str(r+1): nn.Sequential(
+        nn.Linear(hidden, k, bias=False)
+        ) for r in range(self.risks)})
+
+    self.scaleg = nn.ModuleDict({str(r+1): nn.Sequential(
+        nn.Linear(hidden, k, bias=True)
+        ) for r in range(self.risks)})
+
+    self.shapeg = nn.ModuleDict({str(r+1): nn.Sequential(
+        nn.Linear(hidden, k, bias=True)
+        ) for r in range(self.risks)})
+
+    if self.typ == 'ConvNet':
+#         self.cnn = torchvision.models.resnet18(pretrained=True).float()
+#         self.cnn.conv1 = torch.nn.Conv1d(1, 64, (7, 7), (2, 2), (3, 3), bias=False)
+#         self.linear = torch.nn.Linear(1000, hidden)
+        self.conv1 = nn.Conv2d(1, 6, 3)
+        self.pool = nn.MaxPool2d(2, 2)
+        self.conv2 = nn.Conv2d(6, 16, 3)
+        self.fc1 = nn.Linear(16 * 5 * 5, 120)
+        self.fc2 = nn.Linear(120, 84)
+        self.fc3 = nn.Linear(84, hidden)
+
+
+  def forward(self, x, risk='1'):
+    """The forward function that is called when data is passed through DSM.
+
+    Args:
+      x:
+        a torch.tensor of the input features.
+
+    """
+#     xrep = self.linear(self.cnn(x))
+    x = self.pool(F.relu(self.conv1(x)))
+    x = self.pool(F.relu(self.conv2(x)))
+    x = x.view(-1, 16 * 5 * 5)
+    x = F.relu(self.fc1(x))
+    x = F.relu(self.fc2(x))
+    xrep = self.fc3(x)
+    
+    dim = x.shape[0]
     return(self.act(self.shapeg[risk](xrep))+self.shape[risk].expand(dim, -1),
            self.act(self.scaleg[risk](xrep))+self.scale[risk].expand(dim, -1),
            self.gate[risk](xrep)/self.temp)

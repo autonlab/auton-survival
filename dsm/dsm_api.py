@@ -28,7 +28,7 @@ provides a convenient API to train Deep Survival Machines.
 """
 
 from dsm.dsm_torch import DeepSurvivalMachinesTorch
-from dsm.dsm_torch import DeepRecurrentSurvivalMachinesTorch
+from dsm.dsm_torch import DeepRecurrentSurvivalMachinesTorch, DeepConvolutionalSurvivalMachinesTorch
 from dsm.losses import predict_cdf
 import dsm.losses as losses
 from dsm.utilities import train_dsm, _get_padded_features, _get_padded_targets
@@ -66,7 +66,8 @@ class DSMBase():
 
   def fit(self, x, t, e, vsize=0.15,
           iters=1, learning_rate=1e-3, batch_size=100,
-          elbo=True, optimizer="Adam", random_state=100):
+          elbo=True, optimizer="Adam", random_state=100,
+          cuda=False):
 
     r"""This method is used to train an instance of the DSM model.
 
@@ -185,7 +186,7 @@ class DSMBase():
                       "before calling `predict_risk`.")
 
 
-  def predict_survival(self, x, t, risk=1):
+  def predict_survival(self, x, t, risk=1, cuda=False):
     r"""Returns the estimated survival probability at time \( t \),
       \( \widehat{\mathbb{P}}(T > t|X) \) for some input data \( x \).
 
@@ -327,6 +328,31 @@ class DeepRecurrentSurvivalMachines(DSMBase):
             x_val, t_val, e_val)
 
 
-class DeepConvolutionalSurvivalMachines(DeepRecurrentSurvivalMachines):
-  __doc__ = "..warning:: Not Implemented"
-  pass
+class DeepConvolutionalSurvivalMachines(DSMBase):
+  """The Deep Convolutional Survival Machines model to handle data with
+  image-based covariates.
+
+  """
+
+  def __init__(self, k=3, layers=None, hidden=None, 
+               distribution='Weibull', temp=1000., discount=1.0, typ='ConvNet'):
+    super(DeepConvolutionalSurvivalMachines, self).__init__(k=k, 
+                                                            layers=layers,
+                                                            distribution=distribution,
+                                                            temp=temp, 
+                                                            discount=discount)
+    self.hidden = hidden
+    self.typ = typ
+  def _gen_torch_model(self, inputdim, optimizer, risks):
+    """Helper function to return a torch model."""
+    return DeepConvolutionalSurvivalMachinesTorch(inputdim,
+                                              k=self.k,
+                                              layers=self.layers,
+                                              hidden=self.hidden,
+                                              dist=self.dist,
+                                              temp=self.temp,
+                                              discount=self.discount,
+                                              optimizer=optimizer,
+                                              typ=self.typ,
+                                              risks=risks)
+

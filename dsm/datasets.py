@@ -36,6 +36,8 @@ import numpy as np
 from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import StandardScaler
 
+import torchvision
+
 def increase_censoring(e, t, p):
 
   uncens = np.where(e == 1)[0]
@@ -192,6 +194,35 @@ def _load_support_dataset():
   remove = ~np.isnan(t)
   return x[remove], t[remove], e[remove]
 
+def _load_mnist():
+  """Helper function to load and preprocess the MNIST dataset.
+
+  The MNIST database of handwritten digits, available from this page, has a 
+  training set of 60,000 examples, and a test set of 10,000 examples. 
+  It is a good database for people who want to try learning techniques and 
+  pattern recognition methods on real-world data while spending minimal 
+  efforts on preprocessing and formatting [1].
+
+  Please refer to http://yann.lecun.com/exdb/mnist/.
+  for the original datasource.
+
+  References
+  ----------
+  [1]: LeCun, Y. (1998). The MNIST database of handwritten digits. 
+  http://yann.lecun.com/exdb/mnist/.
+
+  """
+
+
+  train = torchvision.datasets.MNIST(root='datasets/', 
+                                     train=True, download=True)
+  x = train.data.numpy()
+  x = np.expand_dims(x, 1).astype(float)
+  t = train.targets.numpy().astype(float) + 1
+  
+  e, t = increase_censoring(np.ones(t.shape), t, p=.5)
+
+  return x, t, e
 
 def load_dataset(dataset='SUPPORT', **kwargs):
   """Helper function to load datasets to test Survival Analysis models.
@@ -249,5 +280,7 @@ def load_dataset(dataset='SUPPORT', **kwargs):
     return _load_pbc_dataset(sequential)
   if dataset == 'FRAMINGHAM':
     return _load_framingham_dataset(sequential)
+  if dataset == 'MNIST':
+    return _load_mnist()
   else:
     raise NotImplementedError('Dataset '+dataset+' not implemented.')

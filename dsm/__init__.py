@@ -181,4 +181,4 @@ user/themes/auton/images/AutonLogo.png">
 
 """
 
-from dsm.dsm_api import DeepSurvivalMachines, DeepRecurrentSurvivalMachines
+from dsm.dsm_api import DeepSurvivalMachines, DeepRecurrentSurvivalMachines, DeepConvolutionalSurvivalMachines
