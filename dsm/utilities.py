@@ -132,8 +132,6 @@ def train_dsm(model,
   model.scale.data.fill_(float(premodel.scale))
 
   model.double()
-  if model.cuda:
-    model = model.cuda()
     
   optimizer = torch.optim.Adam(model.parameters(), lr=lr)
 
