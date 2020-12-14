@@ -274,8 +274,8 @@ class DeepRecurrentSurvivalMachines(DSMBase):
 
   """
 
-  def __init__(self, k=3, layers=None, hidden=None, 
-               distribution='Weibull', temp=1000., discount=1.0, typ='LSTM'):
+  def __init__(self, k=3, layers=None, hidden=None,
+               distribution="Weibull", temp=1000., discount=1.0, typ="LSTM"):
     super(DeepRecurrentSurvivalMachines, self).__init__(k=k,
                                                         layers=layers,
                                                         distribution=distribution,
