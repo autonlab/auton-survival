@@ -9,7 +9,7 @@ os:
 install:
   - pip install -r requirements.txt
   - pip install --upgrade pytest 
-  - pip install --upgrade pylint
+  - pip install pylint==2.5.3
 
 # command to run tests
 script:
