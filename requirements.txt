@@ -3,3 +3,4 @@ numpy>=0.14
 pandas>=1.0.0
 tqdm>=4.0.0
 scikit-learn>=0.18
+torchvision>=0.7.0

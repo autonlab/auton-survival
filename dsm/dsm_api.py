@@ -28,7 +28,8 @@ provides a convenient API to train Deep Survival Machines.
 """
 
 from dsm.dsm_torch import DeepSurvivalMachinesTorch
-from dsm.dsm_torch import DeepRecurrentSurvivalMachinesTorch, DeepConvolutionalSurvivalMachinesTorch
+from dsm.dsm_torch import DeepRecurrentSurvivalMachinesTorch 
+from dsm.dsm_torch import DeepConvolutionalSurvivalMachinesTorch
 from dsm.losses import predict_cdf
 import dsm.losses as losses
 from dsm.utilities import train_dsm, _get_padded_features, _get_padded_targets
@@ -66,8 +67,7 @@ class DSMBase():
 
   def fit(self, x, t, e, vsize=0.15,
           iters=1, learning_rate=1e-3, batch_size=100,
-          elbo=True, optimizer="Adam", random_state=100,
-          cuda=False):
+          elbo=True, optimizer="Adam", random_state=100):
 
     r"""This method is used to train an instance of the DSM model.
 
@@ -186,7 +186,7 @@ class DSMBase():
                       "before calling `predict_risk`.")
 
 
-  def predict_survival(self, x, t, risk=1, cuda=False):
+  def predict_survival(self, x, t, risk=1):
     r"""Returns the estimated survival probability at time \( t \),
       \( \widehat{\mathbb{P}}(T > t|X) \) for some input data \( x \).
 
@@ -336,8 +336,7 @@ class DeepConvolutionalSurvivalMachines(DSMBase):
 
   def __init__(self, k=3, layers=None, hidden=None, 
                distribution='Weibull', temp=1000., discount=1.0, typ='ConvNet'):
-    super(DeepConvolutionalSurvivalMachines, self).__init__(k=k, 
-                                                            layers=layers,
+    super(DeepConvolutionalSurvivalMachines, self).__init__(k=k,
                                                             distribution=distribution,
                                                             temp=temp, 
                                                             discount=discount)
@@ -347,7 +346,6 @@ class DeepConvolutionalSurvivalMachines(DSMBase):
     """Helper function to return a torch model."""
     return DeepConvolutionalSurvivalMachinesTorch(inputdim,
                                               k=self.k,
-                                              layers=self.layers,
                                               hidden=self.hidden,
                                               dist=self.dist,
                                               temp=self.temp,

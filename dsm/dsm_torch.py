@@ -36,7 +36,7 @@ Note: NOT DESIGNED TO BE CALLED DIRECTLY!!!
 import torch.nn as nn
 import torch
 import torchvision
-import torch.nn.functional as F
+import numpy as np
 
 __pdoc__ = {}
 
@@ -339,7 +339,50 @@ class DeepRecurrentSurvivalMachinesTorch(nn.Module):
   def get_shape_scale(self, risk='1'):
     return(self.shape[risk],
            self.scale[risk])
-           
+          
+
+def create_conv_representation(inputdim, hidden, typ='ConvNet'):
+  r"""Helper function to generate the representation function for DSM.
+
+  Deep Survival Machines learns a representation (\ Phi(X) \) for the input
+  data. This representation is parameterized using a Convolutional Neural
+  Network (`torch.nn.Module`). This is a helper function designed to
+  instantiate the representation for Deep Survival Machines.
+
+  .. warning::
+    Not designed to be used directly.
+
+  Parameters
+  ----------
+  inputdim: int
+      Dimensionality of the input features.
+  hidden: int
+      The number of neurons in each hidden layer.
+  typ: str
+      Choice of convolutional neural network: One of 'ConvNet'
+
+  Returns
+  ----------
+  an ConvNet with torch.nn.Module with the specfied structure.
+
+  """
+
+  if typ == 'ConvNet':
+    inputdim = np.squeeze(inputdim)
+    linear_dim = ((((inputdim-2) // 2) - 2) // 2) ** 2 
+    linear_dim *= 16
+    embedding = nn.Sequential(
+      nn.Conv2d(1, 6, 3),
+      nn.MaxPool2d(2, 2),
+      nn.Conv2d(6, 16, 3),
+      nn.MaxPool2d(2, 2),
+      nn.Flatten(),
+      nn.Linear(linear_dim, 120),
+      nn.Linear(120, 84),
+      nn.Linear(84, hidden)
+    )
+  return embedding
+
 class DeepConvolutionalSurvivalMachinesTorch(nn.Module):
   """A Torch implementation of Deep Convolutional Survival Machines model.
 
@@ -357,11 +400,9 @@ class DeepConvolutionalSurvivalMachinesTorch(nn.Module):
   Parameters
   ----------
   inputdim: int
-      Dimensionality of the input features.
+      Dimensionality of the input features. A tuple (height, width).
   k: int
       The number of underlying parametric distributions.
-  layers: int
-      The number of hidden layers in the LSTM or RNN cell.
   hidden: int
       The number of neurons in each hidden layer.
   init: tuple
@@ -381,7 +422,7 @@ class DeepConvolutionalSurvivalMachinesTorch(nn.Module):
 
   """
 
-  def __init__(self, inputdim, k, typ='ResNet', layers=1,
+  def __init__(self, inputdim, k, typ='ConvNet',
                hidden=None, dist='Weibull',
                temp=1000., discount=1.0, optimizer='Adam', risks=1):
     super(DeepConvolutionalSurvivalMachinesTorch, self).__init__()
@@ -392,7 +433,6 @@ class DeepConvolutionalSurvivalMachinesTorch(nn.Module):
     self.discount = float(discount)
     self.optimizer = optimizer
     self.hidden = hidden
-    self.layers = layers
     self.typ = typ
     self.risks = risks
 
@@ -430,17 +470,7 @@ class DeepConvolutionalSurvivalMachinesTorch(nn.Module):
         nn.Linear(hidden, k, bias=True)
         ) for r in range(self.risks)})
 
-    if self.typ == 'ConvNet':
-#         self.cnn = torchvision.models.resnet18(pretrained=True).float()
-#         self.cnn.conv1 = torch.nn.Conv1d(1, 64, (7, 7), (2, 2), (3, 3), bias=False)
-#         self.linear = torch.nn.Linear(1000, hidden)
-        self.conv1 = nn.Conv2d(1, 6, 3)
-        self.pool = nn.MaxPool2d(2, 2)
-        self.conv2 = nn.Conv2d(6, 16, 3)
-        self.fc1 = nn.Linear(16 * 5 * 5, 120)
-        self.fc2 = nn.Linear(120, 84)
-        self.fc3 = nn.Linear(84, hidden)
-
+    self.embedding = create_conv_representation(inputdim=inputdim, hidden=hidden, typ='ConvNet')
 
   def forward(self, x, risk='1'):
     """The forward function that is called when data is passed through DSM.
@@ -450,14 +480,7 @@ class DeepConvolutionalSurvivalMachinesTorch(nn.Module):
         a torch.tensor of the input features.
 
     """
-#     xrep = self.linear(self.cnn(x))
-    x = self.pool(F.relu(self.conv1(x)))
-    x = self.pool(F.relu(self.conv2(x)))
-    x = x.view(-1, 16 * 5 * 5)
-    x = F.relu(self.fc1(x))
-    x = F.relu(self.fc2(x))
-    xrep = self.fc3(x)
-    
+    xrep = self.embedding(x)
     dim = x.shape[0]
     return(self.act(self.shapeg[risk](xrep))+self.shape[risk].expand(dim, -1),
            self.act(self.scaleg[risk](xrep))+self.scale[risk].expand(dim, -1),
