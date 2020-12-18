@@ -29,7 +29,7 @@ for fold in range(cv_folds):
     
 #     model = DeepSurvivalMachines(distribution='Weibull', layers=[100])
     model = DeepConvolutionalSurvivalMachines(distribution='Weibull', hidden=64)
-    model.fit(x_train, t_train, e_train, iters=2, learning_rate=1e-3, batch_size=101)
+    model.fit(x_train, t_train, e_train, iters=1, learning_rate=1e-3, batch_size=2001)
     
     et_train = np.array([(e_train[i], t_train[i]) for i in range(len(e_train))],
                  dtype=[('e', bool), ('t', int)])
