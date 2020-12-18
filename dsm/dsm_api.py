@@ -98,7 +98,7 @@ class DSMBase():
         random seed that determines how the validation set is chosen.
 
     """
-
+    self.training_t = np.sort(np.unique(t)).tolist()
     processed_data = self._prepocess_training_data(x, t, e, vsize,
                                                    random_state)
     x_train, t_train, e_train, x_val, t_val, e_val = processed_data
@@ -161,7 +161,7 @@ class DSMBase():
       raise Exception("The model has not been fitted yet. Please fit the " +
                       "model using the `fit` method on some training data " +
                       "before calling `predict_mean`.")
-  def predict_risk(self, x, t, risk=1):
+  def predict_risk(self, x, t=None, risk=1):
     r"""Returns the estimated risk of an event occuring before time \( t \)
       \( \widehat{\mathbb{P}}(T\leq t|X) \) for some input data \( x \).
 
@@ -172,6 +172,7 @@ class DSMBase():
     t: list or float
         a list or float of the times at which survival probability is
         to be computed
+        If None: evaluate at all available time.
     Returns:
       np.array: numpy array of the risks at each time in t.
 
@@ -185,7 +186,7 @@ class DSMBase():
                       "before calling `predict_risk`.")
 
 
-  def predict_survival(self, x, t, risk=1):
+  def predict_survival(self, x, t=None, risk=1):
     r"""Returns the estimated survival probability at time \( t \),
       \( \widehat{\mathbb{P}}(T > t|X) \) for some input data \( x \).
 
@@ -196,14 +197,18 @@ class DSMBase():
     t: list or float
         a list or float of the times at which survival probability is
         to be computed
+        If None: evaluate at all available time.
     Returns:
       np.array: numpy array of the survival probabilites at each time in t.
 
     """
     x = self._prepocess_test_data(x)
-    if not isinstance(t, list):
-      t = [t]
     if self.fitted:
+      if t is None:
+        t = self.training_t
+      if not isinstance(t, list):
+        t = [t]
+
       scores = predict_cdf(self.torch_model, x, t, risk=str(risk))
       return np.exp(np.array(scores)).T
     else:
