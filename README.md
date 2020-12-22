@@ -34,6 +34,12 @@ underlying event outcome distribution as a mixure of some fixed \( K \)
 parametric distributions. The parameters of these mixture distributions as
 well as the mixing weights are modelled using Neural Networks.
 
+
+Installation
+------------
+
+    $ pip install git+https://github.com/autonlab/DeepSurvivalMachines.git
+
 #### Usage Example
     >>> from dsm import DeepSurvivalMachines
     >>> model = DeepSurvivalMachines()
