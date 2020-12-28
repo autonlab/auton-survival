@@ -116,6 +116,8 @@ class DSMBase():
 
     self.torch_model = model.eval()
     self.fitted = True
+    
+    return self
 
   def _prepocess_test_data(self, x):
     return torch.from_numpy(x)
