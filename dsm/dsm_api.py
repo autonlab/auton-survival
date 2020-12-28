@@ -28,7 +28,7 @@ provides a convenient API to train Deep Survival Machines.
 """
 
 from dsm.dsm_torch import DeepSurvivalMachinesTorch
-from dsm.dsm_torch import DeepRecurrentSurvivalMachinesTorch 
+from dsm.dsm_torch import DeepRecurrentSurvivalMachinesTorch
 from dsm.dsm_torch import DeepConvolutionalSurvivalMachinesTorch
 from dsm.losses import predict_cdf
 import dsm.losses as losses
@@ -353,4 +353,3 @@ class DeepConvolutionalSurvivalMachines(DSMBase):
                                               optimizer=optimizer,
                                               typ=self.typ,
                                               risks=risks)
-
