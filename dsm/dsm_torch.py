@@ -473,7 +473,9 @@ class DeepConvolutionalSurvivalMachinesTorch(nn.Module):
         nn.Linear(hidden, k, bias=True)
         ) for r in range(self.risks)})
 
-    self.embedding = create_conv_representation(inputdim=inputdim, hidden=hidden, typ='ConvNet')
+    self.embedding = create_conv_representation(inputdim=inputdim, 
+                                                hidden=hidden, 
+                                                typ='ConvNet')
 
   def forward(self, x, risk='1'):
     """The forward function that is called when data is passed through DSM.
