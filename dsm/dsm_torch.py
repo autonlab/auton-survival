@@ -339,7 +339,6 @@ class DeepRecurrentSurvivalMachinesTorch(nn.Module):
   def get_shape_scale(self, risk='1'):
     return(self.shape[risk],
            self.scale[risk])
-          
 
 def create_conv_representation(inputdim, hidden, typ='ConvNet'):
   r"""Helper function to generate the representation function for DSM.
