@@ -123,7 +123,8 @@ class DSMBase():
     return torch.from_numpy(x)
 
   def _prepocess_training_data(self, x, t, e, vsize, random_state):
-    assert np.min(t) > 0, "Minimum time should be greater than 0"
+    if np.nanmin(t) <= 0:
+      raise ValueError("Minimum time should be greater than 0")
     
     idx = list(range(x.shape[0]))
     np.random.seed(random_state)
@@ -207,7 +208,8 @@ class DSMBase():
     if not isinstance(t, list):
       t = [t]
       
-    assert np.min(t) > 0, "Minimum time should be greater than 0"
+    if np.nanmin(t) <= 0:
+      raise ValueError("Minimum time should be greater than 0")
     if self.fitted:
       scores = predict_cdf(self.torch_model, x, t, risk=str(risk))
       return np.exp(np.array(scores)).T
@@ -306,7 +308,8 @@ class DeepRecurrentSurvivalMachines(DSMBase):
 
   def _prepocess_training_data(self, x, t, e, vsize, random_state):
     """RNNs require different preprocessing for variable length sequences"""
-    assert np.min(t) > 0, "Minimum time should be greater than 0"
+    if np.nanmin(t) <= 0:
+      raise ValueError("Minimum time should be greater than 0")
     
     idx = list(range(x.shape[0]))
     np.random.seed(random_state)
