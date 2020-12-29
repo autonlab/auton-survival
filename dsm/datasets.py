@@ -219,7 +219,7 @@ def _load_mnist():
   x = train.data.numpy()
   x = np.expand_dims(x, 1).astype(float)
   t = train.targets.numpy().astype(float) + 1
-  
+
   e, t = increase_censoring(np.ones(t.shape), t, p=.5)
 
   return x, t, e

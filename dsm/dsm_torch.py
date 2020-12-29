@@ -391,14 +391,15 @@ class DeepConvolutionalSurvivalMachinesTorch(nn.Module):
 
   This is an implementation of Deep Convolutional Survival Machines model
   in torch. It inherits from `DeepSurvivalMachinesTorch` and replaces the
-  input representation learning MLP with an simple convnet, the parameters of the
-  underlying distributions and the forward function which is called whenever
+  input representation learning MLP with an simple convnet, the parameters of
+  the underlying distributions and the forward function which is called whenever
   data is passed to the module. Each of the parameters are nn.Parameters and
   torch automatically keeps track and computes gradients for them.
 
   .. warning::
     Not designed to be used directly.
-    Please use the API inferface `dsm.dsm_api.DeepConvolutionalSurvivalMachines`!!
+    Please use the API inferface
+    `dsm.dsm_api.DeepConvolutionalSurvivalMachines`!!
 
   Parameters
   ----------
