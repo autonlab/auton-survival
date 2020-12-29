@@ -308,7 +308,7 @@ class DeepRecurrentSurvivalMachines(DSMBase):
 
   def _prepocess_training_data(self, x, t, e, vsize, random_state):
     """RNNs require different preprocessing for variable length sequences"""
-    if np.nanmin(t) <= 0:
+    if np.nanmin([np.nanmin(sub_t) for sub_t in t]) <= 0:
       raise ValueError("Minimum time should be greater than 0")
     
     idx = list(range(x.shape[0]))
