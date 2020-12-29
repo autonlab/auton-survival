@@ -197,10 +197,10 @@ def _load_support_dataset():
 def _load_mnist():
   """Helper function to load and preprocess the MNIST dataset.
 
-  The MNIST database of handwritten digits, available from this page, has a 
-  training set of 60,000 examples, and a test set of 10,000 examples. 
-  It is a good database for people who want to try learning techniques and 
-  pattern recognition methods on real-world data while spending minimal 
+  The MNIST database of handwritten digits, available from this page, has a
+  training set of 60,000 examples, and a test set of 10,000 examples.
+  It is a good database for people who want to try learning techniques and
+  pattern recognition methods on real-world data while spending minimal
   efforts on preprocessing and formatting [1].
 
   Please refer to http://yann.lecun.com/exdb/mnist/.
@@ -208,13 +208,13 @@ def _load_mnist():
 
   References
   ----------
-  [1]: LeCun, Y. (1998). The MNIST database of handwritten digits. 
+  [1]: LeCun, Y. (1998). The MNIST database of handwritten digits.
   http://yann.lecun.com/exdb/mnist/.
 
   """
 
 
-  train = torchvision.datasets.MNIST(root='datasets/', 
+  train = torchvision.datasets.MNIST(root='datasets/',
                                      train=True, download=True)
   x = train.data.numpy()
   x = np.expand_dims(x, 1).astype(float)

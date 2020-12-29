@@ -35,12 +35,11 @@ Note: NOT DESIGNED TO BE CALLED DIRECTLY!!!
 
 import torch.nn as nn
 import torch
-import torchvision
 import numpy as np
 
 __pdoc__ = {}
 
-for clsn in ['DeepSurvivalMachinesTorch', 
+for clsn in ['DeepSurvivalMachinesTorch',
              'DeepRecurrentSurvivalMachinesTorch']:
   for membr in ['training', 'dump_patches']:
 
@@ -368,7 +367,7 @@ def create_conv_representation(inputdim, hidden, typ='ConvNet'):
 
   if typ == 'ConvNet':
     inputdim = np.squeeze(inputdim)
-    linear_dim = ((((inputdim-2) // 2) - 2) // 2) ** 2 
+    linear_dim = ((((inputdim-2) // 2) - 2) // 2) ** 2
     linear_dim *= 16
     embedding = nn.Sequential(
       nn.Conv2d(1, 6, 3),
@@ -474,8 +473,8 @@ class DeepConvolutionalSurvivalMachinesTorch(nn.Module):
         nn.Linear(hidden, k, bias=True)
         ) for r in range(self.risks)})
 
-    self.embedding = create_conv_representation(inputdim=inputdim, 
-                                                hidden=hidden, 
+    self.embedding = create_conv_representation(inputdim=inputdim,
+                                                hidden=hidden,
                                                 typ='ConvNet')
 
   def forward(self, x, risk='1'):
