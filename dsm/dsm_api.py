@@ -32,7 +32,8 @@ from dsm.dsm_torch import DeepRecurrentSurvivalMachinesTorch
 from dsm.dsm_torch import DeepConvolutionalSurvivalMachinesTorch
 from dsm.losses import predict_cdf
 import dsm.losses as losses
-from dsm.utilities import train_dsm, _get_padded_features, _get_padded_targets
+from dsm.utilities import train_dsm, _get_padded_features, _get_padded_targets, \
+    _reshape_tensor_with_nans
 
 import torch
 import numpy as np
@@ -119,6 +120,26 @@ class DSMBase():
     self.fitted = True
     
     return self
+
+  def _eval_conditional_loss(self, x, t, e):
+    """
+        Evaluates models with conditional loss
+    """
+    if not(self.fitted):
+      raise Exception("The model has not been fitted yet. Please fit the " +
+                      "model using the `fit` method on some training data " +
+                      "before calling `eval`.")
+    processed_data = self._prepocess_training_data(x, t, e, 0, 0)
+    _, _, _, x_val, t_val, e_val = processed_data
+    x_val, t_val, e_val = x_val,\
+        _reshape_tensor_with_nans(t_val),\
+        _reshape_tensor_with_nans(e_val)
+    loss = 0
+    for r in range(self.torch_model.risks):
+        loss += float(losses.conditional_loss(self.torch_model,
+                      x_val, t_val, e_val, elbo=False,
+                      risk=str(r+1)).detach().numpy())
+    return loss
 
   def _prepocess_test_data(self, x):
     return torch.from_numpy(x)
