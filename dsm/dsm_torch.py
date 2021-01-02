@@ -35,11 +35,13 @@ Note: NOT DESIGNED TO BE CALLED DIRECTLY!!!
 
 import torch.nn as nn
 import torch
+import numpy as np
 
 __pdoc__ = {}
 
 for clsn in ['DeepSurvivalMachinesTorch',
-             'DeepRecurrentSurvivalMachinesTorch']:
+             'DeepRecurrentSurvivalMachinesTorch',
+             'DeepConvolutionalSurvivalMachines']:
   for membr in ['training', 'dump_patches']:
 
     __pdoc__[clsn+'.'+membr] = False
@@ -330,6 +332,170 @@ class DeepRecurrentSurvivalMachinesTorch(nn.Module):
     xrep = xrep[inputmask]
     xrep = nn.ReLU6()(xrep)
     dim = xrep.shape[0]
+    return(self.act(self.shapeg[risk](xrep))+self.shape[risk].expand(dim, -1),
+           self.act(self.scaleg[risk](xrep))+self.scale[risk].expand(dim, -1),
+           self.gate[risk](xrep)/self.temp)
+
+  def get_shape_scale(self, risk='1'):
+    return(self.shape[risk],
+           self.scale[risk])
+
+def create_conv_representation(inputdim, hidden, typ='ConvNet'):
+  r"""Helper function to generate the representation function for DSM.
+
+  Deep Survival Machines learns a representation (\ Phi(X) \) for the input
+  data. This representation is parameterized using a Convolutional Neural
+  Network (`torch.nn.Module`). This is a helper function designed to
+  instantiate the representation for Deep Survival Machines.
+
+  .. warning::
+    Not designed to be used directly.
+
+  Parameters
+  ----------
+  inputdim: int
+      Dimensionality of the input features.
+  hidden: int
+      The number of neurons in each hidden layer.
+  typ: str
+      Choice of convolutional neural network: One of 'ConvNet'
+
+  Returns
+  ----------
+  an ConvNet with torch.nn.Module with the specfied structure.
+
+  """
+
+  if typ == 'ConvNet':
+    inputdim = np.squeeze(inputdim)
+    linear_dim = ((((inputdim-2) // 2) - 2) // 2) ** 2
+    linear_dim *= 16
+    embedding = nn.Sequential(
+        nn.Conv2d(1, 6, 3),
+        nn.ReLU6(),
+        nn.MaxPool2d(2, 2),
+        nn.Conv2d(6, 16, 3),
+        nn.ReLU6(),
+        nn.MaxPool2d(2, 2),
+        nn.Flatten(),
+        nn.Linear(linear_dim, hidden),
+        nn.ReLU6()
+    )
+
+#   if typ == 'SimpleConvNet':
+#     inputdim = np.squeeze(inputdim)
+
+#         layers.Conv2D(32, kernel_size=(3, 3), activation="relu"),
+#         layers.MaxPooling2D(pool_size=(2, 2)),
+#         layers.Conv2D(64, kernel_size=(3, 3), activation="relu"),
+#         layers.MaxPooling2D(pool_size=(2, 2)),
+#         layers.Flatten(),
+
+
+  return embedding
+
+class DeepConvolutionalSurvivalMachinesTorch(nn.Module):
+  """A Torch implementation of Deep Convolutional Survival Machines model.
+
+  This is an implementation of Deep Convolutional Survival Machines model
+  in torch. It inherits from `DeepSurvivalMachinesTorch` and replaces the
+  input representation learning MLP with an simple convnet, the parameters of
+  the underlying distributions and the forward function which is called whenever
+  data is passed to the module. Each of the parameters are nn.Parameters and
+  torch automatically keeps track and computes gradients for them.
+
+  .. warning::
+    Not designed to be used directly.
+    Please use the API inferface
+    `dsm.dsm_api.DeepConvolutionalSurvivalMachines`!!
+
+  Parameters
+  ----------
+  inputdim: int
+      Dimensionality of the input features. A tuple (height, width).
+  k: int
+      The number of underlying parametric distributions.
+  hidden: int
+      The number of neurons in each hidden layer.
+  init: tuple
+      A tuple for initialization of the parameters for the underlying
+      distributions. (shape, scale).
+  dist: str
+      Choice of the underlying survival distributions.
+      One of 'Weibull', 'LogNormal'.
+      Default is 'Weibull'.
+  temp: float
+      The logits for the gate are rescaled with this value.
+      Default is 1000.
+  discount: float
+      a float in [0,1] that determines how to discount the tail bias
+      from the uncensored instances.
+      Default is 1.
+
+  """
+
+  def __init__(self, inputdim, k, typ='ConvNet',
+               hidden=None, dist='Weibull',
+               temp=1000., discount=1.0, optimizer='Adam', risks=1):
+    super(DeepConvolutionalSurvivalMachinesTorch, self).__init__()
+
+    self.k = k
+    self.dist = dist
+    self.temp = float(temp)
+    self.discount = float(discount)
+    self.optimizer = optimizer
+    self.hidden = hidden
+    self.typ = typ
+    self.risks = risks
+
+    if self.dist in ['Weibull']:
+      self.act = nn.SELU()
+      self.shape = nn.ParameterDict({str(r+1): nn.Parameter(-torch.ones(k))
+                                     for r in range(self.risks)})
+      self.scale = nn.ParameterDict({str(r+1):nn.Parameter(-torch.ones(k))
+                                     for r in range(self.risks)})
+    elif self.dist in ['Normal']:
+      self.act = nn.Identity()
+      self.shape = nn.ParameterDict({str(r+1): nn.Parameter(torch.ones(k))
+                                     for r in range(self.risks)})
+      self.scale = nn.ParameterDict({str(r+1): nn.Parameter(torch.ones(k))
+                                     for r in range(self.risks)})
+    elif self.dist in ['LogNormal']:
+      self.act = nn.Tanh()
+      self.shape = nn.ParameterDict({str(r+1): nn.Parameter(torch.ones(k))
+                                     for r in range(self.risks)})
+      self.scale = nn.ParameterDict({str(r+1): nn.Parameter(torch.ones(k))
+                                     for r in range(self.risks)})
+    else:
+      raise NotImplementedError('Distribution: '+self.dist+' not implemented'+
+                                ' yet.')
+
+    self.gate = nn.ModuleDict({str(r+1): nn.Sequential(
+        nn.Linear(hidden, k, bias=False)
+        ) for r in range(self.risks)})
+
+    self.scaleg = nn.ModuleDict({str(r+1): nn.Sequential(
+        nn.Linear(hidden, k, bias=True)
+        ) for r in range(self.risks)})
+
+    self.shapeg = nn.ModuleDict({str(r+1): nn.Sequential(
+        nn.Linear(hidden, k, bias=True)
+        ) for r in range(self.risks)})
+
+    self.embedding = create_conv_representation(inputdim=inputdim,
+                                                hidden=hidden,
+                                                typ='ConvNet')
+
+  def forward(self, x, risk='1'):
+    """The forward function that is called when data is passed through DSM.
+
+    Args:
+      x:
+        a torch.tensor of the input features.
+
+    """
+    xrep = self.embedding(x)
+    dim = x.shape[0]
     return(self.act(self.shapeg[risk](xrep))+self.shape[risk].expand(dim, -1),
            self.act(self.scaleg[risk](xrep))+self.scale[risk].expand(dim, -1),
            self.gate[risk](xrep)/self.temp)
