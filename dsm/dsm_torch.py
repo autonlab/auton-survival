@@ -154,7 +154,7 @@ class DeepSurvivalMachinesTorch(nn.Module):
       self.act = nn.SELU()
       self.shape = nn.ParameterDict({str(r+1): nn.Parameter(-torch.ones(k))
                                      for r in range(self.risks)})
-      self.scale = nn.ParameterDict({str(r+1):nn.Parameter(-torch.ones(k))
+      self.scale = nn.ParameterDict({str(r+1): nn.Parameter(-torch.ones(k))
                                      for r in range(self.risks)})
     elif self.dist in ['Normal']:
       self.act = nn.Identity()
@@ -271,7 +271,7 @@ class DeepRecurrentSurvivalMachinesTorch(nn.Module):
       self.act = nn.SELU()
       self.shape = nn.ParameterDict({str(r+1): nn.Parameter(-torch.ones(k))
                                      for r in range(self.risks)})
-      self.scale = nn.ParameterDict({str(r+1):nn.Parameter(-torch.ones(k))
+      self.scale = nn.ParameterDict({str(r+1): nn.Parameter(-torch.ones(k))
                                      for r in range(self.risks)})
     elif self.dist in ['Normal']:
       self.act = nn.Identity()
