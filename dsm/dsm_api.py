@@ -338,7 +338,7 @@ class DeepConvolutionalSurvivalMachines(DSMBase):
                distribution='Weibull', temp=1000., discount=1.0, typ='ConvNet'):
     super(DeepConvolutionalSurvivalMachines, self).__init__(k=k,
                                                             distribution=distribution,
-                                                            temp=temp, 
+                                                            temp=temp,
                                                             discount=discount)
     self.hidden = hidden
     self.typ = typ

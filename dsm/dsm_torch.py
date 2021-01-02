@@ -40,7 +40,8 @@ import numpy as np
 __pdoc__ = {}
 
 for clsn in ['DeepSurvivalMachinesTorch',
-             'DeepRecurrentSurvivalMachinesTorch']:
+             'DeepRecurrentSurvivalMachinesTorch',
+             'DeepConvolutionalSurvivalMachines']:
   for membr in ['training', 'dump_patches']:
 
     __pdoc__[clsn+'.'+membr] = False
@@ -370,19 +371,27 @@ def create_conv_representation(inputdim, hidden, typ='ConvNet'):
     linear_dim = ((((inputdim-2) // 2) - 2) // 2) ** 2
     linear_dim *= 16
     embedding = nn.Sequential(
-      nn.Conv2d(1, 6, 3),
-      nn.ReLU(),
-      nn.MaxPool2d(2, 2),
-      nn.Conv2d(6, 16, 3),
-      nn.ReLU(),
-      nn.MaxPool2d(2, 2),
-      nn.Flatten(),
-      nn.Linear(linear_dim, 120),
-      nn.ReLU(),
-      nn.Linear(120, 84),
-      nn.ReLU(),
-      nn.Linear(84, hidden)
+        nn.Conv2d(1, 6, 3),
+        nn.ReLU6(),
+        nn.MaxPool2d(2, 2),
+        nn.Conv2d(6, 16, 3),
+        nn.ReLU6(),
+        nn.MaxPool2d(2, 2),
+        nn.Flatten(),
+        nn.Linear(linear_dim, hidden),
+        nn.ReLU6()
     )
+
+#   if typ == 'SimpleConvNet':
+#     inputdim = np.squeeze(inputdim)
+
+#         layers.Conv2D(32, kernel_size=(3, 3), activation="relu"),
+#         layers.MaxPooling2D(pool_size=(2, 2)),
+#         layers.Conv2D(64, kernel_size=(3, 3), activation="relu"),
+#         layers.MaxPooling2D(pool_size=(2, 2)),
+#         layers.Flatten(),
+
+
   return embedding
 
 class DeepConvolutionalSurvivalMachinesTorch(nn.Module):
