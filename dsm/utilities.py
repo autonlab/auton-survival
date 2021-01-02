@@ -174,7 +174,8 @@ def train_dsm(model,
                                        x_valid,
                                        t_valid_,
                                        e_valid_,
-                                       elbo=False)
+                                       elbo=False,
+                                       risk=str(r+1))
 
     valid_loss = valid_loss.detach().cpu().numpy()
     costs.append(float(valid_loss))
