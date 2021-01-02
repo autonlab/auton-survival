@@ -61,6 +61,31 @@ instantiate the representation for Deep Survival Machines.</p>
 <h2 id="returns">Returns</h2>
 <p>an MLP with torch.nn.Module with the specfied structure.</p></div>
 </dd>
+<dt id="dsm.dsm_torch.create_conv_representation"><code class="name flex">
+<span>def <span class="ident">create_conv_representation</span></span>(<span>inputdim, hidden, typ='ConvNet')</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper function to generate the representation function for DSM.</p>
+<p>Deep Survival Machines learns a representation (\ Phi(X) ) for the input
+data. This representation is parameterized using a Convolutional Neural
+Network (<code>torch.nn.Module</code>). This is a helper function designed to
+instantiate the representation for Deep Survival Machines.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Not designed to be used directly.</p>
+</div>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>inputdim</code></strong> :&ensp;<code>int</code></dt>
+<dd>Dimensionality of the input features.</dd>
+<dt><strong><code>hidden</code></strong> :&ensp;<code>int</code></dt>
+<dd>The number of neurons in each hidden layer.</dd>
+<dt><strong><code>typ</code></strong> :&ensp;<code>str</code></dt>
+<dd>Choice of convolutional neural network: One of 'ConvNet'</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>an ConvNet with torch.nn.Module with the specfied structure.</p></div>
+</dd>
 </dl>
 </section>
 <section>
@@ -68,7 +93,7 @@ instantiate the representation for Deep Survival Machines.</p>
 <dl>
 <dt id="dsm.dsm_torch.DeepSurvivalMachinesTorch"><code class="flex name class">
 <span>class <span class="ident">DeepSurvivalMachinesTorch</span></span>
-<span>(</span><span>inputdim, k, layers=None, dist='Weibull', temp=1000.0, discount=1.0, optimizer='Adam')</span>
+<span>(</span><span>inputdim, k, layers=None, dist='Weibull', temp=1000.0, discount=1.0, optimizer='Adam', risks=1)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>A Torch implementation of Deep Survival Machines model.</p>
@@ -115,7 +140,7 @@ Default is 1.</dd>
 <h3>Methods</h3>
 <dl>
 <dt id="dsm.dsm_torch.DeepSurvivalMachinesTorch.forward"><code class="name flex">
-<span>def <span class="ident">forward</span></span>(<span>self, x) ‑> Callable[..., Any]</span>
+<span>def <span class="ident">forward</span></span>(<span>self, x, risk='1') ‑> Callable[..., Any]</span>
 </code></dt>
 <dd>
 <div class="desc"><p>The forward function that is called when data is passed through DSM.</p>
@@ -124,7 +149,7 @@ Default is 1.</dd>
 a torch.tensor of the input features.</p></div>
 </dd>
 <dt id="dsm.dsm_torch.DeepSurvivalMachinesTorch.get_shape_scale"><code class="name flex">
-<span>def <span class="ident">get_shape_scale</span></span>(<span>self)</span>
+<span>def <span class="ident">get_shape_scale</span></span>(<span>self, risk='1')</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -133,7 +158,7 @@ a torch.tensor of the input features.</p></div>
 </dd>
 <dt id="dsm.dsm_torch.DeepRecurrentSurvivalMachinesTorch"><code class="flex name class">
 <span>class <span class="ident">DeepRecurrentSurvivalMachinesTorch</span></span>
-<span>(</span><span>inputdim, k, typ='LSTM', layers=1, hidden=None, dist='Weibull', temp=1000.0, discount=1.0, optimizer='Adam')</span>
+<span>(</span><span>inputdim, k, typ='LSTM', layers=1, hidden=None, dist='Weibull', temp=1000.0, discount=1.0, optimizer='Adam', risks=1)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>A Torch implementation of Deep Recurrent Survival Machines model.</p>
@@ -177,7 +202,7 @@ Default is 1.</dd>
 <h3>Methods</h3>
 <dl>
 <dt id="dsm.dsm_torch.DeepRecurrentSurvivalMachinesTorch.forward"><code class="name flex">
-<span>def <span class="ident">forward</span></span>(<span>self, x) ‑> Callable[..., Any]</span>
+<span>def <span class="ident">forward</span></span>(<span>self, x, risk='1') ‑> Callable[..., Any]</span>
 </code></dt>
 <dd>
 <div class="desc"><p>The forward function that is called when data is passed through DSM.</p>
@@ -189,7 +214,79 @@ DSM loss functions.</p>
 a torch.tensor of the input features.</p></div>
 </dd>
 <dt id="dsm.dsm_torch.DeepRecurrentSurvivalMachinesTorch.get_shape_scale"><code class="name flex">
-<span>def <span class="ident">get_shape_scale</span></span>(<span>self)</span>
+<span>def <span class="ident">get_shape_scale</span></span>(<span>self, risk='1')</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="dsm.dsm_torch.DeepConvolutionalSurvivalMachinesTorch"><code class="flex name class">
+<span>class <span class="ident">DeepConvolutionalSurvivalMachinesTorch</span></span>
+<span>(</span><span>inputdim, k, typ='ConvNet', hidden=None, dist='Weibull', temp=1000.0, discount=1.0, optimizer='Adam', risks=1)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>A Torch implementation of Deep Convolutional Survival Machines model.</p>
+<p>This is an implementation of Deep Convolutional Survival Machines model
+in torch. It inherits from <code><a title="dsm.dsm_torch.DeepSurvivalMachinesTorch" href="#dsm.dsm_torch.DeepSurvivalMachinesTorch">DeepSurvivalMachinesTorch</a></code> and replaces the
+input representation learning MLP with an simple convnet, the parameters of
+the underlying distributions and the forward function which is called whenever
+data is passed to the module. Each of the parameters are nn.Parameters and
+torch automatically keeps track and computes gradients for them.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Not designed to be used directly.
+Please use the API inferface
+<code><a title="dsm.dsm_api.DeepConvolutionalSurvivalMachines" href="dsm_api.html#dsm.dsm_api.DeepConvolutionalSurvivalMachines">DeepConvolutionalSurvivalMachines</a></code>!!</p>
+</div>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>inputdim</code></strong> :&ensp;<code>int</code></dt>
+<dd>Dimensionality of the input features. A tuple (height, width).</dd>
+<dt><strong><code>k</code></strong> :&ensp;<code>int</code></dt>
+<dd>The number of underlying parametric distributions.</dd>
+<dt><strong><code>hidden</code></strong> :&ensp;<code>int</code></dt>
+<dd>The number of neurons in each hidden layer.</dd>
+<dt><strong><code>init</code></strong> :&ensp;<code>tuple</code></dt>
+<dd>A tuple for initialization of the parameters for the underlying
+distributions. (shape, scale).</dd>
+<dt><strong><code>dist</code></strong> :&ensp;<code>str</code></dt>
+<dd>Choice of the underlying survival distributions.
+One of 'Weibull', 'LogNormal'.
+Default is 'Weibull'.</dd>
+<dt><strong><code>temp</code></strong> :&ensp;<code>float</code></dt>
+<dd>The logits for the gate are rescaled with this value.
+Default is 1000.</dd>
+<dt><strong><code>discount</code></strong> :&ensp;<code>float</code></dt>
+<dd>a float in [0,1] that determines how to discount the tail bias
+from the uncensored instances.
+Default is 1.</dd>
+</dl>
+<p>Initializes internal Module state, shared by both nn.Module and ScriptModule.</p></div>
+<h3>Class variables</h3>
+<dl>
+<dt id="dsm.dsm_torch.DeepConvolutionalSurvivalMachinesTorch.dump_patches"><code class="name">var <span class="ident">dump_patches</span> : bool</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="dsm.dsm_torch.DeepConvolutionalSurvivalMachinesTorch.training"><code class="name">var <span class="ident">training</span> : bool</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="dsm.dsm_torch.DeepConvolutionalSurvivalMachinesTorch.forward"><code class="name flex">
+<span>def <span class="ident">forward</span></span>(<span>self, x, risk='1') ‑> Callable[..., Any]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>The forward function that is called when data is passed through DSM.</p>
+<h2 id="args">Args</h2>
+<p>x:
+a torch.tensor of the input features.</p></div>
+</dd>
+<dt id="dsm.dsm_torch.DeepConvolutionalSurvivalMachinesTorch.get_shape_scale"><code class="name flex">
+<span>def <span class="ident">get_shape_scale</span></span>(<span>self, risk='1')</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -213,6 +310,7 @@ a torch.tensor of the input features.</p></div>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
 <li><code><a title="dsm.dsm_torch.create_representation" href="#dsm.dsm_torch.create_representation">create_representation</a></code></li>
+<li><code><a title="dsm.dsm_torch.create_conv_representation" href="#dsm.dsm_torch.create_conv_representation">create_conv_representation</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-classes">Classes</a></h3>
@@ -229,6 +327,15 @@ a torch.tensor of the input features.</p></div>
 <ul class="">
 <li><code><a title="dsm.dsm_torch.DeepRecurrentSurvivalMachinesTorch.forward" href="#dsm.dsm_torch.DeepRecurrentSurvivalMachinesTorch.forward">forward</a></code></li>
 <li><code><a title="dsm.dsm_torch.DeepRecurrentSurvivalMachinesTorch.get_shape_scale" href="#dsm.dsm_torch.DeepRecurrentSurvivalMachinesTorch.get_shape_scale">get_shape_scale</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="dsm.dsm_torch.DeepConvolutionalSurvivalMachinesTorch" href="#dsm.dsm_torch.DeepConvolutionalSurvivalMachinesTorch">DeepConvolutionalSurvivalMachinesTorch</a></code></h4>
+<ul class="">
+<li><code><a title="dsm.dsm_torch.DeepConvolutionalSurvivalMachinesTorch.forward" href="#dsm.dsm_torch.DeepConvolutionalSurvivalMachinesTorch.forward">forward</a></code></li>
+<li><code><a title="dsm.dsm_torch.DeepConvolutionalSurvivalMachinesTorch.get_shape_scale" href="#dsm.dsm_torch.DeepConvolutionalSurvivalMachinesTorch.get_shape_scale">get_shape_scale</a></code></li>
+<li><code><a title="dsm.dsm_torch.DeepConvolutionalSurvivalMachinesTorch.dump_patches" href="#dsm.dsm_torch.DeepConvolutionalSurvivalMachinesTorch.dump_patches">dump_patches</a></code></li>
+<li><code><a title="dsm.dsm_torch.DeepConvolutionalSurvivalMachinesTorch.training" href="#dsm.dsm_torch.DeepConvolutionalSurvivalMachinesTorch.training">training</a></code></li>
 </ul>
 </li>
 </ul>

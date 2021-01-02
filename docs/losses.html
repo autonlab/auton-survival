@@ -44,19 +44,25 @@ These losses are optimized when training DSM.</p>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="dsm.losses.unconditional_loss"><code class="name flex">
-<span>def <span class="ident">unconditional_loss</span></span>(<span>model, t, e)</span>
+<span>def <span class="ident">unconditional_loss</span></span>(<span>model, t, e, risk='1')</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
 <dt id="dsm.losses.conditional_loss"><code class="name flex">
-<span>def <span class="ident">conditional_loss</span></span>(<span>model, x, t, e, elbo=True)</span>
+<span>def <span class="ident">conditional_loss</span></span>(<span>model, x, t, e, elbo=True, risk='1')</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="dsm.losses.predict_mean"><code class="name flex">
+<span>def <span class="ident">predict_mean</span></span>(<span>model, x, risk='1')</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
 <dt id="dsm.losses.predict_cdf"><code class="name flex">
-<span>def <span class="ident">predict_cdf</span></span>(<span>model, x, t_horizon)</span>
+<span>def <span class="ident">predict_cdf</span></span>(<span>model, x, t_horizon, risk='1')</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -81,6 +87,7 @@ These losses are optimized when training DSM.</p>
 <ul class="">
 <li><code><a title="dsm.losses.unconditional_loss" href="#dsm.losses.unconditional_loss">unconditional_loss</a></code></li>
 <li><code><a title="dsm.losses.conditional_loss" href="#dsm.losses.conditional_loss">conditional_loss</a></code></li>
+<li><code><a title="dsm.losses.predict_mean" href="#dsm.losses.predict_mean">predict_mean</a></code></li>
 <li><code><a title="dsm.losses.predict_cdf" href="#dsm.losses.predict_cdf">predict_cdf</a></code></li>
 </ul>
 </li>
