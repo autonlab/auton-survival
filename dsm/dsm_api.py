@@ -31,7 +31,8 @@ from dsm.dsm_torch import DeepSurvivalMachinesTorch
 from dsm.dsm_torch import DeepRecurrentSurvivalMachinesTorch
 from dsm.losses import predict_cdf
 import dsm.losses as losses
-from dsm.utilities import train_dsm, _get_padded_features, _get_padded_targets, _reshape_tensor_with_nans
+from dsm.utilities import train_dsm, _get_padded_features, _get_padded_targets,\
+  _reshape_tensor_with_nans
 
 import torch
 import numpy as np
@@ -119,7 +120,7 @@ class DSMBase():
     
     return self
   
-  def eval(self, x, t, e):
+  def _eval_conditional_loss(self, x, t, e):
     """
         Evaluates models with conditional loss
     """
