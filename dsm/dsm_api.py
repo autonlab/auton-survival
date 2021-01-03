@@ -121,7 +121,7 @@ class DSMBase():
     
     return self
 
-  def _eval_conditional_loss(self, x, t, e):
+  def _eval_nll(self, x, t, e):
     """
         Evaluates models with conditional loss
     """
