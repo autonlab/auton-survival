@@ -30,8 +30,9 @@ provides a convenient API to train Deep Survival Machines.
 from dsm.dsm_torch import DeepSurvivalMachinesTorch
 from dsm.dsm_torch import DeepRecurrentSurvivalMachinesTorch
 from dsm.dsm_torch import DeepConvolutionalSurvivalMachinesTorch
-from dsm.losses import predict_cdf
+
 import dsm.losses as losses
+
 from dsm.utilities import train_dsm
 from dsm.utilities import _get_padded_features, _get_padded_targets
 from dsm.utilities import _reshape_tensor_with_nans
@@ -40,8 +41,10 @@ import torch
 import numpy as np
 
 __pdoc__ = {}
-__pdoc__["DSMBase"] = False
 __pdoc__["DeepSurvivalMachines.fit"] = True
+__pdoc__["DeepSurvivalMachines._eval_nll"] = True
+__pdoc__["DeepConvolutionalSurvivalMachines._eval_nll"] = True
+__pdoc__["DSMBase"] = False
 
 
 class DSMBase():
@@ -120,9 +123,10 @@ class DSMBase():
     self.torch_model = model.eval()
     self.fitted = True
     
-    return self
+    return self    
 
-  def _eval_nll(self, x, t, e):
+
+  def compute_nll(self, x, t, e):
     r"""This function computes the negative log likelihood of the given data.
     In case of competing risks, the negative log likelihoods are summed over
     the different events' type.
@@ -243,7 +247,7 @@ class DSMBase():
     if not isinstance(t, list):
       t = [t]
     if self.fitted:
-      scores = predict_cdf(self.torch_model, x, t, risk=str(risk))
+      scores = losses.predict_cdf(self.torch_model, x, t, risk=str(risk))
       return np.exp(np.array(scores)).T
     else:
       raise Exception("The model has not been fitted yet. Please fit the " +
