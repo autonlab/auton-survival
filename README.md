@@ -6,6 +6,8 @@ Python package `dsm` provides an API to train the Deep Survival Machines
 and associated models for problems in survival analysis. The underlying model
 is implemented in `pytorch`.
 
+For full documentation of the module, please see https://autonlab.github.io/DeepSurvivalMachines/
+
 What is Survival Analysis?
 ------------------------
 
