@@ -110,7 +110,7 @@ class DSMBase():
     x_train, t_train, e_train, x_val, t_val, e_val = processed_data
 
     inputdim = x_train.shape[-1]
-    maxrisk = int(e_train.max())
+    maxrisk = int(np.nanmax(e_train.cpu().numpy()))
     model = self._gen_torch_model(inputdim, optimizer, risks=maxrisk)
     model, _ = train_dsm(model,
                          x_train, t_train, e_train,
