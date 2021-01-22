@@ -75,15 +75,15 @@ Fully Parametric Survival Regression and
 Representation Learning for Censored Data with Competing Risks. (2021)](https://arxiv.org/abs/2003.01176)</a>
 
 ```
-@article{nagpal2021deep,
-  author={C. {Nagpal} and X. R. {Li} and A. {Dubrawski}},
-  journal={IEEE Journal of Biomedical and Health Informatics}, 
-  title={Deep Survival Machines: Fully Parametric Survival Regression and Representation Learning for Censored Data with Competing Risks}, 
-  year={2021},
-  volume={},
-  number={},
-  pages={1-1},
-  doi={10.1109/JBHI.2021.3052441}}
+  @article{nagpal2021deep,
+    author={C. {Nagpal} and X. R. {Li} and A. {Dubrawski}},
+    journal={IEEE Journal of Biomedical and Health Informatics}, 
+    title={Deep Survival Machines: Fully Parametric Survival Regression and Representation Learning for Censored Data with Competing Risks}, 
+    year={2021},
+    volume={},
+    number={},
+    pages={1-1},
+    doi={10.1109/JBHI.2021.3052441}}
 ```
 
 Compatibility
