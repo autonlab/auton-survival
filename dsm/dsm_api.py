@@ -174,15 +174,22 @@ class DSMBase():
     t_train = torch.from_numpy(t_train).double()
     e_train = torch.from_numpy(e_train).double()
 
-    vsize = int(vsize*x_train.shape[0])
+    if vsize is not None:
 
-    x_val, t_val, e_val = x_train[-vsize:], t_train[-vsize:], e_train[-vsize:]
-    x_train = x_train[:-vsize]
-    t_train = t_train[:-vsize]
-    e_train = e_train[:-vsize]
+      vsize = int(vsize*x_train.shape[0])
 
-    return (x_train, t_train, e_train,
-            x_val, t_val, e_val)
+      x_val, t_val, e_val = x_train[-vsize:], t_train[-vsize:], e_train[-vsize:]
+      x_train = x_train[:-vsize]
+      t_train = t_train[:-vsize]
+      e_train = e_train[:-vsize]
+
+      return (x_train, t_train, e_train,
+              x_val, t_val, e_val)
+
+    else:
+      return (x_train, t_train, e_train,
+              x_train, t_train, e_train)
+
 
   def predict_mean(self, x, risk=1):
     r"""Returns the mean Time-to-Event \( t \)
@@ -359,15 +366,20 @@ class DeepRecurrentSurvivalMachines(DSMBase):
     t_train = torch.from_numpy(t_train).double()
     e_train = torch.from_numpy(e_train).double()
 
-    vsize = int(vsize*x_train.shape[0])
-    x_val, t_val, e_val = x_train[-vsize:], t_train[-vsize:], e_train[-vsize:]
+    if vsize is not None:
 
-    x_train = x_train[:-vsize]
-    t_train = t_train[:-vsize]
-    e_train = e_train[:-vsize]
+      vsize = int(vsize*x_train.shape[0])
+      x_val, t_val, e_val = x_train[-vsize:], t_train[-vsize:], e_train[-vsize:]
 
-    return (x_train, t_train, e_train,
-            x_val, t_val, e_val)
+      x_train = x_train[:-vsize]
+      t_train = t_train[:-vsize]
+      e_train = e_train[:-vsize]
+
+      return (x_train, t_train, e_train,
+              x_val, t_val, e_val)
+    else:
+      return (x_train, t_train, e_train,
+              x_train, t_train, e_train)
 
 
 class DeepConvolutionalSurvivalMachines(DSMBase):
