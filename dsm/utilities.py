@@ -132,6 +132,10 @@ def train_dsm(model,
                           lr=1e-2,
                           thres=1e-4)
 
+  if model.cuda:
+    x_valid, t_valid_, e_valid_ = x_valid.cuda(),\
+                t_valid_.cuda(), e_valid_.cuda()
+
   for r in range(model.risks):
     model.shape[str(r+1)].data.fill_(float(premodel.shape[str(r+1)]))
     model.scale[str(r+1)].data.fill_(float(premodel.scale[str(r+1)]))
@@ -155,6 +159,9 @@ def train_dsm(model,
       xb = x_train[j*bs:(j+1)*bs]
       tb = t_train[j*bs:(j+1)*bs]
       eb = e_train[j*bs:(j+1)*bs]
+
+      if model.cuda:
+        xb, tb, eb = xb.cuda(), tb.cuda(), eb.cuda()
 
       optimizer.zero_grad()
       loss = 0
