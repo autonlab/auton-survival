@@ -340,12 +340,14 @@ class DeepRecurrentSurvivalMachines(DSMBase):
   """
 
   def __init__(self, k=3, layers=None, hidden=None,
-               distribution="Weibull", temp=1000., discount=1.0, typ="LSTM"):
+               distribution="Weibull", temp=1000., discount=1.0, typ="LSTM",
+               cuda=False):
     super(DeepRecurrentSurvivalMachines, self).__init__(k=k,
                                                         layers=layers,
                                                         distribution=distribution,
                                                         temp=temp,
-                                                        discount=discount)
+                                                        discount=discount,
+                                                        cuda=cuda)
     self.hidden = hidden
     self.typ = typ
   def _gen_torch_model(self, inputdim, optimizer, risks):
@@ -412,11 +414,13 @@ class DeepConvolutionalSurvivalMachines(DSMBase):
   """
 
   def __init__(self, k=3, layers=None, hidden=None, 
-               distribution='Weibull', temp=1000., discount=1.0, typ='ConvNet'):
+               distribution='Weibull', temp=1000., discount=1.0, typ='ConvNet',
+               cuda=False):
     super(DeepConvolutionalSurvivalMachines, self).__init__(k=k,
                                                             distribution=distribution,
                                                             temp=temp,
-                                                            discount=discount)
+                                                            discount=discount,
+                                                            cuda=cuda)
     self.hidden = hidden
     self.typ = typ
   def _gen_torch_model(self, inputdim, optimizer, risks):
