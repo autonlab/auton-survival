@@ -51,7 +51,7 @@ class DSMBase():
   """Base Class for all DSM models"""
 
   def __init__(self, k=3, layers=None, distribution="Weibull",
-               temp=1000., discount=1.0):
+               temp=1000., discount=1.0, cuda=False):
     self.k = k
     self.layers = layers
     self.dist = distribution
@@ -59,7 +59,8 @@ class DSMBase():
     self.discount = discount
     self.fitted = False
     
-    self.cuda = True
+    self.cuda = cuda
+    self.torch_model = None
 
   def _gen_torch_model(self, inputdim, optimizer, risks):
     """Helper function to return a torch model."""
@@ -77,7 +78,8 @@ class DSMBase():
 
   def cpu(self):
     self.cuda = False
-    self.torch_model = self.torch_model.cpu()
+    if self.torch_model:
+      self.torch_model = self.torch_model.cpu()
     return self
 
   def fit(self, x, t, e, vsize=0.15,
@@ -128,7 +130,8 @@ class DSMBase():
                          n_iter=iters,
                          lr=learning_rate,
                          elbo=elbo,
-                         bs=batch_size)
+                         bs=batch_size,
+                         cuda=self.cuda)
 
     self.torch_model = model.eval()
     self.fitted = True

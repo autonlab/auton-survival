@@ -112,7 +112,7 @@ def train_dsm(model,
               x_train, t_train, e_train,
               x_valid, t_valid, e_valid,
               n_iter=10000, lr=1e-3, elbo=True,
-              bs=100):
+              bs=100, cuda=False):
   """Function to train the torch instance of the model."""
 
   logging.info('Pretraining the Underlying Distributions...')
@@ -132,7 +132,7 @@ def train_dsm(model,
                           lr=1e-2,
                           thres=1e-4)
 
-  if model.cuda:
+  if cuda:
     x_valid, t_valid_, e_valid_ = x_valid.cuda(),\
                 t_valid_.cuda(), e_valid_.cuda()
 
@@ -160,7 +160,7 @@ def train_dsm(model,
       tb = t_train[j*bs:(j+1)*bs]
       eb = e_train[j*bs:(j+1)*bs]
 
-      if model.cuda:
+      if cuda:
         xb, tb, eb = xb.cuda(), tb.cuda(), eb.cuda()
 
       optimizer.zero_grad()
