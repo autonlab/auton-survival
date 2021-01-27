@@ -166,6 +166,10 @@ class DSMBase():
     x_val, t_val, e_val = x_val,\
         _reshape_tensor_with_nans(t_val),\
         _reshape_tensor_with_nans(e_val)
+
+    if self.cuda:
+      x_val, t_val, e_val = x_val.cuda(), t_val.cuda(), e_val.cuda()
+
     loss = 0
     for r in range(self.torch_model.risks):
         loss += float(losses.conditional_loss(self.torch_model,
