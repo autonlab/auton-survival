@@ -1,6 +1,6 @@
 """This module contains test functions to
 test the accuracy of Deep Survival Machines
-models on standard datasets.
+models on certain standard datasets.
 """
 import unittest
 
