@@ -30,6 +30,7 @@ provides a convenient API to train Deep Survival Machines.
 from dsm.dsm_torch import DeepSurvivalMachinesTorch
 from dsm.dsm_torch import DeepRecurrentSurvivalMachinesTorch
 from dsm.dsm_torch import DeepConvolutionalSurvivalMachinesTorch
+from dsm.dsm_torch import DeepCNNRNNSurvivalMachinesTorch
 
 import dsm.losses as losses
 
@@ -109,7 +110,13 @@ class DSMBase():
                                                    random_state)
     x_train, t_train, e_train, x_val, t_val, e_val = processed_data
 
-    inputdim = x_train.shape[-1]
+    #Todo: Change this somehow. The base design shouldn't depend on child
+    if type(self).__name__ in ["DeepConvolutionalSurvivalMachines",
+                               "DeepCNNRNNSurvivalMachines"]:
+      inputdim = tuple(x_train.shape)[-2:]
+    else:
+      inputdim = x_train.shape[-1]
+
     maxrisk = int(np.nanmax(e_train.cpu().numpy()))
     model = self._gen_torch_model(inputdim, optimizer, risks=maxrisk)
     model, _ = train_dsm(model,
@@ -122,7 +129,7 @@ class DSMBase():
 
     self.torch_model = model.eval()
     self.fitted = True
-    
+
     return self    
 
 
@@ -140,11 +147,11 @@ class DSMBase():
     e: np.ndarray
         A numpy array of the event/censoring indicators, \( \delta \).
         \( \delta = r \) means the event r took place.
-    
+
     Returns:
       float: Negative log likelihood.
     """
-    if not(self.fitted):
+    if not self.fitted:
       raise Exception("The model has not been fitted yet. Please fit the " +
                       "model using the `fit` method on some training data " +
                       "before calling `_eval_nll`.")
@@ -155,9 +162,9 @@ class DSMBase():
         _reshape_tensor_with_nans(e_val)
     loss = 0
     for r in range(self.torch_model.risks):
-        loss += float(losses.conditional_loss(self.torch_model,
-                      x_val, t_val, e_val, elbo=False,
-                      risk=str(r+1)).detach().numpy())
+      loss += float(losses.conditional_loss(self.torch_model,
+                    x_val, t_val, e_val, elbo=False,
+                    risk=str(r+1)).detach().numpy())
     return loss
 
   def _prepocess_test_data(self, x):
@@ -369,6 +376,7 @@ class DeepRecurrentSurvivalMachines(DSMBase):
     if vsize is not None:
 
       vsize = int(vsize*x_train.shape[0])
+
       x_val, t_val, e_val = x_train[-vsize:], t_train[-vsize:], e_train[-vsize:]
 
       x_train = x_train[:-vsize]
@@ -389,7 +397,7 @@ class DeepConvolutionalSurvivalMachines(DSMBase):
   """
 
   def __init__(self, k=3, layers=None, hidden=None, 
-               distribution='Weibull', temp=1000., discount=1.0, typ='ConvNet'):
+               distribution="Weibull", temp=1000., discount=1.0, typ="ConvNet"):
     super(DeepConvolutionalSurvivalMachines, self).__init__(k=k,
                                                             distribution=distribution,
                                                             temp=temp,
@@ -399,11 +407,44 @@ class DeepConvolutionalSurvivalMachines(DSMBase):
   def _gen_torch_model(self, inputdim, optimizer, risks):
     """Helper function to return a torch model."""
     return DeepConvolutionalSurvivalMachinesTorch(inputdim,
-                                              k=self.k,
-                                              hidden=self.hidden,
-                                              dist=self.dist,
-                                              temp=self.temp,
-                                              discount=self.discount,
-                                              optimizer=optimizer,
-                                              typ=self.typ,
-                                              risks=risks)
+                                                  k=self.k,
+                                                  hidden=self.hidden,
+                                                  dist=self.dist,
+                                                  temp=self.temp,
+                                                  discount=self.discount,
+                                                  optimizer=optimizer,
+                                                  typ=self.typ,
+                                                  risks=risks)
+
+
+class DeepCNNRNNSurvivalMachines(DeepRecurrentSurvivalMachines):
+
+  """The Deep CNN-RNN Survival Machines model to handle data with
+  moving image streams.
+
+  """
+
+  def __init__(self, k=3, layers=None, hidden=None,
+               distribution="Weibull", temp=1000., discount=1.0, typ="LSTM"):
+    super(DeepCNNRNNSurvivalMachines, self).__init__(k=k,
+                                                     layers=layers,
+                                                     distribution=distribution,
+                                                     temp=temp,
+                                                     discount=discount)
+    self.hidden = hidden
+    self.typ = typ
+
+  def _gen_torch_model(self, inputdim, optimizer, risks):
+    """Helper function to return a torch model."""
+    return DeepCNNRNNSurvivalMachinesTorch(inputdim,
+                                           k=self.k,
+                                           layers=self.layers,
+                                           hidden=self.hidden,
+                                           dist=self.dist,
+                                           temp=self.temp,
+                                           discount=self.discount,
+                                           optimizer=optimizer,
+                                           typ=self.typ,
+                                           risks=risks)
+
+

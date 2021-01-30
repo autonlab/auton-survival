@@ -90,6 +90,8 @@ def create_representation(inputdim, layers, activation):
 
   return nn.Sequential(*modules)
 
+
+
 class DeepSurvivalMachinesTorch(nn.Module):
   """A Torch implementation of Deep Survival Machines model.
 
@@ -134,6 +136,42 @@ class DeepSurvivalMachinesTorch(nn.Module):
 
   """
 
+  def _init_dsm_layers(self, lastdim):
+
+    if self.dist in ['Weibull']:
+      self.act = nn.SELU()
+      self.shape = nn.ParameterDict({str(r+1): nn.Parameter(-torch.ones(self.k))
+                                     for r in range(self.risks)})
+      self.scale = nn.ParameterDict({str(r+1): nn.Parameter(-torch.ones(self.k))
+                                     for r in range(self.risks)})
+    elif self.dist in ['Normal']:
+      self.act = nn.Identity()
+      self.shape = nn.ParameterDict({str(r+1): nn.Parameter(torch.ones(self.k))
+                                     for r in range(self.risks)})
+      self.scale = nn.ParameterDict({str(r+1): nn.Parameter(torch.ones(self.k))
+                                     for r in range(self.risks)})
+    elif self.dist in ['LogNormal']:
+      self.act = nn.Tanh()
+      self.shape = nn.ParameterDict({str(r+1): nn.Parameter(torch.ones(self.k))
+                                     for r in range(self.risks)})
+      self.scale = nn.ParameterDict({str(r+1): nn.Parameter(torch.ones(self.k))
+                                     for r in range(self.risks)})
+    else:
+      raise NotImplementedError('Distribution: '+self.dist+' not implemented'+
+                                ' yet.')
+
+    self.gate = nn.ModuleDict({str(r+1): nn.Sequential(
+        nn.Linear(lastdim, self.k, bias=False)
+        ) for r in range(self.risks)})
+
+    self.scaleg = nn.ModuleDict({str(r+1): nn.Sequential(
+        nn.Linear(lastdim, self.k, bias=True)
+        ) for r in range(self.risks)})
+
+    self.shapeg = nn.ModuleDict({str(r+1): nn.Sequential(
+        nn.Linear(lastdim, self.k, bias=True)
+        ) for r in range(self.risks)})
+
   def __init__(self, inputdim, k, layers=None, dist='Weibull',
                temp=1000., discount=1.0, optimizer='Adam',
                risks=1):
@@ -150,27 +188,27 @@ class DeepSurvivalMachinesTorch(nn.Module):
       layers = []
     self.layers = layers
 
-    if self.dist in ['Weibull']:
-      self.act = nn.SELU()
-      self.shape = nn.ParameterDict({str(r+1): nn.Parameter(-torch.ones(k))
-                                     for r in range(self.risks)})
-      self.scale = nn.ParameterDict({str(r+1): nn.Parameter(-torch.ones(k))
-                                     for r in range(self.risks)})
-    elif self.dist in ['Normal']:
-      self.act = nn.Identity()
-      self.shape = nn.ParameterDict({str(r+1): nn.Parameter(torch.ones(k))
-                                     for r in range(self.risks)})
-      self.scale = nn.ParameterDict({str(r+1): nn.Parameter(torch.ones(k))
-                                     for r in range(self.risks)})
-    elif self.dist in ['LogNormal']:
-      self.act = nn.Tanh()
-      self.shape = nn.ParameterDict({str(r+1): nn.Parameter(torch.ones(k))
-                                     for r in range(self.risks)})
-      self.scale = nn.ParameterDict({str(r+1): nn.Parameter(torch.ones(k))
-                                     for r in range(self.risks)})
-    else:
-      raise NotImplementedError('Distribution: '+self.dist+' not implemented'+
-                                ' yet.')
+    # if self.dist in ['Weibull']:
+    #   self.act = nn.SELU()
+    #   self.shape = nn.ParameterDict({str(r+1): nn.Parameter(-torch.ones(k))
+    #                                  for r in range(self.risks)})
+    #   self.scale = nn.ParameterDict({str(r+1): nn.Parameter(-torch.ones(k))
+    #                                  for r in range(self.risks)})
+    # elif self.dist in ['Normal']:
+    #   self.act = nn.Identity()
+    #   self.shape = nn.ParameterDict({str(r+1): nn.Parameter(torch.ones(k))
+    #                                  for r in range(self.risks)})
+    #   self.scale = nn.ParameterDict({str(r+1): nn.Parameter(torch.ones(k))
+    #                                  for r in range(self.risks)})
+    # elif self.dist in ['LogNormal']:
+    #   self.act = nn.Tanh()
+    #   self.shape = nn.ParameterDict({str(r+1): nn.Parameter(torch.ones(k))
+    #                                  for r in range(self.risks)})
+    #   self.scale = nn.ParameterDict({str(r+1): nn.Parameter(torch.ones(k))
+    #                                  for r in range(self.risks)})
+    # else:
+    #   raise NotImplementedError('Distribution: '+self.dist+' not implemented'+
+    #                             ' yet.')
 
     self.embedding = create_representation(inputdim, layers, 'ReLU6')
 
@@ -179,18 +217,19 @@ class DeepSurvivalMachinesTorch(nn.Module):
     else:
       lastdim = layers[-1]
 
-    self.gate = nn.ModuleDict({str(r+1): nn.Sequential(
-        nn.Linear(lastdim, k, bias=False)
-        ) for r in range(self.risks)})
+    # self.gate = nn.ModuleDict({str(r+1): nn.Sequential(
+    #     nn.Linear(lastdim, k, bias=False)
+    #     ) for r in range(self.risks)})
 
-    self.scaleg = nn.ModuleDict({str(r+1): nn.Sequential(
-        nn.Linear(lastdim, k, bias=True)
-        ) for r in range(self.risks)})
+    # self.scaleg = nn.ModuleDict({str(r+1): nn.Sequential(
+    #     nn.Linear(lastdim, k, bias=True)
+    #     ) for r in range(self.risks)})
 
-    self.shapeg = nn.ModuleDict({str(r+1): nn.Sequential(
-        nn.Linear(lastdim, k, bias=True)
-        ) for r in range(self.risks)})
+    # self.shapeg = nn.ModuleDict({str(r+1): nn.Sequential(
+    #     nn.Linear(lastdim, k, bias=True)
+    #     ) for r in range(self.risks)})
 
+    self._init_dsm_layers(lastdim)
 
   def forward(self, x, risk='1'):
     """The forward function that is called when data is passed through DSM.
@@ -210,7 +249,7 @@ class DeepSurvivalMachinesTorch(nn.Module):
     return(self.shape[risk],
            self.scale[risk])
 
-class DeepRecurrentSurvivalMachinesTorch(nn.Module):
+class DeepRecurrentSurvivalMachinesTorch(DeepSurvivalMachinesTorch):
   """A Torch implementation of Deep Recurrent Survival Machines model.
 
   This is an implementation of Deep Recurrent Survival Machines model
@@ -255,7 +294,7 @@ class DeepRecurrentSurvivalMachinesTorch(nn.Module):
                hidden=None, dist='Weibull',
                temp=1000., discount=1.0,
                optimizer='Adam', risks=1):
-    super(DeepRecurrentSurvivalMachinesTorch, self).__init__()
+    super(DeepSurvivalMachinesTorch, self).__init__()
 
     self.k = k
     self.dist = dist
@@ -267,39 +306,41 @@ class DeepRecurrentSurvivalMachinesTorch(nn.Module):
     self.typ = typ
     self.risks = risks
 
-    if self.dist in ['Weibull']:
-      self.act = nn.SELU()
-      self.shape = nn.ParameterDict({str(r+1): nn.Parameter(-torch.ones(k))
-                                     for r in range(self.risks)})
-      self.scale = nn.ParameterDict({str(r+1): nn.Parameter(-torch.ones(k))
-                                     for r in range(self.risks)})
-    elif self.dist in ['Normal']:
-      self.act = nn.Identity()
-      self.shape = nn.ParameterDict({str(r+1): nn.Parameter(torch.ones(k))
-                                     for r in range(self.risks)})
-      self.scale = nn.ParameterDict({str(r+1): nn.Parameter(torch.ones(k))
-                                     for r in range(self.risks)})
-    elif self.dist in ['LogNormal']:
-      self.act = nn.Tanh()
-      self.shape = nn.ParameterDict({str(r+1): nn.Parameter(torch.ones(k))
-                                     for r in range(self.risks)})
-      self.scale = nn.ParameterDict({str(r+1): nn.Parameter(torch.ones(k))
-                                     for r in range(self.risks)})
-    else:
-      raise NotImplementedError('Distribution: '+self.dist+' not implemented'+
-                                ' yet.')
+    self._init_dsm_layers(hidden)
 
-    self.gate = nn.ModuleDict({str(r+1): nn.Sequential(
-        nn.Linear(hidden, k, bias=False)
-        ) for r in range(self.risks)})
+    # if self.dist in ['Weibull']:
+    #   self.act = nn.SELU()
+    #   self.shape = nn.ParameterDict({str(r+1): nn.Parameter(-torch.ones(k))
+    #                                  for r in range(self.risks)})
+    #   self.scale = nn.ParameterDict({str(r+1): nn.Parameter(-torch.ones(k))
+    #                                  for r in range(self.risks)})
+    # elif self.dist in ['Normal']:
+    #   self.act = nn.Identity()
+    #   self.shape = nn.ParameterDict({str(r+1): nn.Parameter(torch.ones(k))
+    #                                  for r in range(self.risks)})
+    #   self.scale = nn.ParameterDict({str(r+1): nn.Parameter(torch.ones(k))
+    #                                  for r in range(self.risks)})
+    # elif self.dist in ['LogNormal']:
+    #   self.act = nn.Tanh()
+    #   self.shape = nn.ParameterDict({str(r+1): nn.Parameter(torch.ones(k))
+    #                                  for r in range(self.risks)})
+    #   self.scale = nn.ParameterDict({str(r+1): nn.Parameter(torch.ones(k))
+    #                                  for r in range(self.risks)})
+    # else:
+    #   raise NotImplementedError('Distribution: '+self.dist+' not implemented'+
+    #                             ' yet.')
 
-    self.scaleg = nn.ModuleDict({str(r+1): nn.Sequential(
-        nn.Linear(hidden, k, bias=True)
-        ) for r in range(self.risks)})
+    # self.gate = nn.ModuleDict({str(r+1): nn.Sequential(
+    #     nn.Linear(hidden, k, bias=False)
+    #     ) for r in range(self.risks)})
 
-    self.shapeg = nn.ModuleDict({str(r+1): nn.Sequential(
-        nn.Linear(hidden, k, bias=True)
-        ) for r in range(self.risks)})
+    # self.scaleg = nn.ModuleDict({str(r+1): nn.Sequential(
+    #     nn.Linear(hidden, k, bias=True)
+    #     ) for r in range(self.risks)})
+
+    # self.shapeg = nn.ModuleDict({str(r+1): nn.Sequential(
+    #     nn.Linear(hidden, k, bias=True)
+    #     ) for r in range(self.risks)})
 
     if self.typ == 'LSTM':
       self.embedding = nn.LSTM(inputdim, hidden, layers,
@@ -324,14 +365,18 @@ class DeepRecurrentSurvivalMachinesTorch(nn.Module):
         a torch.tensor of the input features.
 
     """
+
     x = x.detach().clone()
     inputmask = ~torch.isnan(x[:, :, 0]).reshape(-1)
     x[torch.isnan(x)] = 0
+
     xrep, _ = self.embedding(x)
     xrep = xrep.contiguous().view(-1, self.hidden)
     xrep = xrep[inputmask]
     xrep = nn.ReLU6()(xrep)
+
     dim = xrep.shape[0]
+    
     return(self.act(self.shapeg[risk](xrep))+self.shape[risk].expand(dim, -1),
            self.act(self.scaleg[risk](xrep))+self.scale[risk].expand(dim, -1),
            self.gate[risk](xrep)/self.temp)
@@ -340,7 +385,8 @@ class DeepRecurrentSurvivalMachinesTorch(nn.Module):
     return(self.shape[risk],
            self.scale[risk])
 
-def create_conv_representation(inputdim, hidden, typ='ConvNet'):
+def create_conv_representation(inputdim, hidden,
+                               typ='ConvNet', add_linear=True):
   r"""Helper function to generate the representation function for DSM.
 
   Deep Survival Machines learns a representation (\ Phi(X) \) for the input
@@ -353,8 +399,8 @@ def create_conv_representation(inputdim, hidden, typ='ConvNet'):
 
   Parameters
   ----------
-  inputdim: int
-      Dimensionality of the input features.
+  inputdim: tuple
+      Dimensionality of the input image.
   hidden: int
       The number of neurons in each hidden layer.
   typ: str
@@ -367,9 +413,7 @@ def create_conv_representation(inputdim, hidden, typ='ConvNet'):
   """
 
   if typ == 'ConvNet':
-    inputdim = np.squeeze(inputdim)
-    linear_dim = ((((inputdim-2) // 2) - 2) // 2) ** 2
-    linear_dim *= 16
+
     embedding = nn.Sequential(
         nn.Conv2d(1, 6, 3),
         nn.ReLU6(),
@@ -378,23 +422,21 @@ def create_conv_representation(inputdim, hidden, typ='ConvNet'):
         nn.ReLU6(),
         nn.MaxPool2d(2, 2),
         nn.Flatten(),
-        nn.Linear(linear_dim, hidden),
-        nn.ReLU6()
+        nn.ReLU6(),
     )
 
-#   if typ == 'SimpleConvNet':
-#     inputdim = np.squeeze(inputdim)
+  if add_linear:
 
-#         layers.Conv2D(32, kernel_size=(3, 3), activation="relu"),
-#         layers.MaxPooling2D(pool_size=(2, 2)),
-#         layers.Conv2D(64, kernel_size=(3, 3), activation="relu"),
-#         layers.MaxPooling2D(pool_size=(2, 2)),
-#         layers.Flatten(),
+    dummyx = torch.ones((10, 1) + inputdim)
+    dummyout = embedding.forward(dummyx)
+    outshape = dummyout.shape
 
+    embedding.add_module('linear', torch.nn.Linear(outshape[-1], hidden))
+    embedding.add_module('act', torch.nn.ReLU6())
 
   return embedding
 
-class DeepConvolutionalSurvivalMachinesTorch(nn.Module):
+class DeepConvolutionalSurvivalMachinesTorch(DeepSurvivalMachinesTorch):
   """A Torch implementation of Deep Convolutional Survival Machines model.
 
   This is an implementation of Deep Convolutional Survival Machines model
@@ -411,7 +453,7 @@ class DeepConvolutionalSurvivalMachinesTorch(nn.Module):
 
   Parameters
   ----------
-  inputdim: int
+  inputdim: tuple
       Dimensionality of the input features. A tuple (height, width).
   k: int
       The number of underlying parametric distributions.
@@ -437,7 +479,7 @@ class DeepConvolutionalSurvivalMachinesTorch(nn.Module):
   def __init__(self, inputdim, k, typ='ConvNet',
                hidden=None, dist='Weibull',
                temp=1000., discount=1.0, optimizer='Adam', risks=1):
-    super(DeepConvolutionalSurvivalMachinesTorch, self).__init__()
+    super(DeepSurvivalMachinesTorch, self).__init__()
 
     self.k = k
     self.dist = dist
@@ -448,39 +490,41 @@ class DeepConvolutionalSurvivalMachinesTorch(nn.Module):
     self.typ = typ
     self.risks = risks
 
-    if self.dist in ['Weibull']:
-      self.act = nn.SELU()
-      self.shape = nn.ParameterDict({str(r+1): nn.Parameter(-torch.ones(k))
-                                     for r in range(self.risks)})
-      self.scale = nn.ParameterDict({str(r+1):nn.Parameter(-torch.ones(k))
-                                     for r in range(self.risks)})
-    elif self.dist in ['Normal']:
-      self.act = nn.Identity()
-      self.shape = nn.ParameterDict({str(r+1): nn.Parameter(torch.ones(k))
-                                     for r in range(self.risks)})
-      self.scale = nn.ParameterDict({str(r+1): nn.Parameter(torch.ones(k))
-                                     for r in range(self.risks)})
-    elif self.dist in ['LogNormal']:
-      self.act = nn.Tanh()
-      self.shape = nn.ParameterDict({str(r+1): nn.Parameter(torch.ones(k))
-                                     for r in range(self.risks)})
-      self.scale = nn.ParameterDict({str(r+1): nn.Parameter(torch.ones(k))
-                                     for r in range(self.risks)})
-    else:
-      raise NotImplementedError('Distribution: '+self.dist+' not implemented'+
-                                ' yet.')
+    self._init_dsm_layers(hidden)
 
-    self.gate = nn.ModuleDict({str(r+1): nn.Sequential(
-        nn.Linear(hidden, k, bias=False)
-        ) for r in range(self.risks)})
+    # if self.dist in ['Weibull']:
+    #   self.act = nn.SELU()
+    #   self.shape = nn.ParameterDict({str(r+1): nn.Parameter(-torch.ones(k))
+    #                                  for r in range(self.risks)})
+    #   self.scale = nn.ParameterDict({str(r+1): nn.Parameter(-torch.ones(k))
+    #                                  for r in range(self.risks)})
+    # elif self.dist in ['Normal']:
+    #   self.act = nn.Identity()
+    #   self.shape = nn.ParameterDict({str(r+1): nn.Parameter(torch.ones(k))
+    #                                  for r in range(self.risks)})
+    #   self.scale = nn.ParameterDict({str(r+1): nn.Parameter(torch.ones(k))
+    #                                  for r in range(self.risks)})
+    # elif self.dist in ['LogNormal']:
+    #   self.act = nn.Tanh()
+    #   self.shape = nn.ParameterDict({str(r+1): nn.Parameter(torch.ones(k))
+    #                                  for r in range(self.risks)})
+    #   self.scale = nn.ParameterDict({str(r+1): nn.Parameter(torch.ones(k))
+    #                                  for r in range(self.risks)})
+    # else:
+    #   raise NotImplementedError('Distribution: '+self.dist+' not implemented'+
+    #                             ' yet.')
 
-    self.scaleg = nn.ModuleDict({str(r+1): nn.Sequential(
-        nn.Linear(hidden, k, bias=True)
-        ) for r in range(self.risks)})
+    # self.gate = nn.ModuleDict({str(r+1): nn.Sequential(
+    #     nn.Linear(hidden, k, bias=False)
+    #     ) for r in range(self.risks)})
 
-    self.shapeg = nn.ModuleDict({str(r+1): nn.Sequential(
-        nn.Linear(hidden, k, bias=True)
-        ) for r in range(self.risks)})
+    # self.scaleg = nn.ModuleDict({str(r+1): nn.Sequential(
+    #     nn.Linear(hidden, k, bias=True)
+    #     ) for r in range(self.risks)})
+
+    # self.shapeg = nn.ModuleDict({str(r+1): nn.Sequential(
+    #     nn.Linear(hidden, k, bias=True)
+    #     ) for r in range(self.risks)})
 
     self.embedding = create_conv_representation(inputdim=inputdim,
                                                 hidden=hidden,
@@ -495,7 +539,152 @@ class DeepConvolutionalSurvivalMachinesTorch(nn.Module):
 
     """
     xrep = self.embedding(x)
+
     dim = x.shape[0]
+    return(self.act(self.shapeg[risk](xrep))+self.shape[risk].expand(dim, -1),
+           self.act(self.scaleg[risk](xrep))+self.scale[risk].expand(dim, -1),
+           self.gate[risk](xrep)/self.temp)
+
+  def get_shape_scale(self, risk='1'):
+    return(self.shape[risk],
+           self.scale[risk])
+
+
+class DeepCNNRNNSurvivalMachinesTorch(DeepRecurrentSurvivalMachinesTorch):
+  """A Torch implementation of Deep CNN Recurrent Survival Machines model.
+
+  This is an implementation of Deep Recurrent Survival Machines model
+  in torch. It inherits from `DeepSurvivalMachinesTorch` and replaces the
+  input representation learning MLP with an LSTM or RNN, the parameters of the
+  underlying distributions and the forward function which is called whenever
+  data is passed to the module. Each of the parameters are nn.Parameters and
+  torch automatically keeps track and computes gradients for them.
+
+  .. warning::
+    Not designed to be used directly.
+    Please use the API inferface `dsm.dsm_api.DeepCNNRNNSurvivalMachines`!!
+
+  Parameters
+  ----------
+  inputdim: int
+      Dimensionality of the input features.
+  k: int
+      The number of underlying parametric distributions.
+  layers: int
+      The number of hidden layers in the LSTM or RNN cell.
+  hidden: int
+      The number of neurons in each hidden layer.
+  init: tuple
+      A tuple for initialization of the parameters for the underlying
+      distributions. (shape, scale).
+  dist: str
+      Choice of the underlying survival distributions.
+      One of 'Weibull', 'LogNormal'.
+      Default is 'Weibull'.
+  temp: float
+      The logits for the gate are rescaled with this value.
+      Default is 1000.
+  discount: float
+      a float in [0,1] that determines how to discount the tail bias
+      from the uncensored instances.
+      Default is 1.
+
+  """
+
+  def __init__(self, inputdim, k, typ='LSTM', layers=1,
+               hidden=None, dist='Weibull',
+               temp=1000., discount=1.0,
+               optimizer='Adam', risks=1):
+    super(DeepSurvivalMachinesTorch, self).__init__()
+
+    self.k = k
+    self.dist = dist
+    self.temp = float(temp)
+    self.discount = float(discount)
+    self.optimizer = optimizer
+    self.hidden = hidden
+    self.layers = layers
+    self.typ = typ
+    self.risks = risks
+
+    self._init_dsm_layers(hidden)
+
+    # if self.dist in ['Weibull']:
+    #   self.act = nn.SELU()
+    #   self.shape = nn.ParameterDict({str(r+1): nn.Parameter(-torch.ones(k))
+    #                                  for r in range(self.risks)})
+    #   self.scale = nn.ParameterDict({str(r+1): nn.Parameter(-torch.ones(k))
+    #                                  for r in range(self.risks)})
+    # elif self.dist in ['Normal']:
+    #   self.act = nn.Identity()
+    #   self.shape = nn.ParameterDict({str(r+1): nn.Parameter(torch.ones(k))
+    #                                  for r in range(self.risks)})
+    #   self.scale = nn.ParameterDict({str(r+1): nn.Parameter(torch.ones(k))
+    #                                  for r in range(self.risks)})
+    # elif self.dist in ['LogNormal']:
+    #   self.act = nn.Tanh()
+    #   self.shape = nn.ParameterDict({str(r+1): nn.Parameter(torch.ones(k))
+    #                                  for r in range(self.risks)})
+    #   self.scale = nn.ParameterDict({str(r+1): nn.Parameter(torch.ones(k))
+    #                                  for r in range(self.risks)})
+    # else:
+    #   raise NotImplementedError('Distribution: '+self.dist+' not implemented'+
+    #                             ' yet.')
+
+    # self.gate = nn.ModuleDict({str(r+1): nn.Sequential(
+    #     nn.Linear(hidden, k, bias=False)
+    #     ) for r in range(self.risks)})
+
+    # self.scaleg = nn.ModuleDict({str(r+1): nn.Sequential(
+    #     nn.Linear(hidden, k, bias=True)
+    #     ) for r in range(self.risks)})
+
+    # self.shapeg = nn.ModuleDict({str(r+1): nn.Sequential(
+    #     nn.Linear(hidden, k, bias=True)
+    #     ) for r in range(self.risks)})
+
+    if self.typ == 'LSTM':
+      self.embedding = nn.LSTM(inputdim, hidden, layers,
+                               bias=False, batch_first=True)
+    if self.typ == 'RNN':
+      self.embedding = nn.RNN(inputdim, hidden, layers,
+                              bias=False, batch_first=True,
+                              nonlinearity='relu')
+    if self.typ == 'GRU':
+      self.embedding = nn.GRU(inputdim, hidden, layers,
+                              bias=False, batch_first=True)
+
+  def forward(self, x, risk='1'):
+    """The forward function that is called when data is passed through DSM.
+
+    Note: As compared to DSM, the input data for DCRSM is a tensor. The forward
+    function involves unpacking the tensor in-order to directly use the
+    DSM loss functions.
+
+    Args:
+      x:
+        a torch.tensor of the input features.
+
+    """
+
+    # Input Mask
+    x = x.detach().clone()
+    inputmask = ~torch.isnan(x[:, :, 0, 0]).reshape(-1)
+    x[torch.isnan(x)] = 0
+
+    # CNN Layer
+    xcnn = x.view((-1, 1)+x.shape[2:])
+    filteredx = self.cnn(xcnn)
+
+    # RNN Layer
+    xrnn = filteredx.view(tuple(x.shape)[:2] + (-1,))
+    xrnn, _ = self.rnn(xrnn)
+    xrep = xrnn.contiguous().view(-1, self.hidden)
+
+    # Unfolding for DSM
+    xrep = xrep[inputmask]
+    xrep = nn.ReLU6()(xrep)
+    dim = xrep.shape[0]
     return(self.act(self.shapeg[risk](xrep))+self.shape[risk].expand(dim, -1),
            self.act(self.scaleg[risk](xrep))+self.scale[risk].expand(dim, -1),
            self.gate[risk](xrep)/self.temp)
