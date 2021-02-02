@@ -57,7 +57,7 @@ def pretrain_dsm(model, t_train, e_train, t_valid, e_valid,
                                        risks=model.risks)
   premodel.double()
 
-  optimizer = torch.optim.Adam(premodel.parameters(), lr=lr)
+  optimizer = get_optimizer(model, lr)
 
   oldcost = float('inf')
   patience = 0
@@ -137,7 +137,7 @@ def train_dsm(model,
     model.scale[str(r+1)].data.fill_(float(premodel.scale[str(r+1)]))
 
   model.double()
-  optimizer = torch.optim.Adam(model.parameters(), lr=lr)
+  optimizer = get_optimizer(model, lr)
 
   patience = 0
   oldcost = float('inf')
