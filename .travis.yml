@@ -13,7 +13,7 @@ install:
 
 # command to run tests
 script:
-  - python -m pytest tests/
+  - python --cov -m pytest tests/
   - pylint --fail-under=8 dsm/
 
 #command to track code coverage
