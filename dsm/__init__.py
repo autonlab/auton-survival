@@ -184,3 +184,4 @@ user/themes/auton/images/AutonLogo.png">
 from dsm.dsm_api import DeepSurvivalMachines
 from dsm.dsm_api import DeepConvolutionalSurvivalMachines
 from dsm.dsm_api import DeepRecurrentSurvivalMachines
+from dsm.dsm_api import DeepCNNRNNSurvivalMachines
