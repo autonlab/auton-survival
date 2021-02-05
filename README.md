@@ -30,7 +30,7 @@ As compared to typical regression problems, Survival Analysis differs in two maj
 
 Deep Survival Machines
 ----------------------
-
+<img width=40% src=https://ndownloader.figshare.com/files/13724596>
 <img width=80% src=https://ndownloader.figshare.com/files/25259852>
 
 
