@@ -6,6 +6,8 @@
 &nbsp;&nbsp;&nbsp;
 [![GitHub Repo stars](https://img.shields.io/github/stars/autonlab/DeepSurvivalMachines?style=social)](https://github.com/autonlab/DeepSurvivalMachines)
 
+<img align="right" width=50% src=https://ndownloader.figshare.com/files/26367844>
+
 Package: `dsm`
 -------------
 
@@ -30,7 +32,6 @@ As compared to typical regression problems, Survival Analysis differs in two maj
 
 Deep Survival Machines
 ----------------------
-
 <img width=80% src=https://ndownloader.figshare.com/files/25259852>
 
 
