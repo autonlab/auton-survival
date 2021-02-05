@@ -6,7 +6,7 @@
 &nbsp;&nbsp;&nbsp;
 [![GitHub Repo stars](https://img.shields.io/github/stars/autonlab/DeepSurvivalMachines?style=social)](https://github.com/autonlab/DeepSurvivalMachines)
 
-<img width=40% src=https://ndownloader.figshare.com/files/26367844>
+<img align="right" width=40% src=https://ndownloader.figshare.com/files/26367844>
 
 Package: `dsm`
 -------------
