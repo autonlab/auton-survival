@@ -85,7 +85,7 @@ Default is 1.</dd>
 <h3>Methods</h3>
 <dl>
 <dt id="dsm.dsm_api.DeepSurvivalMachines.fit"><code class="name flex">
-<span>def <span class="ident">fit</span></span>(<span>self, x, t, e, vsize=0.15, iters=1, learning_rate=0.001, batch_size=100, elbo=True, optimizer='Adam', random_state=100)</span>
+<span>def <span class="ident">fit</span></span>(<span>self, x, t, e, vsize=0.15, val_data=None, iters=1, learning_rate=0.001, batch_size=100, elbo=True, optimizer='Adam', random_state=100)</span>
 </code></dt>
 <dd>
 <p class="inheritance">
@@ -104,6 +104,8 @@ Default is 1.</dd>
 <span><span class="MathJax_Preview"> \delta = 1 </span><script type="math/tex"> \delta = 1 </script></span> means the event took place.</dd>
 <dt><strong><code>vsize</code></strong> :&ensp;<code>float</code></dt>
 <dd>Amount of data to set aside as the validation set.</dd>
+<dt><strong><code>val_data</code></strong> :&ensp;<code>tuple</code></dt>
+<dd>A tuple of the validation dataset. If passed vsize is ignored.</dd>
 <dt><strong><code>iters</code></strong> :&ensp;<code>int</code></dt>
 <dd>The maximum number of training iterations on the training dataset.</dd>
 <dt><strong><code>learning_rate</code></strong> :&ensp;<code>float</code></dt>
@@ -229,7 +231,7 @@ time-dependent covariates.</p></div>
 <h3>Methods</h3>
 <dl>
 <dt id="dsm.dsm_api.DeepRecurrentSurvivalMachines.fit"><code class="name flex">
-<span>def <span class="ident">fit</span></span>(<span>self, x, t, e, vsize=0.15, iters=1, learning_rate=0.001, batch_size=100, elbo=True, optimizer='Adam', random_state=100)</span>
+<span>def <span class="ident">fit</span></span>(<span>self, x, t, e, vsize=0.15, val_data=None, iters=1, learning_rate=0.001, batch_size=100, elbo=True, optimizer='Adam', random_state=100)</span>
 </code></dt>
 <dd>
 <p class="inheritance">
@@ -248,6 +250,8 @@ time-dependent covariates.</p></div>
 <span><span class="MathJax_Preview"> \delta = 1 </span><script type="math/tex"> \delta = 1 </script></span> means the event took place.</dd>
 <dt><strong><code>vsize</code></strong> :&ensp;<code>float</code></dt>
 <dd>Amount of data to set aside as the validation set.</dd>
+<dt><strong><code>val_data</code></strong> :&ensp;<code>tuple</code></dt>
+<dd>A tuple of the validation dataset. If passed vsize is ignored.</dd>
 <dt><strong><code>iters</code></strong> :&ensp;<code>int</code></dt>
 <dd>The maximum number of training iterations on the training dataset.</dd>
 <dt><strong><code>learning_rate</code></strong> :&ensp;<code>float</code></dt>
@@ -373,7 +377,7 @@ image-based covariates.</p></div>
 <h3>Methods</h3>
 <dl>
 <dt id="dsm.dsm_api.DeepConvolutionalSurvivalMachines.fit"><code class="name flex">
-<span>def <span class="ident">fit</span></span>(<span>self, x, t, e, vsize=0.15, iters=1, learning_rate=0.001, batch_size=100, elbo=True, optimizer='Adam', random_state=100)</span>
+<span>def <span class="ident">fit</span></span>(<span>self, x, t, e, vsize=0.15, val_data=None, iters=1, learning_rate=0.001, batch_size=100, elbo=True, optimizer='Adam', random_state=100)</span>
 </code></dt>
 <dd>
 <p class="inheritance">
@@ -392,6 +396,8 @@ image-based covariates.</p></div>
 <span><span class="MathJax_Preview"> \delta = 1 </span><script type="math/tex"> \delta = 1 </script></span> means the event took place.</dd>
 <dt><strong><code>vsize</code></strong> :&ensp;<code>float</code></dt>
 <dd>Amount of data to set aside as the validation set.</dd>
+<dt><strong><code>val_data</code></strong> :&ensp;<code>tuple</code></dt>
+<dd>A tuple of the validation dataset. If passed vsize is ignored.</dd>
 <dt><strong><code>iters</code></strong> :&ensp;<code>int</code></dt>
 <dd>The maximum number of training iterations on the training dataset.</dd>
 <dt><strong><code>learning_rate</code></strong> :&ensp;<code>float</code></dt>
@@ -517,7 +523,7 @@ moving image streams.</p></div>
 <h3>Methods</h3>
 <dl>
 <dt id="dsm.dsm_api.DeepCNNRNNSurvivalMachines.fit"><code class="name flex">
-<span>def <span class="ident">fit</span></span>(<span>self, x, t, e, vsize=0.15, iters=1, learning_rate=0.001, batch_size=100, elbo=True, optimizer='Adam', random_state=100)</span>
+<span>def <span class="ident">fit</span></span>(<span>self, x, t, e, vsize=0.15, val_data=None, iters=1, learning_rate=0.001, batch_size=100, elbo=True, optimizer='Adam', random_state=100)</span>
 </code></dt>
 <dd>
 <p class="inheritance">
@@ -536,6 +542,8 @@ moving image streams.</p></div>
 <span><span class="MathJax_Preview"> \delta = 1 </span><script type="math/tex"> \delta = 1 </script></span> means the event took place.</dd>
 <dt><strong><code>vsize</code></strong> :&ensp;<code>float</code></dt>
 <dd>Amount of data to set aside as the validation set.</dd>
+<dt><strong><code>val_data</code></strong> :&ensp;<code>tuple</code></dt>
+<dd>A tuple of the validation dataset. If passed vsize is ignored.</dd>
 <dt><strong><code>iters</code></strong> :&ensp;<code>int</code></dt>
 <dd>The maximum number of training iterations on the training dataset.</dd>
 <dt><strong><code>learning_rate</code></strong> :&ensp;<code>float</code></dt>
