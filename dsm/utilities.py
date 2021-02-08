@@ -57,7 +57,7 @@ def pretrain_dsm(model, t_train, e_train, t_valid, e_valid,
                                        risks=model.risks)
   premodel.double()
 
-  optimizer = torch.optim.Adam(premodel.parameters(), lr=lr)
+  optimizer = get_optimizer(model, lr)
 
   oldcost = float('inf')
   patience = 0
@@ -95,7 +95,7 @@ def _get_padded_features(x):
   d = max([len(x_) for x_ in x])
   padx = []
   for i in range(len(x)):
-    pads = np.nan*np.ones((d - len(x[i]), x[i].shape[1]))  
+    pads = np.nan*np.ones((d - len(x[i]),) + x[i].shape[1:])
     padx.append(np.concatenate([x[i], pads]))
   return np.array(padx)
 
@@ -140,10 +140,8 @@ def train_dsm(model,
     model.shape[str(r+1)].data.fill_(float(premodel.shape[str(r+1)]))
     model.scale[str(r+1)].data.fill_(float(premodel.scale[str(r+1)]))
 
-  print(premodel.shape, premodel.scale)
-
   model.double()
-  optimizer = torch.optim.Adam(model.parameters(), lr=lr)
+  optimizer = get_optimizer(model, lr)
 
   patience = 0
   oldcost = float('inf')
@@ -160,8 +158,12 @@ def train_dsm(model,
       tb = t_train[j*bs:(j+1)*bs]
       eb = e_train[j*bs:(j+1)*bs]
 
+
       if cuda:
         xb, tb, eb = xb.cuda(), tb.cuda(), eb.cuda()
+
+      if xb.shape[0] == 0:
+        continue
 
       optimizer.zero_grad()
       loss = 0
@@ -175,26 +177,28 @@ def train_dsm(model,
       #print ("Train Loss:", float(loss))
       loss.backward()
       optimizer.step()
-      valid_loss = 0
-      for r in range(model.risks):
-        valid_loss += conditional_loss(model,
-                                       x_valid,
-                                       t_valid_,
-                                       e_valid_,
-                                       elbo=False,
-                                       risk=str(r+1))
+
+    valid_loss = 0
+    for r in range(model.risks):
+      valid_loss += conditional_loss(model,
+                                     x_valid,
+                                     t_valid_,
+                                     e_valid_,
+                                     elbo=False,
+                                     risk=str(r+1))
 
     valid_loss = valid_loss.detach().cpu().numpy()
     costs.append(float(valid_loss))
     dics.append(deepcopy(model.state_dict()))
 
-    if (costs[-1] >= oldcost) is True:
+    if costs[-1] >= oldcost:
       if patience == 2:
-        maxm = np.argmax(costs)
-        model.load_state_dict(dics[maxm])
+        minm = np.argmin(costs)
+        model.load_state_dict(dics[minm])
 
         del dics
         gc.collect()
+
         return model, i
       else:
         patience += 1
@@ -202,5 +206,11 @@ def train_dsm(model,
       patience = 0
 
     oldcost = costs[-1]
+
+  minm = np.argmin(costs)
+  model.load_state_dict(dics[minm])
+
+  del dics
+  gc.collect()
 
   return model, i

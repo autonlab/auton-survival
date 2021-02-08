@@ -25,6 +25,8 @@
 r"""
 [![Build Status](https://travis-ci.org/autonlab/DeepSurvivalMachines.svg?branch=master)](https://travis-ci.org/autonlab/DeepSurvivalMachines)
 &nbsp;&nbsp;&nbsp;
+[![codecov](https://codecov.io/gh/autonlab/DeepSurvivalMachines/branch/master/graph/badge.svg?token=FU1HB5O92D)](https://codecov.io/gh/autonlab/DeepSurvivalMachines)
+&nbsp;&nbsp;&nbsp;
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 &nbsp;&nbsp;&nbsp;
 [![GitHub Repo stars](https://img.shields.io/github/stars/autonlab/DeepSurvivalMachines?style=social)](https://github.com/autonlab/DeepSurvivalMachines)
@@ -184,3 +186,4 @@ user/themes/auton/images/AutonLogo.png">
 from dsm.dsm_api import DeepSurvivalMachines
 from dsm.dsm_api import DeepConvolutionalSurvivalMachines
 from dsm.dsm_api import DeepRecurrentSurvivalMachines
+from dsm.dsm_api import DeepCNNRNNSurvivalMachines
