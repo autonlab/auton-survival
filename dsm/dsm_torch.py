@@ -467,8 +467,8 @@ class DeepCNNRNNSurvivalMachinesTorch(DeepRecurrentSurvivalMachinesTorch):
 
   Parameters
   ----------
-  inputdim: int
-      Dimensionality of the input features.
+  inputdim: tuple
+      Dimensionality of the input features. (height, width)
   k: int
       The number of underlying parametric distributions.
   layers: int
@@ -510,16 +510,18 @@ class DeepCNNRNNSurvivalMachinesTorch(DeepRecurrentSurvivalMachinesTorch):
 
     self._init_dsm_layers(hidden)
 
+    self.cnn = create_conv_representation(inputdim, hidden)
+
     if self.typ == 'LSTM':
-      self.embedding = nn.LSTM(inputdim, hidden, layers,
-                               bias=False, batch_first=True)
+      self.rnn = nn.LSTM(hidden, hidden, layers,
+                         bias=False, batch_first=True)
     if self.typ == 'RNN':
-      self.embedding = nn.RNN(inputdim, hidden, layers,
-                              bias=False, batch_first=True,
-                              nonlinearity='relu')
+      self.rnn = nn.RNN(hidden, hidden, layers,
+                        bias=False, batch_first=True,
+                        nonlinearity='relu')
     if self.typ == 'GRU':
-      self.embedding = nn.GRU(inputdim, hidden, layers,
-                              bias=False, batch_first=True)
+      self.rnn = nn.GRU(hidden, hidden, layers,
+                        bias=False, batch_first=True)
 
   def forward(self, x, risk='1'):
     """The forward function that is called when data is passed through DSM.

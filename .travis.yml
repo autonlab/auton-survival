@@ -10,8 +10,13 @@ install:
   - pip install -r requirements.txt
   - pip install --upgrade pytest 
   - pip install pylint==2.5.3
-
+  - pip install pytest-cov
+  
 # command to run tests
 script:
-  - python -m pytest tests/
+  - python -m pytest tests/ --cov
   - pylint --fail-under=8 dsm/
+
+#command to track code coverage
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
