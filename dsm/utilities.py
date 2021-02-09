@@ -81,6 +81,7 @@ def pretrain_dsm(model, t_train, e_train, t_valid, e_valid,
       if patience == 2:
         break
     else:
+      patience = 0
       best_loss = valid_loss
       best_params = deepcopy(premodel.state_dict())
       
