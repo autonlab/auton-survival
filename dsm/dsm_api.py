@@ -65,7 +65,7 @@ class DSMBase():
 
   def _gen_torch_model(self, inputdim, optimizer, risks):
     """Helper function to return a torch model."""
-    model = DeepSurvivalMachinesTorch(inputdim,
+    return DeepSurvivalMachinesTorch(inputdim,
                                      k=self.k,
                                      layers=self.layers,
                                      dist=self.dist,
@@ -73,9 +73,6 @@ class DSMBase():
                                      discount=self.discount,
                                      optimizer=optimizer,
                                      risks=risks)
-    if self.cuda:
-        model = model.cuda()
-    return model
 
   def cpu(self):
     self.cuda = False
@@ -134,6 +131,10 @@ class DSMBase():
 
     maxrisk = int(np.nanmax(e_train.cpu().numpy()))
     model = self._gen_torch_model(inputdim, optimizer, risks=maxrisk)
+    
+    if self.cuda:
+      model = model.cuda()
+    
     model, _ = train_dsm(model,
                          x_train, t_train, e_train,
                          x_val, t_val, e_val,
@@ -370,7 +371,7 @@ class DeepRecurrentSurvivalMachines(DSMBase):
     self.typ = typ
   def _gen_torch_model(self, inputdim, optimizer, risks):
     """Helper function to return a torch model."""
-    model = DeepRecurrentSurvivalMachinesTorch(inputdim,
+    return DeepRecurrentSurvivalMachinesTorch(inputdim,
                                               k=self.k,
                                               layers=self.layers,
                                               hidden=self.hidden,
@@ -380,16 +381,11 @@ class DeepRecurrentSurvivalMachines(DSMBase):
                                               optimizer=optimizer,
                                               typ=self.typ,
                                               risks=risks)
-    if self.cuda:
-        model = model.cuda()
-        
-    return model
 
   def _prepocess_test_data(self, x):
     data = torch.from_numpy(_get_padded_features(x))
     if self.cuda:
          data = data.cuda()
-            
     return data
 
   def _prepocess_training_data(self, x, t, e, vsize, val_data, random_state):
@@ -451,6 +447,7 @@ class DeepConvolutionalSurvivalMachines(DSMBase):
                                                             cuda=cuda)
     self.hidden = hidden
     self.typ = typ
+
   def _gen_torch_model(self, inputdim, optimizer, risks):
     """Helper function to return a torch model."""
     return DeepConvolutionalSurvivalMachinesTorch(inputdim,
