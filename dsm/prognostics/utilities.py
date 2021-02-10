@@ -61,36 +61,72 @@ def _eval_independent(predictions, t, horizon):
   return (fpr, tpr, roc_auc), (prec, rec, pr_auc)
 
 
+def _eval_asbatch(predictions, t, horizon, eval_at=None, bootstrap=100):
 
-def _eval_asbatch():
-    return
+  predictions = _repackage_predictions(predictions, t)
 
+  if eval_at is None:
+    idx = -1
+  else:
+    idx = eval_at
+
+  if bootstrap is not None:
+
+    scores = []
+
+    for bs in range(bootstrap):
+
+      bsidx = np.random.choice(len(t), len(t)).tolist()
+
+      predictions_ = predictions[bsidx]
+      t_ = t[bsidx]
+
+      preds = np.array([preds_[idx] for preds_ in predictions_])
+      ts = np.array([t__[idx] for t__ in t_])
+
+      fpr, tpr, _ = roc_curve(ts <= horizon, preds)
+      roc_auc = roc_auc_score(ts <= horizon, preds)
+
+      prec, rec, _ = precision_recall_curve(ts <= horizon, preds)
+      pr_auc = average_precision_score(ts <= horizon, preds)
+
+      scores.append(((fpr, tpr, roc_auc), (prec, rec, pr_auc)))
+
+    return scores
+
+  else:
+
+    predictions_ = predictions
+    t_ = t
+
+    preds = np.array([preds_[idx] for preds_ in predictions_])
+    ts = np.array([t__[idx] for t__ in t_])
+
+    fpr, tpr, _ = roc_curve(ts <= horizon, preds)
+    roc_auc = roc_auc_score(ts <= horizon, preds)
+
+    prec, rec, _ = precision_recall_curve(ts <= horizon, preds)
+    pr_auc = average_precision_score(ts <= horizon, preds)
+
+    return (fpr, tpr, roc_auc), (prec, rec, pr_auc)
 
 
 def evaluate(predictions,
              test_data,
-             typ='batch',
+             typ="batch",
              horizon=None,
-             eval_at=None):
+             eval_at=None,
+             bootstrap=None):
 
   if horizon is None:
     raise Exception("Please provide horizon to evaluate on.")
 
   if typ == "independent":
-    if eval_at is not None:
-      print("WARNING: No threshold provided. Evaluation would be performed\
-             at end of each cycle.")
-
     return _eval_independent(predictions, test_data, horizon)
-
 
   if typ == "batch":
     if eval_at is None:
       print("WARNING: No threshold provided. Evaluation would be performed\
              at end of each cycle.")
 
-
-
-
-
-
+    return _eval_batch(predictions, test_data, horizon, eval_at, bootstrap)
