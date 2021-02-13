@@ -54,7 +54,8 @@ def pretrain_dsm(model, t_train, e_train, t_valid, e_valid,
 
   premodel = DeepSurvivalMachinesTorch(1, 1,
                                        dist=model.dist,
-                                       risks=model.risks)
+                                       risks=model.risks,
+                                       optimizer=model.optimizer)
   premodel.double()
 
   optimizer = get_optimizer(premodel, lr)
