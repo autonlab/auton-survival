@@ -54,10 +54,11 @@ def pretrain_dsm(model, t_train, e_train, t_valid, e_valid,
 
   premodel = DeepSurvivalMachinesTorch(1, 1,
                                        dist=model.dist,
-                                       risks=model.risks)
+                                       risks=model.risks,
+                                       optimizer=model.optimizer)
   premodel.double()
 
-  optimizer = get_optimizer(model, lr)
+  optimizer = get_optimizer(premodel, lr)
 
   oldcost = float('inf')
   patience = 0
@@ -72,7 +73,7 @@ def pretrain_dsm(model, t_train, e_train, t_valid, e_valid,
     optimizer.step()
 
     valid_loss = 0
-    for r in range(model.risks): 
+    for r in range(model.risks):
       valid_loss += unconditional_loss(premodel, t_valid, e_valid, str(r+1))
     valid_loss = valid_loss.detach().cpu().numpy()
     costs.append(valid_loss)
