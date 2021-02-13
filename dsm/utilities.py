@@ -57,7 +57,7 @@ def pretrain_dsm(model, t_train, e_train, t_valid, e_valid,
                                        risks=model.risks)
   premodel.double()
 
-  optimizer = get_optimizer(model, lr)
+  optimizer = get_optimizer(premodel, lr)
 
   oldcost = float('inf')
   patience = 0
