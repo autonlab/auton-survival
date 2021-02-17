@@ -421,7 +421,6 @@ class DeepConvolutionalSurvivalMachinesTorch(DeepSurvivalMachinesTorch):
     self.discount = float(discount)
     self.optimizer = optimizer
     self.hidden = hidden
-    self.typ = typ
     self.risks = risks
 
     self._init_dsm_layers(hidden)
