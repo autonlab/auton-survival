@@ -73,6 +73,22 @@ before determining the underlying survival distributions.
 
 > :warning: **Not Implemented Yet!**
 
+
+Installation
+------------
+
+```console
+foo@bar:~$ git clone https://github.com/autonlab/DeepSurvivalMachines.git
+foo@bar:~$ cd DeepSurvivalMachines
+foo@bar:~$ pip install -r requirements.txt
+```
+
+Examples
+---------
+
+1. [Deep Survival Machines on the SUPPORT Dataset](https://nbviewer.jupyter.org/github/autonlab/DeepSurvivalMachines/blob/master/examples/DSM%20on%20SUPPORT%20Dataset.ipynb)
+
+
 References
 ----------
 
@@ -80,17 +96,31 @@ Please cite the following papers if you are using the `dsm` package.
 
 [1] [Deep Survival Machines:
 Fully Parametric Survival Regression and
-Representation Learning for Censored Data with Competing Risks. (2021)](https://arxiv.org/abs/2003.01176)</a>
+Representation Learning for Censored Data with Competing Risks. IEEE JBHI (2021)](https://arxiv.org/abs/2003.01176)</a>
 
 ```
   @article{nagpal2020deep,
   title={Deep Survival Machines: Fully Parametric Survival Regression and\
   Representation Learning for Censored Data with Competing Risks},
   author={Nagpal, Chirag and Li, Xinyu and Dubrawski, Artur},
-  journal={arXiv preprint arXiv:2003.01176},
-  year={2020}
+  journal={IEEE Journal of Biomedical and Health Informatics},
+  year={2021}
   }
 ```
+
+
+[2] [Recurrent Deep Survival Machines:
+Deep Parametric Time-to-Event Regression with Time-Varying Covariates. AAAI Spring Symposium (2021)]()</a>
+
+```
+  @article{nagpal2021rdsm,
+  title={Deep Parametric Time-to-Event Regression with Time-Varying Covariates},
+  author={Nagpal, Chirag and Jeanselme, Vincent and Dubrawski, Artur},
+  journal={AAAI Spring Symposium on Survival Analysis},
+  year={2021}
+  }
+```
+
 
 Compatibility
 -------------
