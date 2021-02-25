@@ -96,7 +96,8 @@ Please cite the following papers if you are using the `dsm` package.
 
 [1] [Deep Survival Machines:
 Fully Parametric Survival Regression and
-Representation Learning for Censored Data with Competing Risks. IEEE JBHI (2021)](https://arxiv.org/abs/2003.01176)</a>
+Representation Learning for Censored Data with Competing Risks.
+IEEE Journal of Biomedical \& Health Informatics (2021)](https://arxiv.org/abs/2003.01176)</a>
 
 ```
   @article{nagpal2020deep,
@@ -110,7 +111,8 @@ Representation Learning for Censored Data with Competing Risks. IEEE JBHI (2021)
 
 
 [2] [Recurrent Deep Survival Machines:
-Deep Parametric Time-to-Event Regression with Time-Varying Covariates. AAAI Spring Symposium (2021)]()</a>
+Deep Parametric Time-to-Event Regression with Time-Varying Covariates.
+AAAI Spring Symposium (2021)]()</a>
 
 ```
   @article{nagpal2021rdsm,
