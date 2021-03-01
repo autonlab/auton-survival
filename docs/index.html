@@ -100,18 +100,37 @@ before determining the underlying survival distributions.</p>
 &gt;&gt;&gt; # estimate the predicted risks at the time
 &gt;&gt;&gt; model.predict_risk(x, 10)
 </code></pre>
+<h2 id="installation">Installation</h2>
+<pre><code class="language-console">foo@bar:~$ git clone https://github.com/autonlab/DeepSurvivalMachines.git
+foo@bar:~$ cd DeepSurvivalMachines
+foo@bar:~$ pip install -r requirements.txt
+</code></pre>
+<h2 id="examples">Examples</h2>
+<ol>
+<li><a href="https://nbviewer.jupyter.org/github/autonlab/DeepSurvivalMachines/blob/master/examples/DSM%20on%20SUPPORT%20Dataset.ipynb">Deep Survival Machines on the SUPPORT Dataset</a></li>
+</ol>
 <h2 id="references">References</h2>
 <p>Please cite the following papers if you are using the <code><a title="dsm" href="#dsm">dsm</a></code> package.</p>
 <p>[1] <a href="https://arxiv.org/abs/2003.01176">Deep Survival Machines:
 Fully Parametric Survival Regression and
-Representation Learning for Censored Data with Competing Risks."
-arXiv preprint arXiv:2003.01176 (2020)</a></a></p>
+Representation Learning for Censored Data with Competing Risks.
+IEEE Journal of Biomedical \&amp; Health Informatics (2021)</a></a></p>
 <pre><code>  @article{nagpal2020deep,
   title={Deep Survival Machines: Fully Parametric Survival Regression and\
   Representation Learning for Censored Data with Competing Risks},
   author={Nagpal, Chirag and Li, Xinyu and Dubrawski, Artur},
-  journal={arXiv preprint arXiv:2003.01176},
-  year={2020}
+  journal={IEEE Journal of Biomedical and Health Informatics},
+  year={2021}
+  }
+</code></pre>
+<p>[2] <a href="">Recurrent Deep Survival Machines:
+Deep Parametric Time-to-Event Regression with Time-Varying Covariates.
+AAAI Spring Symposium (2021)</a></a></p>
+<pre><code>  @article{nagpal2021rdsm,
+  title={Deep Parametric Time-to-Event Regression with Time-Varying Covariates},
+  author={Nagpal, Chirag and Jeanselme, Vincent and Dubrawski, Artur},
+  journal={AAAI Spring Symposium on Survival Analysis},
+  year={2021}
   }
 </code></pre>
 <h2 id="compatibility">Compatibility</h2>
@@ -182,10 +201,6 @@ These losses are optimized when training DSM.</p>
 <p>NOT DESIGNED TO BE CALLED DIRECTLY!!!</p>
 </div></div>
 </dd>
-<dt><code class="name"><a title="dsm.prognostics" href="prognostics/index.html">dsm.prognostics</a></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
 <dt><code class="name"><a title="dsm.utilities" href="utilities.html">dsm.utilities</a></code></dt>
 <dd>
 <div class="desc"><p>Utility functions to train the Deep Survival Machines models</p></div>
@@ -209,6 +224,8 @@ These losses are optimized when training DSM.</p>
 <li><a href="#deep-recurrent-survival-machines">Deep Recurrent Survival Machines</a></li>
 <li><a href="#deep-convolutional-survival-machines">Deep Convolutional Survival Machines</a></li>
 <li><a href="#example-usage">Example Usage</a></li>
+<li><a href="#installation">Installation</a></li>
+<li><a href="#examples">Examples</a></li>
 <li><a href="#references">References</a></li>
 <li><a href="#compatibility">Compatibility</a></li>
 <li><a href="#contributing">Contributing</a></li>
@@ -222,7 +239,6 @@ These losses are optimized when training DSM.</p>
 <li><code><a title="dsm.dsm_api" href="dsm_api.html">dsm.dsm_api</a></code></li>
 <li><code><a title="dsm.dsm_torch" href="dsm_torch.html">dsm.dsm_torch</a></code></li>
 <li><code><a title="dsm.losses" href="losses.html">dsm.losses</a></code></li>
-<li><code><a title="dsm.prognostics" href="prognostics/index.html">dsm.prognostics</a></code></li>
 <li><code><a title="dsm.utilities" href="utilities.html">dsm.utilities</a></code></li>
 </ul>
 </li>
