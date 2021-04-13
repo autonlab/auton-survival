@@ -275,6 +275,34 @@ class DSMBase():
                       "model using the `fit` method on some training data " +
                       "before calling `predict_survival`.")
 
+  def predict_pdf(self, x, t, risk=1):
+    r"""Returns the estimated pdf at time \( t \),
+      \( \widehat{\mathbb{P}}(T = t|X) \) for some input data \( x \). 
+
+    Parameters
+    ----------
+    x: np.ndarray
+        A numpy array of the input features, \( x \).
+    t: list or float
+        a list or float of the times at which pdf is
+        to be computed
+    Returns:
+      np.array: numpy array of the estimated pdf at each time in t.
+
+    """
+    x = self._prepocess_test_data(x)
+    if not isinstance(t, list):
+      t = [t]
+    if self.fitted:
+      scores = losses.predict_pdf(self.torch_model, x, t, risk=str(risk))
+      return np.exp(np.array(scores)).T
+    else:
+      raise Exception("The model has not been fitted yet. Please fit the " +
+                      "model using the `fit` method on some training data " +
+                      "before calling `predict_survival`.")
+
+
+
 
 class DeepSurvivalMachines(DSMBase):
   """A Deep Survival Machines model.
