@@ -326,7 +326,7 @@ def _weibull_pdf(model, x, t_horizon, risk='1'):
     lpdfs = torch.logsumexp(lpdfs, dim=1)
     pdfs.append(lpdfs.detach().numpy())
 
-  return lpdfs
+  return pdfs
 
 def _weibull_cdf(model, x, t_horizon, risk='1'):
 
