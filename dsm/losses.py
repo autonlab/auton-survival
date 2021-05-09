@@ -52,11 +52,9 @@ def _normal_loss(model, t, e, risk='1'):
     mu = k_[:, g]
     sigma = b_[:, g]
 
-    f = - sigma - 0.5*np.log(2*np.pi)
-    f = f - 0.5*torch.div((t - mu)**2, torch.exp(2*sigma))
-    s = torch.div(t - mu, torch.exp(sigma)*np.sqrt(2))
-    s = 0.5 - 0.5*torch.erf(s)
-    s = torch.log(s)
+    dist = torch.distributions.Normal(mu, sigma)
+    f = dist.log_prob(t)
+    s = torch.log1p(-dist.cdf(t))
 
     uncens = np.where(e.cpu().data.numpy() == int(risk))[0]
     cens = np.where(e.cpu().data.numpy() != int(risk))[0]
@@ -127,27 +125,28 @@ def unconditional_loss(model, t, e, risk='1'):
     raise NotImplementedError('Distribution: '+model.dist+
                               ' not implemented yet.')
 
+
 def _conditional_normal_loss(model, x, t, e, elbo=True, risk='1'):
 
   alpha = model.discount
+
   shape, scale, logits = model.forward(x, risk)
+
+  _, scale = model.get_shape_scale()
+  scale = scale.expand(t.shape[0], -1)
 
   lossf = []
   losss = []
 
-  k_ = shape
-  b_ = scale
-
   for g in range(model.k):
 
-    mu = k_[:, g]
-    sigma = b_[:, g]
+    mu = shape[:, g]
+    sigma = scale[:, g]
 
-    f = - sigma - 0.5*np.log(2*np.pi)
-    f = f - 0.5*torch.div((t - mu)**2, torch.exp(2*sigma))
-    s = torch.div(t - mu, torch.exp(sigma)*np.sqrt(2))
-    s = 0.5 - 0.5*torch.erf(s)
-    s = torch.log(s)
+    dist = torch.distributions.Normal(mu, sigma)
+
+    f = dist.log_prob(t)
+    s = torch.log1p(-dist.cdf(t))
 
     lossf.append(f)
     losss.append(s)
@@ -183,6 +182,7 @@ def _conditional_lognormal_loss(model, x, t, e, elbo=True, risk='1'):
 
   alpha = model.discount
   shape, scale, logits = model.forward(x, risk)
+
 
   lossf = []
   losss = []
@@ -293,6 +293,40 @@ def conditional_loss(model, x, t, e, elbo=True, risk='1'):
     raise NotImplementedError('Distribution: '+model.dist+
                               ' not implemented yet.')
 
+def _weibull_pdf(model, x, t_horizon, risk='1'):
+
+  squish = nn.LogSoftmax(dim=1)
+
+  shape, scale, logits = model.forward(x, risk)
+  logits = squish(logits)
+
+  k_ = shape
+  b_ = scale
+
+  t_horz = torch.tensor(t_horizon).double()
+  t_horz = t_horz.repeat(shape.shape[0], 1)
+
+  pdfs = []
+  for j in range(len(t_horizon)):
+
+    t = t_horz[:, j]
+    lpdfs = []
+
+    for g in range(model.k):
+
+      k = k_[:, g]
+      b = b_[:, g]
+      s = - (torch.pow(torch.exp(b)*t, torch.exp(k)))
+      f = k + b + ((torch.exp(k)-1)*(b+torch.log(t)))
+      f = f + s
+      lpdfs.append(f)
+
+    lpdfs = torch.stack(lpdfs, dim=1)
+    lpdfs = lpdfs+logits
+    lpdfs = torch.logsumexp(lpdfs, dim=1)
+    pdfs.append(lpdfs.detach().numpy())
+
+  return pdfs
 
 def _weibull_cdf(model, x, t_horizon, risk='1'):
 
@@ -326,6 +360,33 @@ def _weibull_cdf(model, x, t_horizon, risk='1'):
     cdfs.append(lcdfs.detach().numpy())
 
   return cdfs
+
+def _weibull_mean(model, x, risk='1'):
+
+  squish = nn.LogSoftmax(dim=1)
+
+  shape, scale, logits = model.forward(x, risk)
+  logits = squish(logits)
+
+  k_ = shape
+  b_ = scale
+
+  lmeans = []
+
+  for g in range(model.k):
+
+    k = k_[:, g]
+    b = b_[:, g]
+
+    one_over_k = torch.reciprocal(torch.exp(k))
+    lmean = -(one_over_k*b) + torch.lgamma(1+one_over_k)
+    lmeans.append(lmean)
+
+  lmeans = torch.stack(lmeans, dim=1)
+  lmeans = lmeans+logits
+  lmeans = torch.logsumexp(lmeans, dim=1)
+
+  return torch.exp(lmeans).detach().numpy()
 
 
 def _lognormal_cdf(model, x, t_horizon, risk='1'):
@@ -365,15 +426,14 @@ def _lognormal_cdf(model, x, t_horizon, risk='1'):
 
   return cdfs
 
+
 def _normal_cdf(model, x, t_horizon, risk='1'):
 
   squish = nn.LogSoftmax(dim=1)
 
-  shape, scale, logits = model.forward(x, risk)
-  logits = squish(logits)
-
-  k_ = shape
-  b_ = scale
+  shape, _, logits = model.forward(x, risk)
+  _, scale = model.get_shape_scale()
+  scale = scale.expand(x.shape[0], -1)
 
   t_horz = torch.tensor(t_horizon).double()
   t_horz = t_horz.repeat(shape.shape[0], 1)
@@ -387,12 +447,11 @@ def _normal_cdf(model, x, t_horizon, risk='1'):
 
     for g in range(model.k):
 
-      mu = k_[:, g]
-      sigma = b_[:, g]
+      mu = shape[:, g]
+      sigma = scale[:, g]
 
-      s = torch.div(t - mu, torch.exp(sigma)*np.sqrt(2))
-      s = 0.5 - 0.5*torch.erf(s)
-      s = torch.log(s)
+      dist = torch.distributions.Normal(mu, sigma)
+      s = torch.log1p(-dist.cdf(t))
       lcdfs.append(s)
 
     lcdfs = torch.stack(lcdfs, dim=1)
@@ -402,20 +461,60 @@ def _normal_cdf(model, x, t_horizon, risk='1'):
 
   return cdfs
 
+
+# def _normal_cdf(model, x, t_horizon, risk='1'):
+
+#   squish = nn.LogSoftmax(dim=1)
+
+#   shape, scale, logits = model.forward(x, risk)
+#   logits = squish(logits)
+
+#   k_ = shape
+#   b_ = scale
+
+#   t_horz = torch.tensor(t_horizon).double()
+#   t_horz = t_horz.repeat(shape.shape[0], 1)
+
+#   cdfs = []
+
+#   for j in range(len(t_horizon)):
+
+#     t = t_horz[:, j]
+#     lcdfs = []
+
+#     for g in range(model.k):
+
+#       mu = k_[:, g]
+#       sigma = b_[:, g]
+
+#       s = torch.div(t - mu, torch.exp(sigma)*np.sqrt(2))
+#       s = 0.5 - 0.5*torch.erf(s)
+#       s = torch.log(s)
+#       lcdfs.append(s)
+
+#     lcdfs = torch.stack(lcdfs, dim=1)
+#     lcdfs = lcdfs+logits
+#     lcdfs = torch.logsumexp(lcdfs, dim=1)
+#     cdfs.append(lcdfs.detach().numpy())
+
+#   return cdfs
+
 def _normal_mean(model, x, risk='1'):
 
   squish = nn.Softmax(dim=1)
-  shape, scale, logits = model.forward(x, risk)
+  shape, _, logits = model.forward(x, risk)
+
+  _, scale = model.get_shape_scale()
+  scale = scale.expand(x.shape[0], -1)
 
   logits = squish(logits)
-  k_ = shape
-  b_ = scale
 
   lmeans = []
   for g in range(model.k):
 
-    mu = k_[:, g]
-    sigma = b_[:, g]
+    mu, sigma = shape[:, g], scale[:, g]
+    mu = torch.distributions.Normal(mu, sigma).mean
+
     lmeans.append(mu)
 
   lmeans = torch.stack(lmeans, dim=1)
@@ -424,15 +523,29 @@ def _normal_mean(model, x, risk='1'):
 
   return lmeans.detach().numpy()
 
+
 def predict_mean(model, x, risk='1'):
   torch.no_grad()
   if model.dist == 'Normal':
     return _normal_mean(model, x, risk)
+  elif model.dist == 'Weibull':
+    return _weibull_mean(model, x, risk)
   else:
     raise NotImplementedError('Mean of Distribution: '+model.dist+
                               ' not implemented yet.')
 
 
+def predict_pdf(model, x, t_horizon, risk='1'):
+  torch.no_grad()
+  if model.dist == 'Weibull':
+    return _weibull_pdf(model, x, t_horizon, risk)
+  # if model.dist == 'LogNormal':
+  #   return _lognormal_pdf(model, x, t_horizon, risk)
+  # if model.dist == 'Normal':
+  #   return _normal_pdf(model, x, t_horizon, risk)
+  else:
+    raise NotImplementedError('Distribution: '+model.dist+
+                              ' not implemented yet.')
 
 
 def predict_cdf(model, x, t_horizon, risk='1'):

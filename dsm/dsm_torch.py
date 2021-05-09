@@ -145,11 +145,13 @@ class DeepSurvivalMachinesTorch(nn.Module):
       self.scale = nn.ParameterDict({str(r+1): nn.Parameter(-torch.ones(self.k))
                                      for r in range(self.risks)})
     elif self.dist in ['Normal']:
-      self.act = nn.Identity()
-      self.shape = nn.ParameterDict({str(r+1): nn.Parameter(torch.ones(self.k))
+      self.act = nn.SELU()
+#      718.48 205.92342741737113
+      self.shape = nn.ParameterDict({str(r+1): nn.Parameter(torch.zeros(self.k))
                                      for r in range(self.risks)})
-      self.scale = nn.ParameterDict({str(r+1): nn.Parameter(torch.ones(self.k))
+      self.scale = nn.ParameterDict({str(r+1): nn.Parameter(10*torch.ones(self.k))
                                      for r in range(self.risks)})
+
     elif self.dist in ['LogNormal']:
       self.act = nn.Tanh()
       self.shape = nn.ParameterDict({str(r+1): nn.Parameter(torch.ones(self.k))
@@ -208,6 +210,7 @@ class DeepSurvivalMachinesTorch(nn.Module):
     """
     xrep = self.embedding(x)
     dim = x.shape[0]
+
     return(self.act(self.shapeg[risk](xrep))+self.shape[risk].expand(dim, -1),
            self.act(self.scaleg[risk](xrep))+self.scale[risk].expand(dim, -1),
            self.gate[risk](xrep)/self.temp)
@@ -392,11 +395,10 @@ class DeepConvolutionalSurvivalMachinesTorch(DeepSurvivalMachinesTorch):
       Dimensionality of the input features. A tuple (height, width).
   k: int
       The number of underlying parametric distributions.
+  embedding: torch.nn.Module
+      A torch CNN to obtain the representation of the input data.
   hidden: int
       The number of neurons in each hidden layer.
-  init: tuple
-      A tuple for initialization of the parameters for the underlying
-      distributions. (shape, scale).
   dist: str
       Choice of the underlying survival distributions.
       One of 'Weibull', 'LogNormal'.
@@ -411,8 +413,8 @@ class DeepConvolutionalSurvivalMachinesTorch(DeepSurvivalMachinesTorch):
 
   """
 
-  def __init__(self, inputdim, k, typ='ConvNet',
-               hidden=None, dist='Weibull',
+  def __init__(self, inputdim, k,
+               embedding=None, hidden=None, dist='Weibull',
                temp=1000., discount=1.0, optimizer='Adam', risks=1):
     super(DeepSurvivalMachinesTorch, self).__init__()
 
@@ -422,14 +424,17 @@ class DeepConvolutionalSurvivalMachinesTorch(DeepSurvivalMachinesTorch):
     self.discount = float(discount)
     self.optimizer = optimizer
     self.hidden = hidden
-    self.typ = typ
     self.risks = risks
 
     self._init_dsm_layers(hidden)
 
-    self.embedding = create_conv_representation(inputdim=inputdim,
-                                                hidden=hidden,
-                                                typ='ConvNet')
+    if embedding is None:
+      self.embedding = create_conv_representation(inputdim=inputdim,
+                                                  hidden=hidden,
+                                                  typ='ConvNet')
+    else:
+      self.embedding = embedding
+
 
   def forward(self, x, risk='1'):
     """The forward function that is called when data is passed through DSM.
