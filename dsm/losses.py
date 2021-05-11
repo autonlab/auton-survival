@@ -433,7 +433,7 @@ def _normal_cdf(model, x, t_horizon, risk='1'):
 
   shape, _, logits = model.forward(x, risk)
   _, scale = model.get_shape_scale()
-  scale = scale.expand(x.shape[0], -1)
+  scale = scale.expand(shape.shape[0], -1)
 
   t_horz = torch.tensor(t_horizon).double()
   t_horz = t_horz.repeat(shape.shape[0], 1)
@@ -505,7 +505,7 @@ def _normal_mean(model, x, risk='1'):
   shape, _, logits = model.forward(x, risk)
 
   _, scale = model.get_shape_scale()
-  scale = scale.expand(x.shape[0], -1)
+  scale = scale.expand(shape.shape[0], -1)
 
   logits = squish(logits)
 

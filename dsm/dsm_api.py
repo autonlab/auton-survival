@@ -133,8 +133,7 @@ class DSMBase():
     self.torch_model = model.eval()
     self.fitted = True
 
-    return self    
-
+    return self
 
   def compute_nll(self, x, t, e):
     r"""This function computes the negative log likelihood of the given data.
@@ -204,7 +203,6 @@ class DSMBase():
     return (x_train, t_train, e_train,
             x_val, t_val, e_val)
 
-
   def predict_mean(self, x, risk=1):
     r"""Returns the mean Time-to-Event \( t \)
 
@@ -225,6 +223,7 @@ class DSMBase():
       raise Exception("The model has not been fitted yet. Please fit the " +
                       "model using the `fit` method on some training data " +
                       "before calling `predict_mean`.")
+
   def predict_risk(self, x, t, risk=1):
     r"""Returns the estimated risk of an event occuring before time \( t \)
       \( \widehat{\mathbb{P}}(T\leq t|X) \) for some input data \( x \).
@@ -347,6 +346,7 @@ class DeepRecurrentSurvivalMachines(DSMBase):
                                                         discount=discount)
     self.hidden = hidden
     self.typ = typ
+    
   def _gen_torch_model(self, inputdim, optimizer, risks):
     """Helper function to return a torch model."""
     return DeepRecurrentSurvivalMachinesTorch(inputdim,
@@ -402,8 +402,7 @@ class DeepRecurrentSurvivalMachines(DSMBase):
       t_val = torch.from_numpy(t_val).double()
       e_val = torch.from_numpy(e_val).double()
 
-    return (x_train, t_train, e_train,
-            x_val, t_val, e_val)
+    return (x_train, t_train, e_train, x_val, t_val, e_val)
 
 
 class DeepConvolutionalSurvivalMachines(DSMBase):
@@ -420,6 +419,7 @@ class DeepConvolutionalSurvivalMachines(DSMBase):
                                                             discount=discount)
     self.hidden = hidden
     self.typ = typ
+
   def _gen_torch_model(self, inputdim, optimizer, risks):
     """Helper function to return a torch model."""
     return DeepConvolutionalSurvivalMachinesTorch(inputdim,
@@ -462,5 +462,3 @@ class DeepCNNRNNSurvivalMachines(DeepRecurrentSurvivalMachines):
                                            optimizer=optimizer,
                                            typ=self.typ,
                                            risks=risks)
-
-

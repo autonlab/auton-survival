@@ -29,6 +29,7 @@
 from sklearn.metrics import roc_curve, roc_auc_score
 from sklearn.metrics import precision_recall_curve, average_precision_score
 from sklearn.metrics import accuracy_score
+from sklearn.metrics import mean_squared_error
 
 import numpy as np
 
@@ -36,12 +37,10 @@ import numpy as np
 def _repackage_predictions(predictions, inputshape):
 
   repack = []
-
   idx = 0
   for row in inputshape:
     repack.append(predictions[idx:idx+len(row)])
     idx += len(row)
-
   return np.array(repack)
 
 def _unrollt(data):
@@ -50,7 +49,31 @@ def _unrollt(data):
 def _unrollx(data):
   return np.vstack([dat for dat in data])
 
-def _eval_independent(predictions, t, horizon):
+def phme_error(y_true, y_pred):
+
+  d = np.array(y_pred-y_true)
+  neg, pos = (d < 0), (d >= 0)
+
+  d[neg] = np.exp(-d[neg]/13.) - 1
+  d[pos] = np.exp(d[pos]/10.) - 1
+
+  return float(d.sum())
+
+def _eval_rul_independent(predictions, t):
+
+  mse = mean_squared_error(_unrollt(t), predictions)
+  rmse = np.sqrt(mse)
+  phme_score = phme_error(_unrollt(t), predictions)
+
+  return mse, rmse, phme_score
+
+
+def _eval_rul_asbatch(predictions, t, horizon, eval_at=None, bootstrap=100):
+
+  predictions = _repackage_predictions(predictions, t)
+
+
+def _eval_clf_independent(predictions, t, horizon):
 
   fpr, tpr, _ = roc_curve(_unrollt(t) <= horizon, predictions)
   roc_auc = roc_auc_score(_unrollt(t) <= horizon, predictions)
@@ -61,7 +84,7 @@ def _eval_independent(predictions, t, horizon):
   return (fpr, tpr, roc_auc), (prec, rec, pr_auc)
 
 
-def _eval_asbatch(predictions, t, horizon, eval_at=None, bootstrap=100):
+def _eval_clf_asbatch(predictions, t, horizon, eval_at=None, bootstrap=100):
 
   predictions = _repackage_predictions(predictions, t)
 
@@ -111,22 +134,38 @@ def _eval_asbatch(predictions, t, horizon, eval_at=None, bootstrap=100):
     return (fpr, tpr, roc_auc), (prec, rec, pr_auc)
 
 
-def evaluate(predictions,
-             test_data,
-             typ="batch",
-             horizon=None,
-             eval_at=None,
-             bootstrap=None):
+def evaluate_classification(predictions,
+                            test_data,
+                            typ="batch",
+                            horizon=None,
+                            eval_at=None,
+                            bootstrap=None):
 
   if horizon is None:
     raise Exception("Please provide horizon to evaluate on.")
 
   if typ == "independent":
-    return _eval_independent(predictions, test_data, horizon)
+    if eval_at is not None:
+      print("WARNING: For independent evaluation, <eval_at> would be ignored")
+    return _eval_clf_independent(predictions, test_data, horizon)
 
   if typ == "batch":
     if eval_at is None:
       print("WARNING: No threshold provided. Evaluation would be performed\
              at end of each cycle.")
+    return _eval_clf_asbatch(predictions, test_data, horizon, eval_at, bootstrap)
 
-    return _eval_batch(predictions, test_data, horizon, eval_at, bootstrap)
+def evaluate_rul(predictions,
+                 test_data,
+                 typ="batch",
+                 eval_at=None,
+                 bootstrap=None):
+
+  if typ == "independent":
+    return _eval_rul_independent(predictions, test_data, horizon)
+
+  if typ == "independent":
+    return _eval_rul_independent(predictions, test_data, horizon)
+
+
+    

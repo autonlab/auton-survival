@@ -136,31 +136,36 @@ class DeepSurvivalMachinesTorch(nn.Module):
 
   """
 
-  def _init_dsm_layers(self, lastdim):
+  def _init_dsm_layers(self, lastdim, init_vals=None):
 
     if self.dist in ['Weibull']:
+
       self.act = nn.SELU()
-      self.shape = nn.ParameterDict({str(r+1): nn.Parameter(-torch.ones(self.k))
-                                     for r in range(self.risks)})
-      self.scale = nn.ParameterDict({str(r+1): nn.Parameter(-torch.ones(self.k))
-                                     for r in range(self.risks)})
+      if init_vals is None:
+        init_vals = (-1., -1.)
+
     elif self.dist in ['Normal']:
+
       self.act = nn.SELU()
-#      718.48 205.92342741737113
-      self.shape = nn.ParameterDict({str(r+1): nn.Parameter(torch.zeros(self.k))
-                                     for r in range(self.risks)})
-      self.scale = nn.ParameterDict({str(r+1): nn.Parameter(10*torch.ones(self.k))
-                                     for r in range(self.risks)})
+      if init_vals is None:
+        init_vals = (0., 100.)
 
     elif self.dist in ['LogNormal']:
+
       self.act = nn.Tanh()
-      self.shape = nn.ParameterDict({str(r+1): nn.Parameter(torch.ones(self.k))
-                                     for r in range(self.risks)})
-      self.scale = nn.ParameterDict({str(r+1): nn.Parameter(torch.ones(self.k))
-                                     for r in range(self.risks)})
+      if init_vals is None:
+        init_vals = (1., 1.)
+
     else:
       raise NotImplementedError('Distribution: '+self.dist+' not implemented'+
                                 ' yet.')
+
+    a, b = init_vals
+    shape = nn.ParameterDict({str(r+1): nn.Parameter(a*torch.ones(self.k))
+                              for r in range(self.risks)})
+    scale = nn.ParameterDict({str(r+1): nn.Parameter(b*torch.ones(self.k))
+                              for r in range(self.risks)})
+    self.shape, self.scale = shape, scale
 
     self.gate = nn.ModuleDict({str(r+1): nn.Sequential(
         nn.Linear(lastdim, self.k, bias=False)
@@ -176,7 +181,7 @@ class DeepSurvivalMachinesTorch(nn.Module):
 
   def __init__(self, inputdim, k, layers=None, dist='Weibull',
                temp=1000., discount=1.0, optimizer='Adam',
-               risks=1):
+               risks=1, init_vals=None):
     super(DeepSurvivalMachinesTorch, self).__init__()
 
     self.k = k
@@ -195,7 +200,7 @@ class DeepSurvivalMachinesTorch(nn.Module):
     else:
       lastdim = layers[-1]
 
-    self._init_dsm_layers(lastdim)
+    self._init_dsm_layers(lastdim, init_vals)
 
     self.embedding = create_representation(inputdim, layers, 'ReLU6')
 

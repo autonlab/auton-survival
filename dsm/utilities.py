@@ -136,6 +136,7 @@ def train_dsm(model,
   for r in range(model.risks):
     model.shape[str(r+1)].data.fill_(float(premodel.shape[str(r+1)]))
     model.scale[str(r+1)].data.fill_(float(premodel.scale[str(r+1)]))
+  print(model.shape['1'], model.scale['1'])
 
   model.double()
   optimizer = get_optimizer(model, lr)
