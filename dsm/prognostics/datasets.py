@@ -29,98 +29,94 @@ the Deep Survival Machines models.
 import pandas as pd
 import numpy as np
 
-def _preprocess_turbofan(data, ruls=None, run_col=0, windowsize=10,
-                         r_mean=True, r_std=True,
-                         standardize_with=None):
+import dsm.prognostics.utilities as utilities 
 
-  flights = set(data[run_col])
-  ft_cols = list(set(data.columns)-set([run_col]))
+def _preprocess_turbofan(file, rul_file=None, windowsize=30, 
+                         ft_cols=None, norm_tuple=None, flatten=False):
 
-  feats = []
-  targets = []
-  events = []
+  data = pd.read_csv(file, sep=' ', header=None)
 
-  if ruls is None:
-    ruls = np.zeros(len(flights))
+  flights = data[0]
+  cycles = data[1]
+
+  if rul_file is None:
+    ruls = np.zeros(len(set(flights)))
   else:
-    ruls = ruls.values[:, 0]
+    ruls = pd.read_csv(rul_file, sep=' ', header=None)[0].values
+
+  if ft_cols is None:
+
+    ft_cols = list(set(data.columns)-set([0, 26, 27]))
+    same_cols = (data[ft_cols].max(axis=0)== data[ft_cols].min(axis=0)).values
+    ft_cols = list(np.array(ft_cols)[~same_cols])
+
+  features = data[ft_cols]
+
+  if norm_tuple is None:
+    norm_tuple = (features.min(), features.max())
+
+  features = (features - norm_tuple[0])/(norm_tuple[1]-norm_tuple[0])
+  features = 2*(features-0.5)
+
+  x, t, e = [], [], []
 
   i = 0
+  for flight in set(flights):
 
-  for flight in flights:
+    features_ft = features[flights == flight]
+    cycles_ft = cycles[flights == flight]
 
-    dat = data[ft_cols][data[run_col] == flight]
-    feats_ = dat.values
+    d = cycles_ft.shape[0]
+    featurized_cycles = d - windowsize
 
-    targets_ = list(range(len(feats_)))
-    targets_.reverse()
-    targets.append(np.array(targets_)+1e-6+ruls[i])
-    events.append(np.ones(len(targets_)))
+    x_, t_, e_ = [], [], []
+    for j in range(featurized_cycles+1):
 
-    if r_mean:
-      m_feats = dat.rolling(windowsize).mean().bfill().values
-      feats_ = np.hstack([feats_, m_feats])
+      cycles_ft_ = cycles_ft.iloc[j:j+windowsize].values
+      features_ft_ = features_ft.iloc[j:j+windowsize, :].values.T
+      target_ = d-cycles_ft_[-1]
 
-    if r_std:
-      s_feats = dat.rolling(windowsize).std().bfill().values
-      feats_ = np.hstack([feats_, s_feats])
+      if flatten:
+        x_.append(features_ft_.flatten())
+      else:
+        x_.append(features_ft_)
 
-    feats.append(feats_)
-    i += 1
+      t_.append(target_+ruls[i])
+      e_.append(1)
 
-  pop_ms = []
-  pop_ss = []
+    x.append(x_)
+    t.append(t_)
+    e.append(e_)
 
-  if standardize_with is not None:
-    pop_ms, pop_ss = standardize_with
+    i+=1
 
-  else:
-    for i in range(feats[0].shape[1]):
-      pop_m = np.concatenate([out_[:, i] for out_ in feats]).mean()
-      pop_s = np.concatenate([out_[:, i] for out_ in feats]).std()
-
-      pop_ms.append(pop_m)
-      pop_ss.append(pop_s)
-
-  d = feats[0].shape[1]
-
-  for i in range(len(feats)):
-    for j in range(d):
-      feats[i][:, j] = (feats[i][:, j]-pop_ms[j])/pop_ss[j]
-      feats[i][np.isnan(feats[i])] = 0
-
-  if standardize_with is None:
-    return np.array(feats), np.array(targets), np.array(events), (pop_ms, pop_ss)
-  else:
-    return np.array(feats), np.array(targets), np.array(events)
+  return np.array(x), np.array(t), np.array(e), ft_cols, norm_tuple
 
 
-def load_turbofan(train_data, test_data, run_col=0,
-                  windowsize=10, r_mean=True, r_std=True):
+def load_turbofan(cmapss_folder, experiment=1, windowsize=30,
+                  flatten=False, sequential=True):
 
   """Helper function to load and preprocess the NASA Turbofan data.
 
   The NASA Trubofan Dataset is a popular dataset from the NASA Prognostics
   Center of Excellence consisting of synthetic dataset simulated using CMAPSS.
 
+  TODO: Add synthetic censoring to the data.
+
   Parameters
   ----------
-  train_data: str
+  cmapss_folder: str
     The location of the file consisting of the training dataset.
-  test_data: tuple
-    A tuple of (str, str) with the location of the file consisting
-    of the testing dataset, including the testing data file and the
-    remaining useful life.
-  run_col: int
-    An integer specifying the column that identifies each separate run.
+  experiment: int
+    The CMAPSS Experiment to use. One of [1, 2, 3, 4]
   windowsize: int
-    The size of the rolling window to extract features. (default: 10)
-  r_mean: bool
-    A boolean indicating if the rolling means are to be included in
-    the feature set.
-  r_std: bool
-    A boolean indicating if the rolling standard deviation is to be
-    included in the feature set.
+    The size of the sliding window to extract features. (default: 30)
+  flatten: bool
+    Flag if the features at each time step are to be flattened into a vector.
+    (Default: False)
+  sequential: bool
+    Flag if the data for each flight is to be stratified sequentially.
+    (Default: True)
 
   References
   ----------
@@ -128,24 +124,28 @@ def load_turbofan(train_data, test_data, run_col=0,
   "Damage propagation modeling for aircraft engine run-to-failure simulation."
   International conference on prognostics and health management, IEEE, 2008.
 
-
   """
 
-  tr_data = pd.read_csv(train_data, sep=' ', header=None)
-  te_data = pd.read_csv(test_data[0], sep=' ', header=None)
-  te_ruls = pd.read_csv(test_data[1], sep=' ', header=None)
+  tr_file = cmapss_folder+'train_FD00'+str(experiment)+'.txt'
+  te_file = cmapss_folder+'test_FD00'+str(experiment)+'.txt'
+  te_rul_file = cmapss_folder+'RUL_FD00'+str(experiment)+'.txt'
 
-  x_tr, t_tr, e_tr, std_with = _preprocess_turbofan(tr_data, None,
-                                                    run_col=run_col,
-                                                    windowsize=windowsize,
-                                                    r_mean=r_mean,
-                                                    r_std=r_std)
+  x_tr, t_tr, e_tr, ft_cols, norm_tuple = _preprocess_turbofan(tr_file,
+                                                               windowsize=windowsize,
+                                                               flatten=flatten)
+  x_te, t_te, e_te, _, _ = _preprocess_turbofan(te_file,
+                                                rul_file=te_rul_file,
+                                                windowsize=windowsize,
+                                                ft_cols=ft_cols,
+                                                norm_tuple=norm_tuple,
+                                                flatten=flatten)
+  if not sequential:
+    x_tr = utilities._unrollx(x_tr)
+    t_tr = utilities._unrollt(t_tr)
+    e_tr = utilities._unrollt(e_tr)
 
-  x_te, t_te, e_te = _preprocess_turbofan(te_data, te_ruls,
-                                          run_col=run_col,
-                                          windowsize=windowsize,
-                                          r_mean=r_mean,
-                                          r_std=r_std,
-                                          standardize_with=std_with)
+    x_te = utilities._unrollx(x_te)
+    t_te = utilities._unrollt(t_te)
+    e_te = utilities._unrollt(e_te)
 
   return (x_tr, t_tr, e_tr), (x_te, t_te, e_te)
