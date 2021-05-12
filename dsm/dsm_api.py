@@ -406,19 +406,51 @@ class DeepRecurrentSurvivalMachines(DSMBase):
 
 
 class DeepConvolutionalSurvivalMachines(DSMBase):
+
   """The Deep Convolutional Survival Machines model to handle data with
   image-based covariates.
 
+  References
+  ----------
+  [1] <a href="https://arxiv.org/abs/2003.01176">Deep Survival Machines:
+  Fully Parametric Survival Regression and
+  Representation Learning for Censored Data with Competing Risks."
+  IEEE Journal of Biomedical and Health Informatics 2021</a>
+  [2] <a href="">Deep parametric time-to-event regression with 
+  time-varying covariates."
+  AAAI Spring Symposium on Survival Prediction (2021)</a> 
+
+  Parameters
+  ----------
+  k: int
+      The number of underlying parametric distributions.
+  hidden: int
+      Dimentionality of the hidden layer (output of CNN).
+  distribution: str
+      Choice of the underlying survival distributions.
+      One of 'Weibull', 'LogNormal'.
+      Default is 'Weibull'.
+  temp: float
+      The logits for the gate are rescaled with this value.
+      Default is 1000.
+  discount: float
+      a float in [0,1] that determines how to discount the tail bias
+      from the uncensored instances.
+      Default is 1.
+  embedding: torch.nn.Module
+      A torch model that allows you to specify a custom
+      representation learning function.
+
   """
 
-  def __init__(self, k=3, layers=None, hidden=None, 
-               distribution="Weibull", temp=1000., discount=1.0, typ="ConvNet"):
+  def __init__(self, k=3, hidden=None, distribution="Weibull", 
+               temp=1000., discount=1.0, embedding=None):
     super(DeepConvolutionalSurvivalMachines, self).__init__(k=k,
                                                             distribution=distribution,
                                                             temp=temp,
                                                             discount=discount)
     self.hidden = hidden
-    self.typ = typ
+    self.embedding = embedding
 
   def _gen_torch_model(self, inputdim, optimizer, risks):
     """Helper function to return a torch model."""
@@ -429,7 +461,7 @@ class DeepConvolutionalSurvivalMachines(DSMBase):
                                                   temp=self.temp,
                                                   discount=self.discount,
                                                   optimizer=optimizer,
-                                                  typ=self.typ,
+                                                  embedding=self.embedding,
                                                   risks=risks)
 
 
