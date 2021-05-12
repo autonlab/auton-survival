@@ -94,7 +94,7 @@ def _preprocess_turbofan(file, rul_file=None, windowsize=30,
 
 
 def load_turbofan(cmapss_folder, experiment=1, windowsize=30,
-                  flatten=False, sequential=True):
+                  flatten=False, sequential=True, test_all=True):
 
   """Helper function to load and preprocess the NASA Turbofan data.
 
@@ -117,7 +117,9 @@ def load_turbofan(cmapss_folder, experiment=1, windowsize=30,
   sequential: bool
     Flag if the data for each flight is to be stratified sequentially.
     (Default: True)
-
+  test_all: bool
+    (Default: True) Flag if only the last time step is to be output for the
+    test data. Note: if sequential is True, this flag is ignored.
   References
   ----------
   [1] Saxena, Abhinav, Kai Goebel, Don Simon, and Neil Eklund.
@@ -139,10 +141,17 @@ def load_turbofan(cmapss_folder, experiment=1, windowsize=30,
                                                 ft_cols=ft_cols,
                                                 norm_tuple=norm_tuple,
                                                 flatten=flatten)
+
   if not sequential:
+
     x_tr = utilities._unrollx(x_tr)
     t_tr = utilities._unrollt(t_tr)
     e_tr = utilities._unrollt(e_tr)
+
+    # if not test_all:
+
+    #   x_te = np.array([x_te_[-1] for x_te_ in x_te])
+
 
     x_te = utilities._unrollx(x_te)
     t_te = utilities._unrollt(t_te)
