@@ -59,7 +59,6 @@ model and allows for learning of representations of the input covariates using
 Machines is a natural fit to model problems where there are time dependendent
 covariates.
 
-> :warning: **Not Implemented Yet!**
 
 Deep Convolutional Survival Machines
 ------------------------------------
