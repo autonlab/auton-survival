@@ -364,6 +364,14 @@ class DeepRecurrentSurvivalMachines(DSMBase):
   """The Deep Recurrent Survival Machines model to handle data with
   time-dependent covariates.
 
+  For full details on Deep Recurrent Survival Machines, refer to our paper [1].
+  
+  References
+  ----------
+  [1] <a href="http://proceedings.mlr.press/v146/nagpal21a.html">
+  Deep Parametric Time-to-Event Regression with Time-Varying Covariates 
+  AAAI Spring Symposium on Survival Prediction</a>
+
   """
 
   def __init__(self, k=3, layers=None, hidden=None,
