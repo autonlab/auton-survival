@@ -100,7 +100,7 @@ Representation Learning for Censored Data with Competing Risks.
 IEEE Journal of Biomedical \& Health Informatics (2021)](https://arxiv.org/abs/2003.01176)</a>
 
 ```
-  @article{nagpal2020deep,
+  @article{nagpal2021deep,
   title={Deep Survival Machines: Fully Parametric Survival Regression and\
   Representation Learning for Censored Data with Competing Risks},
   author={Nagpal, Chirag and Li, Xinyu and Dubrawski, Artur},
@@ -114,11 +114,12 @@ IEEE Journal of Biomedical \& Health Informatics (2021)](https://arxiv.org/abs/2
 AAAI Spring Symposium (2021)](http://proceedings.mlr.press/v146/nagpal21a.html)</a>
 
 ```
-  @article{nagpal2021rdsm,
-  title={Deep Parametric Time-to-Event Regression with Time-Varying Covariates},
-  author={Nagpal, Chirag and Jeanselme, Vincent and Dubrawski, Artur},
-  journal={AAAI Spring Symposium on Survival Analysis},
-  year={2021}
+@InProceedings{pmlr-v146-nagpal21a,
+  title = 	 {Deep Parametric Time-to-Event Regression with Time-Varying Covariates},
+  author =       {Nagpal, Chirag and Jeanselme, Vincent and Dubrawski, Artur},
+  booktitle = 	 {Proceedings of AAAI Spring Symposium on Survival Prediction - Algorithms, Challenges, and Applications 2021},
+  series = 	 {Proceedings of Machine Learning Research},
+  publisher =    {PMLR},
   }
 ```
 
