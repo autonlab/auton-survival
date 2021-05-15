@@ -110,9 +110,8 @@ IEEE Journal of Biomedical \& Health Informatics (2021)](https://arxiv.org/abs/2
 ```
 
 
-[2] [Recurrent Deep Survival Machines:
-Deep Parametric Time-to-Event Regression with Time-Varying Covariates.
-AAAI Spring Symposium (2021)]()</a>
+[2] [Deep Parametric Time-to-Event Regression with Time-Varying Covariates.
+AAAI Spring Symposium (2021)](http://proceedings.mlr.press/v146/nagpal21a.html)</a>
 
 ```
   @article{nagpal2021rdsm,
