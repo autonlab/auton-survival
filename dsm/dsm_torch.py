@@ -40,7 +40,7 @@ import numpy as np
 __pdoc__ = {}
 
 for clsn in ['DeepSurvivalMachinesTorch',
-             'DeepRecurrentSurvivalMachinesTorch',
+             'RecurrentDeepSurvivalMachinesTorch',
              'DeepConvolutionalSurvivalMachines']:
   for membr in ['training', 'dump_patches']:
 
@@ -204,6 +204,9 @@ class DeepSurvivalMachinesTorch(nn.Module):
     Args:
       x:
         a torch.tensor of the input features.
+      risk: 
+        uncertainty as to whether the parameters are appropriate for the 
+        phenomenon that we are attempting to model.
 
     """
     xrep = self.embedding(x)
@@ -216,7 +219,7 @@ class DeepSurvivalMachinesTorch(nn.Module):
     return(self.shape[risk],
            self.scale[risk])
 
-class DeepRecurrentSurvivalMachinesTorch(DeepSurvivalMachinesTorch):
+class RecurrentDeepSurvivalMachinesTorch(DeepSurvivalMachinesTorch):
   """A Torch implementation of Deep Recurrent Survival Machines model.
 
   This is an implementation of Deep Recurrent Survival Machines model
@@ -236,13 +239,13 @@ class DeepRecurrentSurvivalMachinesTorch(DeepSurvivalMachinesTorch):
       Dimensionality of the input features.
   k: int
       The number of underlying parametric distributions.
+  typ: str
+      Choice of the underlying architectures.
+      One of 'LSTM', 'CNN'.
   layers: int
       The number of hidden layers in the LSTM or RNN cell.
   hidden: int
       The number of neurons in each hidden layer.
-  init: tuple
-      A tuple for initialization of the parameters for the underlying
-      distributions. (shape, scale).
   dist: str
       Choice of the underlying survival distributions.
       One of 'Weibull', 'LogNormal'.
@@ -254,6 +257,12 @@ class DeepRecurrentSurvivalMachinesTorch(DeepSurvivalMachinesTorch):
       a float in [0,1] that determines how to discount the tail bias
       from the uncensored instances.
       Default is 1.
+  optimizer: optimizer: str
+      The choice of the gradient based optimization method. 
+      One of'Adam', 'RMSProp' or 'SGD'.
+  risks: int
+      uncertainty as to whether the parameters are appropriate for the 
+      phenomenon that we are attempting to model.
 
   """
 
@@ -298,6 +307,9 @@ class DeepRecurrentSurvivalMachinesTorch(DeepSurvivalMachinesTorch):
     Args:
       x:
         a torch.tensor of the input features.
+      risk:
+        uncertainty as to whether the parameters are appropriate for the 
+        phenomenon that we are attempting to model.
 
     """
 
@@ -340,6 +352,8 @@ def create_conv_representation(inputdim, hidden,
       The number of neurons in each hidden layer.
   typ: str
       Choice of convolutional neural network: One of 'ConvNet'
+  add_Linear: boolean
+      Choice of adding or not adding a linear layer
 
   Returns
   ----------
@@ -407,6 +421,12 @@ class DeepConvolutionalSurvivalMachinesTorch(DeepSurvivalMachinesTorch):
       a float in [0,1] that determines how to discount the tail bias
       from the uncensored instances.
       Default is 1.
+  optimizer: str
+      The choice of the gradient based optimization method. 
+      One of'Adam', 'RMSProp' or 'SGD'.
+  risks: int
+      Uncertainty as to whether the parameters are appropriate for the 
+      phenomenon that we are attempting to model.
 
   """
 
@@ -439,7 +459,10 @@ class DeepConvolutionalSurvivalMachinesTorch(DeepSurvivalMachinesTorch):
     Args:
       x:
         a torch.tensor of the input features.
-
+      risk: 
+        Uncertainty as to whether the parameters are appropriate for the 
+        phenomenon that we are attempting to model.
+      
     """
     xrep = self.embedding(x)
 
@@ -473,6 +496,9 @@ class DeepCNNRNNSurvivalMachinesTorch(DeepRecurrentSurvivalMachinesTorch):
       Dimensionality of the input features. (height, width)
   k: int
       The number of underlying parametric distributions.
+  typ: str
+      Choice of the underlying architectures.
+      One of 'LSTM', 'CNN'.
   layers: int
       The number of hidden layers in the LSTM or RNN cell.
   hidden: int
@@ -491,6 +517,12 @@ class DeepCNNRNNSurvivalMachinesTorch(DeepRecurrentSurvivalMachinesTorch):
       a float in [0,1] that determines how to discount the tail bias
       from the uncensored instances.
       Default is 1.
+  optimizer: str
+      The choice of the gradient based optimization method. 
+      One of'Adam', 'RMSProp' or 'SGD'.
+  risks: int
+      Uncertainty as to whether the parameters are appropriate for the 
+      phenomenon that we are attempting to model.
 
   """
 
@@ -535,7 +567,10 @@ class DeepCNNRNNSurvivalMachinesTorch(DeepRecurrentSurvivalMachinesTorch):
     Args:
       x:
         a torch.tensor of the input features.
-
+      risk: 
+        Uncertainty as to whether the parameters are appropriate for the
+        phenomenon that we are attempting to model.
+        
     """
 
     # Input Mask
