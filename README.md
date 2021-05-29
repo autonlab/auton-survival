@@ -95,7 +95,7 @@ Examples
 ---------
 
 1. [Deep Survival Machines on the SUPPORT Dataset](https://nbviewer.jupyter.org/github/autonlab/DeepSurvivalMachines/blob/master/examples/DSM%20on%20SUPPORT%20Dataset.ipynb)
-2. [Recurrent Deep Survival Machines on the PBC Dataset](https://nbviewer.jupyter.org/github/autonlab/DeepSurvivalMachines/blob/master/examples/DSM%20on%20PBC%20Dataset.ipynb)
+2. [Recurrent Deep Survival Machines on the PBC Dataset](https://nbviewer.jupyter.org/github/autonlab/DeepSurvivalMachines/blob/master/examples/RDSM%20on%20PBC%20Dataset.ipynb)
 
 
 
