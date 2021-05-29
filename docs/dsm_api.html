@@ -220,17 +220,17 @@ to be computed</dd>
 </dd>
 </dl>
 </dd>
-<dt id="dsm.dsm_api.DeepRecurrentSurvivalMachines"><code class="flex name class">
-<span>class <span class="ident">DeepRecurrentSurvivalMachines</span></span>
+<dt id="dsm.dsm_api.RecurrentDeepSurvivalMachines"><code class="flex name class">
+<span>class <span class="ident">RecurrentDeepSurvivalMachines</span></span>
 <span>(</span><span>k=3, layers=None, hidden=None, distribution='Weibull', temp=1000.0, discount=1.0, typ='LSTM')</span>
 </code></dt>
 <dd>
-<div class="desc"><p>The Deep Recurrent Survival Machines model to handle data with
+<div class="desc"><p>The Recurrent  Deep Survival Machines model to handle data with
 time-dependent covariates.</p></div>
 <div class="git-link-div"><a href="https://github.com/autonlab/DeepSurvivalMachines" class="git-link">Browse git</a></div>
 <h3>Methods</h3>
 <dl>
-<dt id="dsm.dsm_api.DeepRecurrentSurvivalMachines.fit"><code class="name flex">
+<dt id="dsm.dsm_api.RecurrentDeepSurvivalMachines.fit"><code class="name flex">
 <span>def <span class="ident">fit</span></span>(<span>self, x, t, e, vsize=0.15, val_data=None, iters=1, learning_rate=0.001, batch_size=100, elbo=True, optimizer='Adam', random_state=100)</span>
 </code></dt>
 <dd>
@@ -269,7 +269,7 @@ Default is True.</dd>
 <dd>random seed that determines how the validation set is chosen.</dd>
 </dl></div>
 </dd>
-<dt id="dsm.dsm_api.DeepRecurrentSurvivalMachines.compute_nll"><code class="name flex">
+<dt id="dsm.dsm_api.RecurrentDeepSurvivalMachines.compute_nll"><code class="name flex">
 <span>def <span class="ident">compute_nll</span></span>(<span>self, x, t, e)</span>
 </code></dt>
 <dd>
@@ -296,7 +296,7 @@ the different events' type.</p>
 <dd>Negative log likelihood.</dd>
 </dl></div>
 </dd>
-<dt id="dsm.dsm_api.DeepRecurrentSurvivalMachines.predict_mean"><code class="name flex">
+<dt id="dsm.dsm_api.RecurrentDeepSurvivalMachines.predict_mean"><code class="name flex">
 <span>def <span class="ident">predict_mean</span></span>(<span>self, x, risk=1)</span>
 </code></dt>
 <dd>
@@ -316,7 +316,7 @@ the different events' type.</p>
 <dd>numpy array of the mean time to event.</dd>
 </dl></div>
 </dd>
-<dt id="dsm.dsm_api.DeepRecurrentSurvivalMachines.predict_risk"><code class="name flex">
+<dt id="dsm.dsm_api.RecurrentDeepSurvivalMachines.predict_risk"><code class="name flex">
 <span>def <span class="ident">predict_risk</span></span>(<span>self, x, t, risk=1)</span>
 </code></dt>
 <dd>
@@ -340,7 +340,7 @@ to be computed</dd>
 <dd>numpy array of the risks at each time in t.</dd>
 </dl></div>
 </dd>
-<dt id="dsm.dsm_api.DeepRecurrentSurvivalMachines.predict_survival"><code class="name flex">
+<dt id="dsm.dsm_api.RecurrentDeepSurvivalMachines.predict_survival"><code class="name flex">
 <span>def <span class="ident">predict_survival</span></span>(<span>self, x, t, risk=1)</span>
 </code></dt>
 <dd>
