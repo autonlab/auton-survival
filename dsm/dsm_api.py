@@ -562,7 +562,20 @@ class DeepConvolutionalSurvivalMachines(DSMBase):
     self.hidden = hidden
     self.typ = typ
   def _gen_torch_model(self, inputdim, optimizer, risks):
-    """Helper function to return a torch model."""
+    r"""Helper function to return a torch model.
+    
+    Parameters
+    ----------
+    inputdim: int
+        Dimensionality of the input features.
+    optimizer: str
+        The choice of the gradient based optimization method. One of
+        'Adam', 'RMSProp' or 'SGD'.
+    risks: int
+        Uncertainty as to whether the parameters are appropriate for 
+        the phenomenon that we are attempting to model.
+    
+    """
     return DeepConvolutionalSurvivalMachinesTorch(inputdim,
                                                   k=self.k,
                                                   hidden=self.hidden,
