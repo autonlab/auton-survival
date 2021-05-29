@@ -40,7 +40,20 @@ import torch
 import torch.nn as nn
 
 def _normal_loss(model, t, e, risk='1'):
-
+  r"""This function returns the normal loss.
+  
+  Parameters
+  ----------
+  t: np.ndarray
+     A numpy array of the event/censoring times, \( t \).
+  e: np.ndarray
+     A numpy array of the event/censoring indicators, \( \delta \).
+     \( \delta = 1 \) means the event took place.
+  risk: 
+     Uncertainty as to whether the parameters are appropriate for the 
+     phenomenon that we are attempting to model.
+     
+  """
   shape, scale = model.get_shape_scale(risk)
 
   k_ = shape.expand(t.shape[0], -1)
@@ -66,6 +79,20 @@ def _normal_loss(model, t, e, risk='1'):
 
 
 def _lognormal_loss(model, t, e, risk='1'):
+  r""" This function returns the log of normal loss.
+  
+  Parameters
+  ----------
+  t: np.ndarray
+     A numpy array of the event/censoring times, \( t \).
+  e: np.ndarray
+     A numpy array of the event/censoring indicators, \( \delta \).
+     \( \delta = 1 \) means the event took place.
+  risk: 
+     Uncertainty as to whether the parameters are appropriate for the 
+     phenomenon that we are attempting to model.
+     
+  """
 
   shape, scale = model.get_shape_scale(risk)
 
@@ -92,7 +119,20 @@ def _lognormal_loss(model, t, e, risk='1'):
 
 
 def _weibull_loss(model, t, e, risk='1'):
-
+  r""" This function returns the weibull loss.
+  
+  Parameters
+  ----------
+  t: np.ndarray
+     A numpy array of the event/censoring times, \( t \).
+  e: np.ndarray
+     A numpy array of the event/censoring indicators, \( \delta \).
+     \( \delta = 1 \) means the event took place.
+  risk: 
+     Uncertainty as to whether the parameters are appropriate for the 
+     phenomenon that we are attempting to model.
+     
+  """
   shape, scale = model.get_shape_scale(risk)
 
   k_ = shape.expand(t.shape[0], -1)
@@ -116,6 +156,20 @@ def _weibull_loss(model, t, e, risk='1'):
 
 
 def unconditional_loss(model, t, e, risk='1'):
+  r""" This function returns the unconditional loss.
+  
+  Parameters
+  ----------
+  t: np.ndarray
+     A numpy array of the event/censoring times, \( t \).
+  e: np.ndarray
+     A numpy array of the event/censoring indicators, \( \delta \).
+     \( \delta = 1 \) means the event took place.
+  risk: 
+     Uncertainty as to whether the parameters are appropriate for the 
+     phenomenon that we are attempting to model.
+     
+  """
 
   if model.dist == 'Weibull':
     return _weibull_loss(model, t, e, risk)
@@ -128,7 +182,22 @@ def unconditional_loss(model, t, e, risk='1'):
                               ' not implemented yet.')
 
 def _conditional_normal_loss(model, x, t, e, elbo=True, risk='1'):
-
+  r""" This function returns the conditional normal loss.
+  
+  Parameters
+  ----------
+  t: np.ndarray
+     A numpy array of the event/censoring times, \( t \).
+  e: np.ndarray
+     A numpy array of the event/censoring indicators, \( \delta \).
+     \( \delta = 1 \) means the event took place.
+  elbo: boolean
+     Evidence lower bound.
+  risk: str
+     Uncertainty as to whether the parameters are appropriate for the 
+     phenomenon that we are attempting to model.
+     
+  """
   alpha = model.discount
   shape, scale, logits = model.forward(x, risk)
 
@@ -180,6 +249,22 @@ def _conditional_normal_loss(model, x, t, e, elbo=True, risk='1'):
   return -ll/float(len(uncens)+len(cens))
 
 def _conditional_lognormal_loss(model, x, t, e, elbo=True, risk='1'):
+  r""" This function returns the log of conditional normal loss.
+  
+  Parameters
+  ----------
+  t: np.ndarray
+     A numpy array of the event/censoring times, \( t \).
+  e: np.ndarray
+     A numpy array of the event/censoring indicators, \( \delta \).
+     \( \delta = 1 \) means the event took place.
+  elbo: boolean
+     Evidence lower bound.
+  risk: str
+     Uncertainty as to whether the parameters are appropriate for the 
+     phenomenon that we are attempting to model.
+     
+  """
 
   alpha = model.discount
   shape, scale, logits = model.forward(x, risk)
@@ -233,6 +318,24 @@ def _conditional_lognormal_loss(model, x, t, e, elbo=True, risk='1'):
 
 
 def _conditional_weibull_loss(model, x, t, e, elbo=True, risk='1'):
+  r""" This function returns the conditional weibull loss.
+  
+  Parameters
+  ----------
+  x: np.ndarray
+     A numpy array of the input features, \( x \).
+  t: np.ndarray
+     A numpy array of the event/censoring times, \( t \).
+  e: np.ndarray
+     A numpy array of the event/censoring indicators, \( \delta \).
+     \( \delta = 1 \) means the event took place.
+  elbo: boolean
+     Evidence lower bound.
+  risk: str
+     Uncertainty as to whether the parameters are appropriate for the 
+     phenomenon that we are attempting to model.
+     
+  """
 
   alpha = model.discount
   shape, scale, logits = model.forward(x, risk)
@@ -282,6 +385,24 @@ def _conditional_weibull_loss(model, x, t, e, elbo=True, risk='1'):
 
 
 def conditional_loss(model, x, t, e, elbo=True, risk='1'):
+  r""" This function returns the conditional loss.
+  
+  Parameters
+  ----------
+  x: np.ndarray
+     A numpy array of the input features, \( x \).
+  t: np.ndarray
+     A numpy array of the event/censoring times, \( t \).
+  e: np.ndarray
+     A numpy array of the event/censoring indicators, \( \delta \).
+     \( \delta = 1 \) means the event took place.
+  elbo: boolean
+     Evidence lower bound.
+  risk: str
+     Uncertainty as to whether the parameters are appropriate for the 
+     phenomenon that we are attempting to model.
+     
+  """
 
   if model.dist == 'Weibull':
     return _conditional_weibull_loss(model, x, t, e, elbo, risk)
@@ -294,6 +415,19 @@ def conditional_loss(model, x, t, e, elbo=True, risk='1'):
                               ' not implemented yet.')
 
 def _weibull_pdf(model, x, t_horizon, risk='1'):
+  r""" This function returns the probability density function 
+  of the Weibull Distribution.
+  
+  Parameters
+  ----------
+  x: np.ndarray
+     A numpy array of the input features, \( x \).
+  t_horizon: 
+  risk: str
+     Uncertainty as to whether the parameters are appropriate for 
+     the phenomenon that we are attempting to model.
+     
+  """  
 
   squish = nn.LogSoftmax(dim=1)
 
@@ -329,7 +463,19 @@ def _weibull_pdf(model, x, t_horizon, risk='1'):
   return pdfs
 
 def _weibull_cdf(model, x, t_horizon, risk='1'):
-
+  r""" This function returns the cumulative density function 
+  of the Weibull Distribution.
+  
+  Parameters
+  ----------
+  x: np.ndarray
+     A numpy array of the input features, \( x \).
+  t_horizon: 
+  risk: str
+     Uncertainty as to whether the parameters are appropriate for 
+     the phenomenon that we are attempting to model.
+     
+  """  
   squish = nn.LogSoftmax(dim=1)
 
   shape, scale, logits = model.forward(x, risk)
@@ -362,6 +508,18 @@ def _weibull_cdf(model, x, t_horizon, risk='1'):
   return cdfs
 
 def _weibull_mean(model, x, risk='1'):
+  r""" This function returns the mean
+  of the Weibull Distribution.
+  
+  Parameters
+  ----------
+  x: np.ndarray
+     A numpy array of the input features, \( x \).
+  risk: str
+     Uncertainty as to whether the parameters are appropriate for 
+     the phenomenon that we are attempting to model.
+     
+  """  
 
   squish = nn.LogSoftmax(dim=1)
 
@@ -388,11 +546,20 @@ def _weibull_mean(model, x, risk='1'):
 
   return torch.exp(lmeans).detach().numpy()
 
-
-
-
 def _lognormal_cdf(model, x, t_horizon, risk='1'):
-
+  r""" This function returns the cumulative density function 
+  of the log of Normal Distribution.
+  
+  Parameters
+  ----------
+  x: np.ndarray
+     A numpy array of the input features, \( x \).
+  t_horizon: 
+  risk: str
+     Uncertainty as to whether the parameters are appropriate for 
+     the phenomenon that we are attempting to model.
+     
+  """  
   squish = nn.LogSoftmax(dim=1)
 
   shape, scale, logits = model.forward(x, risk)
@@ -429,7 +596,19 @@ def _lognormal_cdf(model, x, t_horizon, risk='1'):
   return cdfs
 
 def _normal_cdf(model, x, t_horizon, risk='1'):
-
+  r""" This function returns the cumulative density function 
+  of the Normal Distribution.
+  
+  Parameters
+  ----------
+  x: np.ndarray
+     A numpy array of the input features, \( x \).
+  t_horizon: 
+  risk: str
+     Uncertainty as to whether the parameters are appropriate for 
+     the phenomenon that we are attempting to model.
+     
+  """  
   squish = nn.LogSoftmax(dim=1)
 
   shape, scale, logits = model.forward(x, risk)
@@ -466,7 +645,18 @@ def _normal_cdf(model, x, t_horizon, risk='1'):
   return cdfs
 
 def _normal_mean(model, x, risk='1'):
-
+  r""" This function returns the mean 
+  of the Normal Distribution.
+  
+  Parameters
+  ----------
+  x: np.ndarray
+     A numpy array of the input features, \( x \).
+  risk: str
+     Uncertainty as to whether the parameters are appropriate for 
+     the phenomenon that we are attempting to model.
+     
+  """  
   squish = nn.Softmax(dim=1)
   shape, scale, logits = model.forward(x, risk)
 
@@ -500,6 +690,19 @@ def predict_mean(model, x, risk='1'):
 
 
 def predict_pdf(model, x, t_horizon, risk='1'):
+   r""" This function predicts the probability density function 
+  of the distributions 'Weibull', 'LogNormal', 'Normal'.
+  
+  Parameters
+  ----------
+  x: np.ndarray
+     A numpy array of the input features, \( x \).
+  t_horizon: 
+  risk: str
+     Uncertainty as to whether the parameters are appropriate for 
+     the phenomenon that we are attempting to model.
+     
+  """  
   torch.no_grad()
   if model.dist == 'Weibull':
     return _weibull_pdf(model, x, t_horizon, risk)
@@ -513,6 +716,19 @@ def predict_pdf(model, x, t_horizon, risk='1'):
 
 
 def predict_cdf(model, x, t_horizon, risk='1'):
+  r""" This function predicts the cumulative density function 
+  of the distributions 'Weibull', 'LogNormal', 'Normal'.
+  
+  Parameters
+  ----------
+  x: np.ndarray
+     A numpy array of the input features, \( x \).
+  t_horizon: 
+  risk: str
+     Uncertainty as to whether the parameters are appropriate for 
+     the phenomenon that we are attempting to model.
+     
+  """  
   torch.no_grad()
   if model.dist == 'Weibull':
     return _weibull_cdf(model, x, t_horizon, risk)
