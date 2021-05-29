@@ -444,6 +444,7 @@ class DeepRecurrentSurvivalMachines(DSMBase):
                                                         discount=discount)
     self.hidden = hidden
     self.typ = typ
+    
   def _gen_torch_model(self, inputdim, optimizer, risks):
     r"""Helper function to return a torch model.
     
@@ -561,6 +562,7 @@ class DeepConvolutionalSurvivalMachines(DSMBase):
                                                             discount=discount)
     self.hidden = hidden
     self.typ = typ
+    
   def _gen_torch_model(self, inputdim, optimizer, risks):
     r"""Helper function to return a torch model.
     
