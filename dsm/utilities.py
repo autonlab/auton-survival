@@ -140,7 +140,7 @@ def train_dsm(model,
               x_valid, t_valid, e_valid,
               n_iter=10000, lr=1e-3, elbo=True,
               bs=100):
-  """Function to train the torch instance of the model.
+  r"""Function to train the torch instance of the model.
   
   Parameters
   ----------
