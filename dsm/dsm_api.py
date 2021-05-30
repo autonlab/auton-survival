@@ -61,7 +61,7 @@ class DSMBase():
     self.fitted = False
 
   def _gen_torch_model(self, inputdim, optimizer, risks):
-    r"""Helper function to return a torch model.
+    """Helper function to return a torch model.
     
     Parameters
     ----------
@@ -73,7 +73,6 @@ class DSMBase():
     risks: int
         Uncertainty as to whether the parameters are appropriate for 
         the phenomenon that we are attempting to model.
-    
     """
     return DeepSurvivalMachinesTorch(inputdim,
                                      k=self.k,
@@ -87,8 +86,7 @@ class DSMBase():
   def fit(self, x, t, e, vsize=0.15, val_data=None,
           iters=1, learning_rate=1e-3, batch_size=100,
           elbo=True, optimizer="Adam", random_state=100):
-
-    r"""This method is used to train an instance of the DSM model.
+    """This method is used to train an instance of the DSM model.
 
     Parameters
     ----------
@@ -118,7 +116,6 @@ class DSMBase():
         'Adam', 'RMSProp' or 'SGD'.
     random_state: float
         random seed that determines how the validation set is chosen.
-
     """
 
     processed_data = self._prepocess_training_data(x, t, e,
@@ -150,7 +147,7 @@ class DSMBase():
 
 
   def compute_nll(self, x, t, e):
-    r"""This function computes the negative log likelihood of the given data.
+    """This function computes the negative log likelihood of the given data.
     In case of competing risks, the negative log likelihoods are summed over
     the different events' type.
 
@@ -184,7 +181,7 @@ class DSMBase():
     return loss
 
   def _prepocess_test_data(self, x):
-    r"""This function pre processes the test data.
+    """This function pre processes the test data.
 
     Parameters
     ----------
@@ -197,7 +194,7 @@ class DSMBase():
     return torch.from_numpy(x)
 
   def _prepocess_training_data(self, x, t, e, vsize, val_data, random_state):
-    r"""This function pre processes the training data.
+    """This function pre processes the training data.
 
     Parameters
     ----------
@@ -250,7 +247,7 @@ class DSMBase():
 
 
   def predict_mean(self, x, risk=1):
-    r"""Returns the mean Time-to-Event \( t \)
+    """Returns the mean Time-to-Event \( t \)
 
     Parameters
     ----------
@@ -262,7 +259,6 @@ class DSMBase():
         
     Returns:
       np.array: numpy array of the mean time to event.
-
     """
 
     if self.fitted:
@@ -275,7 +271,7 @@ class DSMBase():
                       "before calling `predict_mean`.")
       
   def predict_risk(self, x, t, risk=1):
-    r"""Returns the estimated risk of an event occuring before time \( t \)
+    """Returns the estimated risk of an event occuring before time \( t \)
       \( \widehat{\mathbb{P}}(T\leq t|X) \) for some input data \( x \).
 
     Parameters
@@ -291,7 +287,6 @@ class DSMBase():
         
     Returns:
       np.array: numpy array of the risks at each time in t.
-
     """
 
     if self.fitted:
@@ -303,7 +298,7 @@ class DSMBase():
 
 
   def predict_survival(self, x, t, risk=1):
-    r"""Returns the estimated survival probability at time \( t \),
+    """Returns the estimated survival probability at time \( t \),
       \( \widehat{\mathbb{P}}(T > t|X) \) for some input data \( x \).
 
     Parameters
@@ -319,7 +314,6 @@ class DSMBase():
         
     Returns:
       np.array: numpy array of the survival probabilites at each time in t.
-
     """
     x = self._prepocess_test_data(x)
     if not isinstance(t, list):
@@ -333,7 +327,7 @@ class DSMBase():
                       "before calling `predict_survival`.")
 
   def predict_pdf(self, x, t, risk=1):
-    r"""Returns the estimated pdf at time \( t \),
+    """Returns the estimated pdf at time \( t \),
       \( \widehat{\mathbb{P}}(T = t|X) \) for some input data \( x \). 
 
     Parameters
@@ -349,7 +343,6 @@ class DSMBase():
         
     Returns:
       np.array: numpy array of the estimated pdf at each time in t.
-
     """
     x = self._prepocess_test_data(x)
     if not isinstance(t, list):
@@ -446,7 +439,7 @@ class DeepRecurrentSurvivalMachines(DSMBase):
     self.typ = typ
     
   def _gen_torch_model(self, inputdim, optimizer, risks):
-    r"""Helper function to return a torch model.
+    """Helper function to return a torch model.
     
     Parameters
     ----------
@@ -458,7 +451,6 @@ class DeepRecurrentSurvivalMachines(DSMBase):
     risks: int
         Uncertainty as to whether the parameters are appropriate for 
         the phenomenon that we are attempting to model.
-    
     """
     return DeepRecurrentSurvivalMachinesTorch(inputdim,
                                               k=self.k,
@@ -472,7 +464,7 @@ class DeepRecurrentSurvivalMachines(DSMBase):
                                               risks=risks)
 
   def _prepocess_test_data(self, x):
-    r"""This function pre processes the test data.
+    """This function pre processes the test data.
 
     Parameters
     ----------
@@ -485,7 +477,7 @@ class DeepRecurrentSurvivalMachines(DSMBase):
     return torch.from_numpy(_get_padded_features(x))
 
   def _prepocess_training_data(self, x, t, e, vsize, val_data, random_state):
-    r"""RNNs require different preprocessing for variable length sequences.
+    """RNNs require different preprocessing for variable length sequences.
     This function pre processes the training data.
 
     Parameters
@@ -564,7 +556,7 @@ class DeepConvolutionalSurvivalMachines(DSMBase):
     self.typ = typ
     
   def _gen_torch_model(self, inputdim, optimizer, risks):
-    r"""Helper function to return a torch model.
+    """Helper function to return a torch model.
     
     Parameters
     ----------
@@ -607,7 +599,7 @@ class DeepCNNRNNSurvivalMachines(DeepRecurrentSurvivalMachines):
     self.typ = typ
 
   def _gen_torch_model(self, inputdim, optimizer, risks):
-    r"""Helper function to return a torch model.
+    """Helper function to return a torch model.
     
     Parameters
     ----------
