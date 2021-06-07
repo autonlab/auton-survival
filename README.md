@@ -52,6 +52,8 @@ well as the mixing weights are modelled using Neural Networks.
 
 Recurrent Deep Survival Machines
 --------------------------------
+<img width=80% src=https://ndownloader.figshare.com/files/28329918>
+
 
 **Recurrent Deep Survival Machines (RDSM)** builds on the original **DSM**
 model and allows for learning of representations of the input covariates using
