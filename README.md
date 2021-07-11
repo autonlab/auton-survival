@@ -64,19 +64,28 @@ model and allows for learning of representations of the input covariates using
 Machines is a natural fit to model problems where there are time dependendent
 covariates.
 
+#### Usage Example
+    >>> from dsm import RecurrentDeepSurvivalMachines
+    >>> model = RecurrentDeepSurvivalMachines()
+    >>> model.fit()
+    >>> model.predict_risk()
+
 
 Deep Convolutional Survival Machines
 ------------------------------------
 
 Predictive maintenance and medical imaging sometimes requires to work with
 image streams. Deep Convolutional Survival Machines extends **DSM** and
-**DRSM** to learn representations of the input image data using
+**RDSM** to learn representations of the input image data using
 convolutional layers. If working with streaming data, the learnt
 representations are then passed through an LSTM to model temporal dependencies
 before determining the underlying survival distributions.
 
-> :warning: **Not Implemented Yet!**
-
+#### Usage Example
+    >>> from dsm import DeepConvolutionalSurvivalMachines
+    >>> model = DeepConvolutionalSurvivalMachines()
+    >>> model.fit()
+    >>> model.predict_risk()
 
 Installation
 ------------
@@ -91,6 +100,9 @@ Examples
 ---------
 
 1. [Deep Survival Machines on the SUPPORT Dataset](https://nbviewer.jupyter.org/github/autonlab/DeepSurvivalMachines/blob/master/examples/DSM%20on%20SUPPORT%20Dataset.ipynb)
+2. [Recurrent Deep Survival Machines on the PBC Dataset](https://nbviewer.jupyter.org/github/autonlab/DeepSurvivalMachines/blob/master/examples/RDSM%20on%20PBC%20Dataset.ipynb)
+
+
 
 
 References

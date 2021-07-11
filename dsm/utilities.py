@@ -38,7 +38,12 @@ import logging
 
 
 def get_optimizer(model, lr):
-
+  r""" This function is to choose the optimizer while
+  training the model.
+  One out of 'Adam', 'SGD', 'RMSProp'
+  
+  """
+  
   if model.optimizer == 'Adam':
     return torch.optim.Adam(model.parameters(), lr=lr)
   elif model.optimizer == 'SGD':
@@ -51,7 +56,28 @@ def get_optimizer(model, lr):
 
 def pretrain_dsm(model, t_train, e_train, t_valid, e_valid,
                  n_iter=10000, lr=1e-2, thres=1e-4):
-
+  r""" This function is to pre-train Deep Survival Machines.
+  
+  Parameters
+  ----------
+  t_train: np.ndarray
+     A numpy array of the event/censoring times, \( t \) of the training data.
+  e_train:np.ndarray
+     A numpy array of the event/censoring indicators, \( \delta \) of the training data.
+     \( \delta = r \) means the event r took place.
+  t_valid:np.ndarray
+     A numpy array of the event/censoring times, \( t \) of the validation data.
+  e_valid:np.ndarray
+     A numpy array of the event/censoring indicators, \( \delta \) of the validation data.
+     \( \delta = r \) means the event r took place.
+  n_iter: int
+     Number of iterations.
+  lr: double
+     Learning rate.
+  thres: double
+     Threshold value.
+  
+  """
   premodel = DeepSurvivalMachinesTorch(1, 1,
                                        dist=model.dist,
                                        risks=model.risks,
@@ -114,7 +140,34 @@ def train_dsm(model,
               x_valid, t_valid, e_valid,
               n_iter=10000, lr=1e-3, elbo=True,
               bs=100):
-  """Function to train the torch instance of the model."""
+  r"""Function to train the torch instance of the model.
+  
+  Parameters
+  ----------
+  x_train: np.ndarray
+     A numpy array of the input features, \( x \) of the training data.
+  t_train: np.ndarray
+     A numpy array of the event/censoring times, \( t \) of the training data.
+  e_train: np.ndarray
+     A numpy array of the event/censoring indicators, \( \delta \) of the training data.
+     \( \delta = r \) means the event r took place.
+  x_valid: np.ndarray
+     A numpy array of the input features, \( x \) of the validation data.
+  t_valid: np.ndarray
+     A numpy array of the event/censoring times, \( t \) of the validation data.
+  e_valid: np.ndarray
+     A numpy array of the event/censoring indicators, \( \delta \) of the validation data.
+     \( \delta = r \) means the event r took place.
+  n_iter: int
+     Number of iterations.
+  lr: double
+     Learning rate.
+  elbo: boolean
+     Evidence Lower Bound.
+  bs: int
+     Batch size.
+     
+  """
 
   logging.info('Pretraining the Underlying Distributions...')
   # For padded variable length sequences we first unroll the input and

@@ -166,12 +166,12 @@ a torch.tensor of the input features.</p></div>
 </dd>
 </dl>
 </dd>
-<dt id="dsm.dsm_torch.DeepRecurrentSurvivalMachinesTorch"><code class="flex name class">
-<span>class <span class="ident">DeepRecurrentSurvivalMachinesTorch</span></span>
+<dt id="dsm.dsm_torch.RecurrentDeepSurvivalMachinesTorch"><code class="flex name class">
+<span>class <span class="ident">RecurrentDeepSurvivalMachinesTorch</span></span>
 <span>(</span><span>inputdim, k, typ='LSTM', layers=1, hidden=None, dist='Weibull', temp=1000.0, discount=1.0, optimizer='Adam', risks=1)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>A Torch implementation of Deep Recurrent Survival Machines model.</p>
+<div class="desc"><p>A Torch implementation of Recurrent Deep Survival Machines model.</p>
 <p>This is an implementation of Deep Recurrent Survival Machines model
 in torch. It inherits from <code><a title="dsm.dsm_torch.DeepSurvivalMachinesTorch" href="#dsm.dsm_torch.DeepSurvivalMachinesTorch">DeepSurvivalMachinesTorch</a></code> and replaces the
 input representation learning MLP with an LSTM or RNN, the parameters of the
@@ -181,7 +181,7 @@ torch automatically keeps track and computes gradients for them.</p>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
 <p>Not designed to be used directly.
-Please use the API inferface <code><a title="dsm.dsm_api.DeepRecurrentSurvivalMachines" href="dsm_api.html#dsm.dsm_api.DeepRecurrentSurvivalMachines">DeepRecurrentSurvivalMachines</a></code>!!</p>
+Please use the API inferface <code><a title="dsm.dsm_api.RecurrentDeepSurvivalMachines" href="dsm_api.html#dsm.dsm_api.RecurrentDeepSurvivalMachines">RecurrentDeepSurvivalMachines</a></code>!!</p>
 </div>
 <h2 id="parameters">Parameters</h2>
 <dl>
@@ -212,7 +212,7 @@ Default is 1.</dd>
 <div class="git-link-div"><a href="https://github.com/autonlab/DeepSurvivalMachines" class="git-link">Browse git</a></div>
 <h3>Methods</h3>
 <dl>
-<dt id="dsm.dsm_torch.DeepRecurrentSurvivalMachinesTorch.forward"><code class="name flex">
+<dt id="dsm.dsm_torch.RecurrentDeepSurvivalMachinesTorch.forward"><code class="name flex">
 <span>def <span class="ident">forward</span></span>(<span>self, x, risk='1') ‑> Callable[..., Any]</span>
 </code></dt>
 <dd>
@@ -225,7 +225,7 @@ DSM loss functions.</p>
 a torch.tensor of the input features.</p></div>
 <div class="git-link-div"><a href="https://github.com/autonlab/DeepSurvivalMachines" class="git-link">Browse git</a></div>
 </dd>
-<dt id="dsm.dsm_torch.DeepRecurrentSurvivalMachinesTorch.get_shape_scale"><code class="name flex">
+<dt id="dsm.dsm_torch.RecurrentDeepSurvivalMachinesTorch.get_shape_scale"><code class="name flex">
 <span>def <span class="ident">get_shape_scale</span></span>(<span>self, risk='1')</span>
 </code></dt>
 <dd>
