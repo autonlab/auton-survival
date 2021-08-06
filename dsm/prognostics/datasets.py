@@ -31,6 +31,31 @@ import numpy as np
 
 import dsm.prognostics.utilities as utilities 
 
+def _increase_censoring(x, t, e, p, random_seed=0):
+
+  np.random.seed(random_seed)
+
+  n = len(x)
+  to_censor = set(np.random.choice(np.arange(n), int(p*n), replace=False))
+  
+  for i in range(len(x)):
+    if i in to_censor:
+      
+      d = len(x[i])
+      cens_time = np.random.randint(1,d-1)
+
+      x[i] = x[i][:cens_time]
+      t[i] = np.arange(0,cens_time)[::-1]
+      e[i] = 0*e[i][:cens_time]
+
+  return x, t, e
+
+def _remove_censored(x, t, e):
+
+  idx = np.array([e_[0] for e_ in e]).astype('bool')
+  return x[idx], t[idx], e[idx]
+
+
 def _preprocess_turbofan(file, rul_file=None, windowsize=30, 
                          ft_cols=None, norm_tuple=None, flatten=False):
 
@@ -46,8 +71,12 @@ def _preprocess_turbofan(file, rul_file=None, windowsize=30,
 
   if ft_cols is None:
 
-    ft_cols = list(set(data.columns)-set([0, 26, 27]))
-    same_cols = (data[ft_cols].max(axis=0)== data[ft_cols].min(axis=0)).values
+    #ft_cols = data.columns
+    ft_cols = [1, 6, 7, 8, 11, 12, 13, 15, 16, 17, 18, 19, 21, 24, 25]
+    #ft_cols = [1, 2, 3, 4, 7, 8, 9, 11, 12, 13, 14, 15, 17, 20, 21]
+    ft_cols = list(set(ft_cols)-set([0, 26, 27]))
+
+    same_cols = (data[ft_cols].max(axis=0) == data[ft_cols].min(axis=0)).values
     ft_cols = list(np.array(ft_cols)[~same_cols])
 
   features = data[ft_cols]
@@ -84,9 +113,9 @@ def _preprocess_turbofan(file, rul_file=None, windowsize=30,
       t_.append(target_+ruls[i])
       e_.append(1)
 
-    x.append(x_)
-    t.append(t_)
-    e.append(e_)
+    x.append(np.array(x_))
+    t.append(np.array(t_))
+    e.append(np.array(e_))
 
     i+=1
 
@@ -94,7 +123,9 @@ def _preprocess_turbofan(file, rul_file=None, windowsize=30,
 
 
 def load_turbofan(cmapss_folder, experiment=1, windowsize=30,
-                  flatten=False, sequential=True, test_last=True):
+                  flatten=False, sequential=True, test_last=True,
+                  censoring=0.0, return_censored=True,
+                  random_seed=0):
 
   """Helper function to load and preprocess the NASA Turbofan data.
 
@@ -120,6 +151,12 @@ def load_turbofan(cmapss_folder, experiment=1, windowsize=30,
   test_last: bool
     (Default: True) Flag if only the last time step is to be output for the
     test data. Note: if sequential is True, this flag is ignored.
+  censoring: float
+    (Default: 0.) Proportion of training data points to be censored.
+  return_censored: bool
+    Flag to decide whether the censored data is returned or not.
+  random_seed: 
+    Seed for generating the censored data.
   References
   ----------
   [1] Saxena, Abhinav, Kai Goebel, Don Simon, and Neil Eklund.
@@ -142,6 +179,13 @@ def load_turbofan(cmapss_folder, experiment=1, windowsize=30,
                                                 norm_tuple=norm_tuple,
                                                 flatten=flatten)
 
+  if censoring>1e-10:
+    x_tr, t_tr, e_tr = _increase_censoring(x_tr, t_tr, e_tr,
+                                           p=censoring, random_seed=random_seed)   
+
+  if not return_censored:
+    x_tr, t_tr, e_tr = _remove_censored(x_tr, t_tr, e_tr)
+
   if not sequential:
 
     x_tr = utilities._unrollx(x_tr)
@@ -151,6 +195,7 @@ def load_turbofan(cmapss_folder, experiment=1, windowsize=30,
     if test_last:
 
       x_te = np.array([x_te_[-1:] for x_te_ in x_te])
+      print("shape:", x_te.shape, x_te[0].shape)
       t_te = np.array([t_te_[-1:] for t_te_ in t_te])
       e_te = np.array([e_te_[-1:] for e_te_ in e_te])
 
