@@ -56,8 +56,9 @@ def pretrain_dsm(model, t_train, e_train, t_valid, e_valid,
                                        dist=model.dist,
                                        risks=model.risks,
                                        optimizer=model.optimizer)
-  premodel.double()
 
+  premodel.to(device=t_train.device, dtype=t_train.dtype)
+  
   optimizer = get_optimizer(premodel, lr)
 
   oldcost = float('inf')
@@ -113,7 +114,7 @@ def train_dsm(model,
               x_train, t_train, e_train,
               x_valid, t_valid, e_valid,
               n_iter=10000, lr=1e-3, elbo=True,
-              bs=100):
+              bs=100, pmax=2, pretrain=True):
   """Function to train the torch instance of the model."""
 
   logging.info('Pretraining the Underlying Distributions...')
@@ -124,21 +125,22 @@ def train_dsm(model,
   t_valid_ = _reshape_tensor_with_nans(t_valid)
   e_valid_ = _reshape_tensor_with_nans(e_valid)
 
-  premodel = pretrain_dsm(model,
-                          t_train_,
-                          e_train_,
-                          t_valid_,
-                          e_valid_,
-                          n_iter=10000,
-                          lr=1e-2,
-                          thres=1e-4)
+  if pretrain:
+    premodel = pretrain_dsm(model,
+                            t_train_,
+                            e_train_,
+                            t_valid_,
+                            e_valid_,
+                            n_iter=10000,
+                            lr=1e-2,
+                            thres=1e-3)
 
-  for r in range(model.risks):
-    model.shape[str(r+1)].data.fill_(float(premodel.shape[str(r+1)]))
-    model.scale[str(r+1)].data.fill_(float(premodel.scale[str(r+1)]))
-  print(model.shape['1'], model.scale['1'])
+    for r in range(model.risks):
+      model.shape[str(r+1)].data.fill_(float(premodel.shape[str(r+1)]))
+      model.scale[str(r+1)].data.fill_(float(premodel.scale[str(r+1)]))
+    print(model.shape['1'], model.scale['1'])
 
-  model.double()
+  model.to(device=t_train.device, dtype=t_train.dtype)
   optimizer = get_optimizer(model, lr)
 
   patience = 0
@@ -150,6 +152,7 @@ def train_dsm(model,
   costs = []
   i = 0
   for i in tqdm(range(n_iter)):
+    model.train()
     for j in range(nbatches):
 
       xb = x_train[j*bs:(j+1)*bs]
@@ -171,7 +174,7 @@ def train_dsm(model,
       #print ("Train Loss:", float(loss))
       loss.backward()
       optimizer.step()
-
+    model.eval()
     valid_loss = 0
     for r in range(model.risks):
       valid_loss += conditional_loss(model,
@@ -186,14 +189,14 @@ def train_dsm(model,
     dics.append(deepcopy(model.state_dict()))
 
     if costs[-1] >= oldcost:
-      if patience == 2:
+      if patience == pmax:
         minm = np.argmin(costs)
         model.load_state_dict(dics[minm])
 
         del dics
         gc.collect()
 
-        return model, i
+        return model, costs
       else:
         patience += 1
     else:
@@ -207,4 +210,4 @@ def train_dsm(model,
   del dics
   gc.collect()
 
-  return model, i
+  return model, costs

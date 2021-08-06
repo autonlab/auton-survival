@@ -52,16 +52,33 @@ class DSMBase():
   """Base Class for all DSM models"""
 
   def __init__(self, k=3, layers=None, distribution="Weibull",
-               temp=1000., discount=1.0):
+               temp=1000., discount=1.0, embedding=None, 
+               cuda=False, precision='float', random_seed=0):
     self.k = k
     self.layers = layers
     self.dist = distribution
     self.temp = temp
     self.discount = discount
     self.fitted = False
+    self.embedding = embedding
+    self.cuda = cuda
+    self.random_seed = random_seed
+
+
+    if precision is 'float':
+      self.precision = torch.float
+    else:
+      self.precision = torch.double 
+
+    if self.cuda:
+      self.device = torch.device('cuda')
+    else:
+      self.device = torch.device('cpu')
+
 
   def _gen_torch_model(self, inputdim, optimizer, risks):
     """Helper function to return a torch model."""
+    torch.manual_seed(self.random_seed)
     return DeepSurvivalMachinesTorch(inputdim,
                                      k=self.k,
                                      layers=self.layers,
@@ -69,11 +86,13 @@ class DSMBase():
                                      temp=self.temp,
                                      discount=self.discount,
                                      optimizer=optimizer,
-                                     risks=risks)
+                                     risks=risks,
+                                     embedding=self.embedding).to(device=self.device,
+                                                                  dtype=self.precision)
 
   def fit(self, x, t, e, vsize=0.15, val_data=None,
           iters=1, learning_rate=1e-3, batch_size=100,
-          elbo=True, optimizer="Adam", random_state=100):
+          elbo=True, optimizer="Adam", early_stop=True):
 
     r"""This method is used to train an instance of the DSM model.
 
@@ -103,15 +122,20 @@ class DSMBase():
     optimizer: str
         The choice of the gradient based optimization method. One of
         'Adam', 'RMSProp' or 'SGD'.
-    random_state: float
-        random seed that determines how the validation set is chosen.
+    early_stop: bool 
+        If True, Early Stopping is performed on the validation set.
+    embedding: torch.nn.Module
+        Pass a custom torch model to extract representations. If passed,
+        layers is ignored.
 
     """
 
     processed_data = self._prepocess_training_data(x, t, e,
                                                    vsize, val_data,
-                                                   random_state)
+                                                   self.random_seed)
     x_train, t_train, e_train, x_val, t_val, e_val = processed_data
+
+    #print("Fit Shape:", x_train.shape)
 
     #Todo: Change this somehow. The base design shouldn't depend on child
     if type(self).__name__ in ["DeepConvolutionalSurvivalMachines",
@@ -120,20 +144,39 @@ class DSMBase():
     else:
       inputdim = x_train.shape[-1]
 
-    maxrisk = int(np.nanmax(e_train.cpu().numpy()))
-    model = self._gen_torch_model(inputdim, optimizer, risks=maxrisk)
-    model, _ = train_dsm(model,
-                         x_train, t_train, e_train,
-                         x_val, t_val, e_val,
-                         n_iter=iters,
-                         lr=learning_rate,
-                         elbo=elbo,
-                         bs=batch_size)
+    if not self.fitted:
+      # Model is not initialized.
+      maxrisk = int(np.nanmax(e_train.cpu().numpy()))
+      model = self._gen_torch_model(inputdim, optimizer, risks=maxrisk)
+      self.torch_model = model
+
+    if early_stop:
+      pmax = 2
+    else:
+      pmax = 2*iters
+
+    model, costs = train_dsm(self.torch_model,
+                             x_train, t_train, e_train,
+                             x_val, t_val, e_val,
+                             n_iter=iters,
+                             lr=learning_rate,
+                             elbo=elbo,
+                             bs=batch_size,
+                             pmax=pmax,
+                             pretrain=(not self.fitted))
 
     self.torch_model = model.eval()
     self.fitted = True
 
-    return self
+    del x_train
+    del t_train
+    del e_train 
+
+    del x_val
+    del t_val
+    del e_val
+
+    return costs
 
   def compute_nll(self, x, t, e):
     r"""This function computes the negative log likelihood of the given data.
@@ -170,7 +213,7 @@ class DSMBase():
     return loss
 
   def _prepocess_test_data(self, x):
-    return torch.from_numpy(x)
+    return torch.from_numpy(x).to(device=self.device, dtype=self.precision)
 
   def _prepocess_training_data(self, x, t, e, vsize, val_data, random_state):
 
@@ -179,9 +222,9 @@ class DSMBase():
     np.random.shuffle(idx)
     x_train, t_train, e_train = x[idx], t[idx], e[idx]
 
-    x_train = torch.from_numpy(x_train).double()
-    t_train = torch.from_numpy(t_train).double()
-    e_train = torch.from_numpy(e_train).double()
+    x_train = torch.from_numpy(x_train).to(device=self.device, dtype=self.precision)
+    t_train = torch.from_numpy(t_train).to(device=self.device, dtype=self.precision)
+    e_train = torch.from_numpy(e_train).to(device=self.device, dtype=self.precision)
 
     if val_data is None:
 
@@ -196,12 +239,11 @@ class DSMBase():
 
       x_val, t_val, e_val = val_data
 
-      x_val = torch.from_numpy(x_val).double()
-      t_val = torch.from_numpy(t_val).double()
-      e_val = torch.from_numpy(e_val).double()
+      x_val = torch.from_numpy(x_val).to(device=self.device, dtype=self.precision)
+      t_val = torch.from_numpy(t_val).to(device=self.device, dtype=self.precision)
+      e_val = torch.from_numpy(e_val).to(device=self.device, dtype=self.precision)
 
-    return (x_train, t_train, e_train,
-            x_val, t_val, e_val)
+    return (x_train, t_train, e_train, x_val, t_val, e_val)
 
   def predict_mean(self, x, risk=1):
     r"""Returns the mean Time-to-Event \( t \)
@@ -218,6 +260,7 @@ class DSMBase():
     if self.fitted:
       x = self._prepocess_test_data(x)
       scores = losses.predict_mean(self.torch_model, x, risk=str(risk))
+      del x
       return scores
     else:
       raise Exception("The model has not been fitted yet. Please fit the " +
@@ -268,6 +311,7 @@ class DSMBase():
       t = [t]
     if self.fitted:
       scores = losses.predict_cdf(self.torch_model, x, t, risk=str(risk))
+      del x
       return np.exp(np.array(scores)).T
     else:
       raise Exception("The model has not been fitted yet. Please fit the " +
@@ -338,12 +382,16 @@ class DeepRecurrentSurvivalMachines(DSMBase):
   """
 
   def __init__(self, k=3, layers=None, hidden=None,
-               distribution="Weibull", temp=1000., discount=1.0, typ="LSTM"):
+               distribution="Weibull", temp=1000., discount=1.0, typ="LSTM",
+               cuda=False, precision='float', random_seed=0):
     super(DeepRecurrentSurvivalMachines, self).__init__(k=k,
                                                         layers=layers,
                                                         distribution=distribution,
                                                         temp=temp,
-                                                        discount=discount)
+                                                        discount=discount,
+                                                        cuda=cuda,
+                                                        precision=precision,
+                                                        random_seed=random_seed)
     self.hidden = hidden
     self.typ = typ
     
@@ -358,10 +406,11 @@ class DeepRecurrentSurvivalMachines(DSMBase):
                                               discount=self.discount,
                                               optimizer=optimizer,
                                               typ=self.typ,
-                                              risks=risks)
+                                              risks=risks).to(device=self.device,
+                                                              dtype=self.precision)
 
   def _prepocess_test_data(self, x):
-    return torch.from_numpy(_get_padded_features(x))
+    return torch.from_numpy(_get_padded_features(x)).to(dtype=self.precision)
 
   def _prepocess_training_data(self, x, t, e, vsize, val_data, random_state):
     """RNNs require different preprocessing for variable length sequences"""
@@ -376,9 +425,9 @@ class DeepRecurrentSurvivalMachines(DSMBase):
 
     x_train, t_train, e_train = x[idx], t[idx], e[idx]
 
-    x_train = torch.from_numpy(x_train).double()
-    t_train = torch.from_numpy(t_train).double()
-    e_train = torch.from_numpy(e_train).double()
+    x_train = torch.from_numpy(x_train).to(device=self.device, dtype=self.precision)
+    t_train = torch.from_numpy(t_train).to(device=self.device, dtype=self.precision)
+    e_train = torch.from_numpy(e_train).to(device=self.device, dtype=self.precision)
 
     if val_data is None:
 
@@ -398,9 +447,9 @@ class DeepRecurrentSurvivalMachines(DSMBase):
       t_val = _get_padded_features(t_val)
       e_val = _get_padded_features(e_val)
 
-      x_val = torch.from_numpy(x_val).double()
-      t_val = torch.from_numpy(t_val).double()
-      e_val = torch.from_numpy(e_val).double()
+      x_val = torch.from_numpy(x_val).to(device=self.device, dtype=self.precision)
+      t_val = torch.from_numpy(t_val).to(device=self.device, dtype=self.precision)
+      e_val = torch.from_numpy(e_val).to(device=self.device, dtype=self.precision)
 
     return (x_train, t_train, e_train, x_val, t_val, e_val)
 
@@ -444,16 +493,21 @@ class DeepConvolutionalSurvivalMachines(DSMBase):
   """
 
   def __init__(self, k=3, hidden=None, distribution="Weibull", 
-               temp=1000., discount=1.0, embedding=None):
+               temp=1000., discount=1.0, embedding=None,
+               cuda=False, precision='float', random_seed=0):
     super(DeepConvolutionalSurvivalMachines, self).__init__(k=k,
                                                             distribution=distribution,
                                                             temp=temp,
-                                                            discount=discount)
+                                                            discount=discount,
+                                                            embedding=embedding,
+                                                            cuda=cuda,
+                                                            precision=precision,
+                                                            random_seed=random_seed)
     self.hidden = hidden
-    self.embedding = embedding
 
   def _gen_torch_model(self, inputdim, optimizer, risks):
     """Helper function to return a torch model."""
+    torch.manual_seed(self.random_seed)
     return DeepConvolutionalSurvivalMachinesTorch(inputdim,
                                                   k=self.k,
                                                   hidden=self.hidden,
@@ -462,7 +516,8 @@ class DeepConvolutionalSurvivalMachines(DSMBase):
                                                   discount=self.discount,
                                                   optimizer=optimizer,
                                                   embedding=self.embedding,
-                                                  risks=risks)
+                                                  risks=risks).to(device=self.device,
+                                                                  dtype=self.precision)
 
 
 class DeepCNNRNNSurvivalMachines(DeepRecurrentSurvivalMachines):
@@ -473,17 +528,20 @@ class DeepCNNRNNSurvivalMachines(DeepRecurrentSurvivalMachines):
   """
 
   def __init__(self, k=3, layers=None, hidden=None,
-               distribution="Weibull", temp=1000., discount=1.0, typ="LSTM"):
+               distribution="Weibull", temp=1000., discount=1.0, typ="LSTM",
+               random_seed=0):
     super(DeepCNNRNNSurvivalMachines, self).__init__(k=k,
                                                      layers=layers,
                                                      distribution=distribution,
                                                      temp=temp,
-                                                     discount=discount)
+                                                     discount=discount,
+                                                     random_seed=random_seed)
     self.hidden = hidden
     self.typ = typ
 
   def _gen_torch_model(self, inputdim, optimizer, risks):
     """Helper function to return a torch model."""
+    torch.manual_seed(self.random_seed)
     return DeepCNNRNNSurvivalMachinesTorch(inputdim,
                                            k=self.k,
                                            layers=self.layers,
@@ -493,4 +551,5 @@ class DeepCNNRNNSurvivalMachines(DeepRecurrentSurvivalMachines):
                                            discount=self.discount,
                                            optimizer=optimizer,
                                            typ=self.typ,
-                                           risks=risks)
+                                           risks=risks).to(device=self.device,
+                                                           dtype=self.precision)

@@ -43,14 +43,16 @@ def _normal_loss(model, t, e, risk='1'):
 
   shape, scale = model.get_shape_scale(risk)
 
-  k_ = shape.expand(t.shape[0], -1)
-  b_ = scale.expand(t.shape[0], -1)
+  shape = shape.expand(t.shape[0], -1)
+  scale = scale.expand(t.shape[0], -1)
+
+  #scale = (0.*scale)+20.
 
   ll = 0.
   for g in range(model.k):
 
-    mu = k_[:, g]
-    sigma = b_[:, g]
+    mu = shape[:, g]
+    sigma = scale[:, g]
 
     dist = torch.distributions.Normal(mu, sigma)
     f = dist.log_prob(t)
@@ -67,14 +69,11 @@ def _lognormal_loss(model, t, e, risk='1'):
 
   shape, scale = model.get_shape_scale(risk)
 
-  k_ = shape.expand(t.shape[0], -1)
-  b_ = scale.expand(t.shape[0], -1)
-
   ll = 0.
   for g in range(model.k):
 
-    mu = k_[:, g]
-    sigma = b_[:, g]
+    mu = shape[:, g]
+    sigma = scale[:, g]
 
     f = - sigma - 0.5*np.log(2*np.pi)
     f = f - torch.div((torch.log(t) - mu)**2, 2.*torch.exp(2*sigma))
@@ -93,14 +92,14 @@ def _weibull_loss(model, t, e, risk='1'):
 
   shape, scale = model.get_shape_scale(risk)
 
-  k_ = shape.expand(t.shape[0], -1)
-  b_ = scale.expand(t.shape[0], -1)
+  shape = shape.expand(t.shape[0], -1)
+  scale = scale.expand(t.shape[0], -1)
 
   ll = 0.
   for g in range(model.k):
 
-    k = k_[:, g]
-    b = b_[:, g]
+    k = shape[:, g]
+    b = scale[:, g]
 
     s = - (torch.pow(torch.exp(b)*t, torch.exp(k)))
     f = k + b + ((torch.exp(k)-1)*(b+torch.log(t)))
@@ -130,10 +129,11 @@ def _conditional_normal_loss(model, x, t, e, elbo=True, risk='1'):
 
   alpha = model.discount
 
-  shape, scale, logits = model.forward(x, risk)
+  # shape, _, logits = model.forward(x, risk)
+  # _, scale = model.get_shape_scale()
+  # scale = scale.expand(t.shape[0], -1)
 
-  _, scale = model.get_shape_scale()
-  scale = scale.expand(t.shape[0], -1)
+  shape, scale, logits = model.forward(x, risk)
 
   lossf = []
   losss = []
@@ -183,17 +183,13 @@ def _conditional_lognormal_loss(model, x, t, e, elbo=True, risk='1'):
   alpha = model.discount
   shape, scale, logits = model.forward(x, risk)
 
-
   lossf = []
   losss = []
 
-  k_ = shape
-  b_ = scale
-
   for g in range(model.k):
 
-    mu = k_[:, g]
-    sigma = b_[:, g]
+    mu = shape[:, g]
+    sigma = scale[:, g]
 
     f = - sigma - 0.5*np.log(2*np.pi)
     f = f - torch.div((torch.log(t) - mu)**2, 2.*torch.exp(2*sigma))
@@ -237,16 +233,13 @@ def _conditional_weibull_loss(model, x, t, e, elbo=True, risk='1'):
   alpha = model.discount
   shape, scale, logits = model.forward(x, risk)
 
-  k_ = shape
-  b_ = scale
-
   lossf = []
   losss = []
 
   for g in range(model.k):
 
-    k = k_[:, g]
-    b = b_[:, g]
+    k = shape[:, g]
+    b = scale[:, g]
 
     s = - (torch.pow(torch.exp(b)*t, torch.exp(k)))
     f = k + b + ((torch.exp(k)-1)*(b+torch.log(t)))
@@ -300,9 +293,6 @@ def _weibull_pdf(model, x, t_horizon, risk='1'):
   shape, scale, logits = model.forward(x, risk)
   logits = squish(logits)
 
-  k_ = shape
-  b_ = scale
-
   t_horz = torch.tensor(t_horizon).double()
   t_horz = t_horz.repeat(shape.shape[0], 1)
 
@@ -314,8 +304,9 @@ def _weibull_pdf(model, x, t_horizon, risk='1'):
 
     for g in range(model.k):
 
-      k = k_[:, g]
-      b = b_[:, g]
+      k = shape[:, g]
+      b = scale[:, g]
+
       s = - (torch.pow(torch.exp(b)*t, torch.exp(k)))
       f = k + b + ((torch.exp(k)-1)*(b+torch.log(t)))
       f = f + s
@@ -324,7 +315,7 @@ def _weibull_pdf(model, x, t_horizon, risk='1'):
     lpdfs = torch.stack(lpdfs, dim=1)
     lpdfs = lpdfs+logits
     lpdfs = torch.logsumexp(lpdfs, dim=1)
-    pdfs.append(lpdfs.detach().numpy())
+    pdfs.append(lpdfs.detach().cpu().numpy())
 
   return pdfs
 
@@ -335,9 +326,6 @@ def _weibull_cdf(model, x, t_horizon, risk='1'):
   shape, scale, logits = model.forward(x, risk)
   logits = squish(logits)
 
-  k_ = shape
-  b_ = scale
-
   t_horz = torch.tensor(t_horizon).double()
   t_horz = t_horz.repeat(shape.shape[0], 1)
 
@@ -349,15 +337,15 @@ def _weibull_cdf(model, x, t_horizon, risk='1'):
 
     for g in range(model.k):
 
-      k = k_[:, g]
-      b = b_[:, g]
+      k = shape[:, g]
+      b = scale[:, g]
       s = - (torch.pow(torch.exp(b)*t, torch.exp(k)))
       lcdfs.append(s)
 
     lcdfs = torch.stack(lcdfs, dim=1)
     lcdfs = lcdfs+logits
     lcdfs = torch.logsumexp(lcdfs, dim=1)
-    cdfs.append(lcdfs.detach().numpy())
+    cdfs.append(lcdfs.detach().cpu().numpy())
 
   return cdfs
 
@@ -368,15 +356,12 @@ def _weibull_mean(model, x, risk='1'):
   shape, scale, logits = model.forward(x, risk)
   logits = squish(logits)
 
-  k_ = shape
-  b_ = scale
-
   lmeans = []
 
   for g in range(model.k):
 
-    k = k_[:, g]
-    b = b_[:, g]
+    k = shape[:, g]
+    b = scale[:, g]
 
     one_over_k = torch.reciprocal(torch.exp(k))
     lmean = -(one_over_k*b) + torch.lgamma(1+one_over_k)
@@ -386,7 +371,7 @@ def _weibull_mean(model, x, risk='1'):
   lmeans = lmeans+logits
   lmeans = torch.logsumexp(lmeans, dim=1)
 
-  return torch.exp(lmeans).detach().numpy()
+  return torch.exp(lmeans).detach().cpu().numpy()
 
 
 def _lognormal_cdf(model, x, t_horizon, risk='1'):
@@ -395,9 +380,6 @@ def _lognormal_cdf(model, x, t_horizon, risk='1'):
 
   shape, scale, logits = model.forward(x, risk)
   logits = squish(logits)
-
-  k_ = shape
-  b_ = scale
 
   t_horz = torch.tensor(t_horizon).double()
   t_horz = t_horz.repeat(shape.shape[0], 1)
@@ -411,8 +393,8 @@ def _lognormal_cdf(model, x, t_horizon, risk='1'):
 
     for g in range(model.k):
 
-      mu = k_[:, g]
-      sigma = b_[:, g]
+      mu = shape[:, g]
+      sigma = scale[:, g]
 
       s = torch.div(torch.log(t) - mu, torch.exp(sigma)*np.sqrt(2))
       s = 0.5 - 0.5*torch.erf(s)
@@ -422,7 +404,7 @@ def _lognormal_cdf(model, x, t_horizon, risk='1'):
     lcdfs = torch.stack(lcdfs, dim=1)
     lcdfs = lcdfs+logits
     lcdfs = torch.logsumexp(lcdfs, dim=1)
-    cdfs.append(lcdfs.detach().numpy())
+    cdfs.append(lcdfs.detach().cpu().numpy())
 
   return cdfs
 
@@ -431,11 +413,13 @@ def _normal_cdf(model, x, t_horizon, risk='1'):
 
   squish = nn.LogSoftmax(dim=1)
 
-  shape, _, logits = model.forward(x, risk)
-  _, scale = model.get_shape_scale()
-  scale = scale.expand(shape.shape[0], -1)
+  # shape, _, logits = model.forward(x, risk)
+  # _, scale = model.get_shape_scale(risk)
+  # scale = scale.expand(shape.shape[0], -1)
 
-  t_horz = torch.tensor(t_horizon).double()
+  shape, scale, logits = model.forward(x, risk)
+
+  t_horz = torch.tensor(t_horizon).double().to(shape.device)
   t_horz = t_horz.repeat(shape.shape[0], 1)
 
   cdfs = []
@@ -457,55 +441,20 @@ def _normal_cdf(model, x, t_horizon, risk='1'):
     lcdfs = torch.stack(lcdfs, dim=1)
     lcdfs = lcdfs+logits
     lcdfs = torch.logsumexp(lcdfs, dim=1)
-    cdfs.append(lcdfs.detach().numpy())
+    cdfs.append(lcdfs.detach().cpu().numpy())
 
   return cdfs
 
 
-# def _normal_cdf(model, x, t_horizon, risk='1'):
-
-#   squish = nn.LogSoftmax(dim=1)
-
-#   shape, scale, logits = model.forward(x, risk)
-#   logits = squish(logits)
-
-#   k_ = shape
-#   b_ = scale
-
-#   t_horz = torch.tensor(t_horizon).double()
-#   t_horz = t_horz.repeat(shape.shape[0], 1)
-
-#   cdfs = []
-
-#   for j in range(len(t_horizon)):
-
-#     t = t_horz[:, j]
-#     lcdfs = []
-
-#     for g in range(model.k):
-
-#       mu = k_[:, g]
-#       sigma = b_[:, g]
-
-#       s = torch.div(t - mu, torch.exp(sigma)*np.sqrt(2))
-#       s = 0.5 - 0.5*torch.erf(s)
-#       s = torch.log(s)
-#       lcdfs.append(s)
-
-#     lcdfs = torch.stack(lcdfs, dim=1)
-#     lcdfs = lcdfs+logits
-#     lcdfs = torch.logsumexp(lcdfs, dim=1)
-#     cdfs.append(lcdfs.detach().numpy())
-
-#   return cdfs
-
 def _normal_mean(model, x, risk='1'):
 
   squish = nn.Softmax(dim=1)
-  shape, _, logits = model.forward(x, risk)
 
-  _, scale = model.get_shape_scale()
-  scale = scale.expand(shape.shape[0], -1)
+  # shape, _, logits = model.forward(x, risk)
+  # _, scale = model.get_shape_scale(risk)
+  # scale = scale.expand(shape.shape[0], -1)
+
+  shape, scale, logits = model.forward(x, risk)
 
   logits = squish(logits)
 
@@ -514,18 +463,18 @@ def _normal_mean(model, x, risk='1'):
 
     mu, sigma = shape[:, g], scale[:, g]
     mu = torch.distributions.Normal(mu, sigma).mean
-
     lmeans.append(mu)
 
   lmeans = torch.stack(lmeans, dim=1)
   lmeans = lmeans*logits
   lmeans = torch.sum(lmeans, dim=1)
 
-  return lmeans.detach().numpy()
+  return lmeans.detach().cpu().numpy()
 
 
 def predict_mean(model, x, risk='1'):
   torch.no_grad()
+  model.eval()
   if model.dist == 'Normal':
     return _normal_mean(model, x, risk)
   elif model.dist == 'Weibull':
@@ -537,6 +486,7 @@ def predict_mean(model, x, risk='1'):
 
 def predict_pdf(model, x, t_horizon, risk='1'):
   torch.no_grad()
+  model.eval()
   if model.dist == 'Weibull':
     return _weibull_pdf(model, x, t_horizon, risk)
   # if model.dist == 'LogNormal':
@@ -550,6 +500,7 @@ def predict_pdf(model, x, t_horizon, risk='1'):
 
 def predict_cdf(model, x, t_horizon, risk='1'):
   torch.no_grad()
+  model.eval()
   if model.dist == 'Weibull':
     return _weibull_cdf(model, x, t_horizon, risk)
   if model.dist == 'LogNormal':

@@ -145,10 +145,10 @@ class DeepSurvivalMachinesTorch(nn.Module):
         init_vals = (-1., -1.)
 
     elif self.dist in ['Normal']:
-
-      self.act = nn.SELU()
+      #self.act = nn.Identity()
+      self.act = nn.Tanh()
       if init_vals is None:
-        init_vals = (0., 100.)
+        init_vals = (80., 50.)
 
     elif self.dist in ['LogNormal']:
 
@@ -181,7 +181,7 @@ class DeepSurvivalMachinesTorch(nn.Module):
 
   def __init__(self, inputdim, k, layers=None, dist='Weibull',
                temp=1000., discount=1.0, optimizer='Adam',
-               risks=1, init_vals=None):
+               risks=1, embedding=None, init_vals=None):
     super(DeepSurvivalMachinesTorch, self).__init__()
 
     self.k = k
@@ -202,7 +202,26 @@ class DeepSurvivalMachinesTorch(nn.Module):
 
     self._init_dsm_layers(lastdim, init_vals)
 
-    self.embedding = create_representation(inputdim, layers, 'ReLU6')
+    if embedding is None:
+      self.embedding = create_representation(inputdim, layers, 'ReLU6')
+    else:
+      self.embedding = embedding
+
+  def _get_parameterization(self, xrep, dim, risk):
+
+    if self.dist == 'Normal':
+
+      weights = 1+(self.temp*self.act(self.scaleg[risk](xrep)))
+      scale = torch.nn.ReLU()(self.scale[risk][0])+1e-2
+      #scale = 0*torch.nn.ReLU()(self.scale[risk][0])+.5e+2
+ 
+      return(self.shapeg[risk](xrep)+self.shape[risk].expand(dim, -1),
+             scale.expand(dim, self.k)*weights, 
+             self.gate[risk](xrep))
+    else:
+      return(self.act(self.shapeg[risk](xrep))+self.shape[risk].expand(dim, -1),
+             self.act(self.scaleg[risk](xrep))+self.scale[risk].expand(dim, -1),
+             self.gate[risk](xrep)/self.temp)
 
 
   def forward(self, x, risk='1'):
@@ -213,12 +232,12 @@ class DeepSurvivalMachinesTorch(nn.Module):
         a torch.tensor of the input features.
 
     """
+
     xrep = self.embedding(x)
     dim = x.shape[0]
 
-    return(self.act(self.shapeg[risk](xrep))+self.shape[risk].expand(dim, -1),
-           self.act(self.scaleg[risk](xrep))+self.scale[risk].expand(dim, -1),
-           self.gate[risk](xrep)/self.temp)
+    return self._get_parameterization(xrep, dim, risk)
+
 
   def get_shape_scale(self, risk='1'):
     return(self.shape[risk],
@@ -295,7 +314,6 @@ class DeepRecurrentSurvivalMachinesTorch(DeepSurvivalMachinesTorch):
                               bias=False, batch_first=True)
 
 
-
   def forward(self, x, risk='1'):
     """The forward function that is called when data is passed through DSM.
 
@@ -320,13 +338,8 @@ class DeepRecurrentSurvivalMachinesTorch(DeepSurvivalMachinesTorch):
 
     dim = xrep.shape[0]
 
-    return(self.act(self.shapeg[risk](xrep))+self.shape[risk].expand(dim, -1),
-           self.act(self.scaleg[risk](xrep))+self.scale[risk].expand(dim, -1),
-           self.gate[risk](xrep)/self.temp)
+    return self._get_parameterization(xrep, dim, risk)
 
-  def get_shape_scale(self, risk='1'):
-    return(self.shape[risk],
-           self.scale[risk])
 
 def create_conv_representation(inputdim, hidden,
                                typ='ConvNet', add_linear=True):
@@ -441,26 +454,6 @@ class DeepConvolutionalSurvivalMachinesTorch(DeepSurvivalMachinesTorch):
       self.embedding = embedding
 
 
-  def forward(self, x, risk='1'):
-    """The forward function that is called when data is passed through DSM.
-
-    Args:
-      x:
-        a torch.tensor of the input features.
-
-    """
-    xrep = self.embedding(x)
-
-    dim = x.shape[0]
-    return(self.act(self.shapeg[risk](xrep))+self.shape[risk].expand(dim, -1),
-           self.act(self.scaleg[risk](xrep))+self.scale[risk].expand(dim, -1),
-           self.gate[risk](xrep)/self.temp)
-
-  def get_shape_scale(self, risk='1'):
-    return(self.shape[risk],
-           self.scale[risk])
-
-
 class DeepCNNRNNSurvivalMachinesTorch(DeepRecurrentSurvivalMachinesTorch):
   """A Torch implementation of Deep CNN Recurrent Survival Machines model.
 
@@ -564,10 +557,6 @@ class DeepCNNRNNSurvivalMachinesTorch(DeepRecurrentSurvivalMachinesTorch):
     xrep = xrep[inputmask]
     xrep = nn.ReLU6()(xrep)
     dim = xrep.shape[0]
-    return(self.act(self.shapeg[risk](xrep))+self.shape[risk].expand(dim, -1),
-           self.act(self.scaleg[risk](xrep))+self.scale[risk].expand(dim, -1),
-           self.gate[risk](xrep)/self.temp)
 
-  def get_shape_scale(self, risk='1'):
-    return(self.shape[risk],
-           self.scale[risk])
+    return self._get_parameterization(xrep, dim, risk)
+
