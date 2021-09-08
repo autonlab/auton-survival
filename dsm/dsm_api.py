@@ -236,7 +236,7 @@ class DSMBase():
 
     if self.fitted:
       x = self._prepocess_test_data(x)
-      scores = losses.predict_mean(self.torch_model, x, risk=str(risk)).detach().cpu().numpy()
+      scores = losses.predict_mean(self.torch_model, x, risk=str(risk))
       return scores
     else:
       raise Exception("The model has not been fitted yet. Please fit the " +
@@ -285,7 +285,7 @@ class DSMBase():
     if not isinstance(t, list):
       t = [t]
     if self.fitted:
-      scores = losses.predict_cdf(self.torch_model, x, t, risk=str(risk)).detach().cpu().numpy()
+      scores = losses.predict_cdf(self.torch_model, x, t, risk=str(risk))
       return np.exp(np.array(scores)).T
     else:
       raise Exception("The model has not been fitted yet. Please fit the " +
@@ -311,7 +311,7 @@ class DSMBase():
     if not isinstance(t, list):
       t = [t]
     if self.fitted:
-      scores = losses.predict_pdf(self.torch_model, x, t, risk=str(risk)).detach().cpu().numpy()
+      scores = losses.predict_pdf(self.torch_model, x, t, risk=str(risk))
       return np.exp(np.array(scores)).T
     else:
       raise Exception("The model has not been fitted yet. Please fit the " +
