@@ -52,17 +52,18 @@ class DSMBase():
   """Base Class for all DSM models"""
 
   def __init__(self, k=3, layers=None, distribution="Weibull",
-               temp=1000., discount=1.0):
+               temp=1000., discount=1.0, cuda=False):
     self.k = k
     self.layers = layers
     self.dist = distribution
     self.temp = temp
     self.discount = discount
     self.fitted = False
+    self.cuda = cuda
 
   def _gen_torch_model(self, inputdim, optimizer, risks):
     """Helper function to return a torch model."""
-    return DeepSurvivalMachinesTorch(inputdim,
+    model = DeepSurvivalMachinesTorch(inputdim,
                                      k=self.k,
                                      layers=self.layers,
                                      dist=self.dist,
@@ -70,6 +71,9 @@ class DSMBase():
                                      discount=self.discount,
                                      optimizer=optimizer,
                                      risks=risks)
+    if self.cuda:
+      model = model.cuda()
+    return model
 
   def fit(self, x, t, e, vsize=0.15, val_data=None,
           iters=1, learning_rate=1e-3, batch_size=100,
@@ -167,11 +171,14 @@ class DSMBase():
     for r in range(self.torch_model.risks):
       loss += float(losses.conditional_loss(self.torch_model,
                     x_val, t_val, e_val, elbo=False,
-                    risk=str(r+1)).detach().numpy())
+                    risk=str(r+1)).item())
     return loss
 
   def _prepocess_test_data(self, x):
-    return torch.from_numpy(x)
+    data = torch.from_numpy(x)
+    if self.cuda:
+      data = data.cuda()
+    return data
 
   def _prepocess_training_data(self, x, t, e, vsize, val_data, random_state):
 
@@ -201,6 +208,10 @@ class DSMBase():
       t_val = torch.from_numpy(t_val).double()
       e_val = torch.from_numpy(e_val).double()
 
+    if self.cuda:
+      x_train, t_train, e_train = x_train.cuda(), t_train.cuda(), e_train.cuda()
+      x_val, t_val, e_val = x_val.cuda(), t_val.cuda(), e_val.cuda()
+
     return (x_train, t_train, e_train,
             x_val, t_val, e_val)
 
@@ -219,7 +230,7 @@ class DSMBase():
 
     if self.fitted:
       x = self._prepocess_test_data(x)
-      scores = losses.predict_mean(self.torch_model, x, risk=str(risk))
+      scores = losses.predict_mean(self.torch_model, x, risk=str(risk)).detach().cpu().numpy()
       return scores
     else:
       raise Exception("The model has not been fitted yet. Please fit the " +
@@ -268,7 +279,7 @@ class DSMBase():
     if not isinstance(t, list):
       t = [t]
     if self.fitted:
-      scores = losses.predict_cdf(self.torch_model, x, t, risk=str(risk))
+      scores = losses.predict_cdf(self.torch_model, x, t, risk=str(risk)).detach().cpu().numpy()
       return np.exp(np.array(scores)).T
     else:
       raise Exception("The model has not been fitted yet. Please fit the " +
@@ -294,7 +305,7 @@ class DSMBase():
     if not isinstance(t, list):
       t = [t]
     if self.fitted:
-      scores = losses.predict_pdf(self.torch_model, x, t, risk=str(risk))
+      scores = losses.predict_pdf(self.torch_model, x, t, risk=str(risk)).detach().cpu().numpy()
       return np.exp(np.array(scores)).T
     else:
       raise Exception("The model has not been fitted yet. Please fit the " +
