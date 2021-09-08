@@ -135,7 +135,7 @@ def train_dsm(model,
                           e_valid_,
                           n_iter=10000,
                           lr=1e-2,
-                          thres=1e-4, cuda = cuda)
+                          thres=1e-4, cuda = cuda or t_train.is_cuda)
 
   for r in range(model.risks):
     model.shape[str(r+1)].data.fill_(float(premodel.shape[str(r+1)]))
