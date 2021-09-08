@@ -59,7 +59,7 @@ class DSMBase():
     self.temp = temp
     self.discount = discount
     self.fitted = False
-    self.cuda = cuda
+    self.cuda = cuda # Two levels: 1 full GPU, 2 batch GPU (prefer 1 if fit on memory)
 
   def _gen_torch_model(self, inputdim, optimizer, risks):
     """Helper function to return a torch model."""
@@ -133,7 +133,7 @@ class DSMBase():
                          n_iter=iters,
                          lr=learning_rate,
                          elbo=elbo,
-                         bs=batch_size)
+                         bs=batch_size, cuda=self.cuda==2)
 
     self.torch_model = model.eval()
     self.fitted = True
@@ -209,7 +209,7 @@ class DSMBase():
       t_val = torch.from_numpy(t_val).double()
       e_val = torch.from_numpy(e_val).double()
 
-    if self.cuda:
+    if self.cuda == 1:
       x_train, t_train, e_train = x_train.cuda(), t_train.cuda(), e_train.cuda()
       x_val, t_val, e_val = x_val.cuda(), t_val.cuda(), e_val.cuda()
 
@@ -453,7 +453,7 @@ class DeepRecurrentSurvivalMachines(DSMBase):
       t_val = torch.from_numpy(t_val).double()
       e_val = torch.from_numpy(e_val).double()
 
-    if self.cuda:
+    if self.cuda == 1:
       x_train, t_train, e_train = x_train.cuda(), t_train.cuda(), e_train.cuda()
       x_val, t_val, e_val = x_val.cuda(), t_val.cuda(), e_val.cuda()
 
