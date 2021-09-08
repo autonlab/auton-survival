@@ -63,7 +63,7 @@ class DSMBase():
 
   def _gen_torch_model(self, inputdim, optimizer, risks):
     """Helper function to return a torch model."""
-    model = DeepSurvivalMachinesTorch(inputdim,
+    return DeepSurvivalMachinesTorch(inputdim,
                                      k=self.k,
                                      layers=self.layers,
                                      dist=self.dist,
@@ -71,9 +71,6 @@ class DSMBase():
                                      discount=self.discount,
                                      optimizer=optimizer,
                                      risks=risks)
-    if self.cuda:
-      model = model.cuda()
-    return model
 
   def fit(self, x, t, e, vsize=0.15, val_data=None,
           iters=1, learning_rate=1e-3, batch_size=100,
@@ -126,6 +123,10 @@ class DSMBase():
 
     maxrisk = int(np.nanmax(e_train.cpu().numpy()))
     model = self._gen_torch_model(inputdim, optimizer, risks=maxrisk)
+
+    if self.cuda:
+      model = model.cuda() 
+ 
     model, _ = train_dsm(model,
                          x_train, t_train, e_train,
                          x_val, t_val, e_val,
@@ -408,7 +409,10 @@ class DeepRecurrentSurvivalMachines(DSMBase):
                                               risks=risks)
 
   def _prepocess_test_data(self, x):
-    return torch.from_numpy(_get_padded_features(x))
+    data = torch.from_numpy(_get_padded_features(x))
+    if self.cuda:
+      data = data.cuda()
+    return data
 
   def _prepocess_training_data(self, x, t, e, vsize, val_data, random_state):
     """RNNs require different preprocessing for variable length sequences"""
@@ -448,6 +452,10 @@ class DeepRecurrentSurvivalMachines(DSMBase):
       x_val = torch.from_numpy(x_val).double()
       t_val = torch.from_numpy(t_val).double()
       e_val = torch.from_numpy(e_val).double()
+
+    if self.cuda:
+      x_train, t_train, e_train = x_train.cuda(), t_train.cuda(), e_train.cuda()
+      x_val, t_val, e_val = x_val.cuda(), t_val.cuda(), e_val.cuda()
 
     return (x_train, t_train, e_train,
             x_val, t_val, e_val)
