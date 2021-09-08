@@ -50,14 +50,14 @@ def get_optimizer(model, lr):
                               ' is not implemented')
 
 def pretrain_dsm(model, t_train, e_train, t_valid, e_valid,
-                 n_iter=10000, lr=1e-2, thres=1e-4):
+                 n_iter=10000, lr=1e-2, thres=1e-4, cuda = False):
 
   premodel = DeepSurvivalMachinesTorch(1, 1,
                                        dist=model.dist,
                                        risks=model.risks,
                                        optimizer=model.optimizer).double()
 
-  if model.is_cuda:
+  if cuda:
     premodel.cuda()
     t_train, e_train = t_train.cuda(), e_train.cuda()
     t_valid, e_valid = t_valid.cuda(), e_valid.cuda()
@@ -135,7 +135,7 @@ def train_dsm(model,
                           e_valid_,
                           n_iter=10000,
                           lr=1e-2,
-                          thres=1e-4)
+                          thres=1e-4, cuda = cuda)
 
   for r in range(model.risks):
     model.shape[str(r+1)].data.fill_(float(premodel.shape[str(r+1)]))
@@ -182,7 +182,7 @@ def train_dsm(model,
     for r in range(model.risks):
       if cuda:
         x_valid, t_valid_, e_valid_ = x_valid.cuda(), t_valid_.cuda(), e_valid_.cuda()
-        
+
       valid_loss += conditional_loss(model,
                                      x_valid,
                                      t_valid_,
