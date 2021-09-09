@@ -50,13 +50,17 @@ def get_optimizer(model, lr):
                               ' is not implemented')
 
 def pretrain_dsm(model, t_train, e_train, t_valid, e_valid,
-                 n_iter=10000, lr=1e-2, thres=1e-4):
+                 n_iter=10000, lr=1e-2, thres=1e-4, cuda = False):
 
   premodel = DeepSurvivalMachinesTorch(1, 1,
                                        dist=model.dist,
                                        risks=model.risks,
-                                       optimizer=model.optimizer)
-  premodel.double()
+                                       optimizer=model.optimizer).double()
+
+  if cuda:
+    premodel.cuda()
+    t_train, e_train = t_train.cuda(), e_train.cuda()
+    t_valid, e_valid = t_valid.cuda(), e_valid.cuda()
 
   optimizer = get_optimizer(premodel, lr)
 
@@ -113,7 +117,7 @@ def train_dsm(model,
               x_train, t_train, e_train,
               x_valid, t_valid, e_valid,
               n_iter=10000, lr=1e-3, elbo=True,
-              bs=100):
+              bs=100, cuda=False):
   """Function to train the torch instance of the model."""
 
   logging.info('Pretraining the Underlying Distributions...')
@@ -131,7 +135,7 @@ def train_dsm(model,
                           e_valid_,
                           n_iter=10000,
                           lr=1e-2,
-                          thres=1e-4)
+                          thres=1e-4, cuda = cuda or t_train.is_cuda)
 
   for r in range(model.risks):
     model.shape[str(r+1)].data.fill_(float(premodel.shape[str(r+1)]))
@@ -158,6 +162,9 @@ def train_dsm(model,
       if xb.shape[0] == 0:
         continue
 
+      if cuda:
+        xb, tb, eb = xb.cuda(), tb.cuda(), eb.cuda()
+
       optimizer.zero_grad()
       loss = 0
       for r in range(model.risks):
@@ -173,6 +180,9 @@ def train_dsm(model,
 
     valid_loss = 0
     for r in range(model.risks):
+      if cuda:
+        x_valid, t_valid_, e_valid_ = x_valid.cuda(), t_valid_.cuda(), e_valid_.cuda()
+
       valid_loss += conditional_loss(model,
                                      x_valid,
                                      t_valid_,

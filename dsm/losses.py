@@ -303,7 +303,7 @@ def _weibull_pdf(model, x, t_horizon, risk='1'):
   k_ = shape
   b_ = scale
 
-  t_horz = torch.tensor(t_horizon).double()
+  t_horz = torch.tensor(t_horizon).double().to(x.device)
   t_horz = t_horz.repeat(shape.shape[0], 1)
 
   pdfs = []
@@ -324,7 +324,7 @@ def _weibull_pdf(model, x, t_horizon, risk='1'):
     lpdfs = torch.stack(lpdfs, dim=1)
     lpdfs = lpdfs+logits
     lpdfs = torch.logsumexp(lpdfs, dim=1)
-    pdfs.append(lpdfs.detach().numpy())
+    pdfs.append(lpdfs.detach().cpu().numpy())
 
   return pdfs
 
@@ -338,7 +338,7 @@ def _weibull_cdf(model, x, t_horizon, risk='1'):
   k_ = shape
   b_ = scale
 
-  t_horz = torch.tensor(t_horizon).double()
+  t_horz = torch.tensor(t_horizon).double().to(x.device)
   t_horz = t_horz.repeat(shape.shape[0], 1)
 
   cdfs = []
@@ -357,7 +357,7 @@ def _weibull_cdf(model, x, t_horizon, risk='1'):
     lcdfs = torch.stack(lcdfs, dim=1)
     lcdfs = lcdfs+logits
     lcdfs = torch.logsumexp(lcdfs, dim=1)
-    cdfs.append(lcdfs.detach().numpy())
+    cdfs.append(lcdfs.detach().cpu().numpy())
 
   return cdfs
 
@@ -386,7 +386,7 @@ def _weibull_mean(model, x, risk='1'):
   lmeans = lmeans+logits
   lmeans = torch.logsumexp(lmeans, dim=1)
 
-  return torch.exp(lmeans).detach().numpy()
+  return torch.exp(lmeans).detach().cpu().numpy()
 
 
 
@@ -401,7 +401,7 @@ def _lognormal_cdf(model, x, t_horizon, risk='1'):
   k_ = shape
   b_ = scale
 
-  t_horz = torch.tensor(t_horizon).double()
+  t_horz = torch.tensor(t_horizon).double().to(x.device)
   t_horz = t_horz.repeat(shape.shape[0], 1)
 
   cdfs = []
@@ -424,7 +424,7 @@ def _lognormal_cdf(model, x, t_horizon, risk='1'):
     lcdfs = torch.stack(lcdfs, dim=1)
     lcdfs = lcdfs+logits
     lcdfs = torch.logsumexp(lcdfs, dim=1)
-    cdfs.append(lcdfs.detach().numpy())
+    cdfs.append(lcdfs.detach().cpu().numpy())
 
   return cdfs
 
@@ -461,7 +461,7 @@ def _normal_cdf(model, x, t_horizon, risk='1'):
     lcdfs = torch.stack(lcdfs, dim=1)
     lcdfs = lcdfs+logits
     lcdfs = torch.logsumexp(lcdfs, dim=1)
-    cdfs.append(lcdfs.detach().numpy())
+    cdfs.append(lcdfs.detach().cpu().numpy())
 
   return cdfs
 
@@ -485,7 +485,7 @@ def _normal_mean(model, x, risk='1'):
   lmeans = lmeans*logits
   lmeans = torch.sum(lmeans, dim=1)
 
-  return lmeans.detach().numpy()
+  return lmeans.detach().cpu().numpy()
 
 
 def predict_mean(model, x, risk='1'):
