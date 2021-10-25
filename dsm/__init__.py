@@ -101,6 +101,20 @@ before determining the underlying survival distributions.
 ..warning:: Not Implemented Yet!
 
 
+Deep Cox Mixtures
+------------------------------------
+
+`dsm` includes pytorch implementation of the Deep Cox Mixture model proposed in
+<a href="https://arxiv.org/abs/2101.06536">Deep Cox Mixtures
+for Survival Regression. Machine Learning in Health Conference (2021)</a>
+
+The Deep Cox Mixture involves the assumption that the survival function
+of the individual to be a mixture of K Cox Models. Conditioned on each
+subgroup Z=k; the PH assumptions are assumed to hold and the baseline
+hazard rates is determined non-parametrically using an spline-interpolated
+Breslow's estimator.
+
+
 Example Usage
 -------------
 
@@ -134,6 +148,32 @@ arXiv preprint arXiv:2003.01176 (2020)](https://arxiv.org/abs/2003.01176)</a>
   year={2020}
   }
 ```
+
+[2] [Deep Parametric Time-to-Event Regression with Time-Varying Covariates. AAAI
+Spring Symposium (2021)](http://proceedings.mlr.press/v146/nagpal21a.html)</a>
+
+```
+  @InProceedings{pmlr-v146-nagpal21a,
+  title={Deep Parametric Time-to-Event Regression with Time-Varying Covariates},
+  author={Nagpal, Chirag and Jeanselme, Vincent and Dubrawski, Artur},
+  booktitle={Proceedings of AAAI Spring Symposium on Survival Prediction - Algorithms, Challenges, and Applications 2021},
+  series={Proceedings of Machine Learning Research},
+  publisher={PMLR},
+  }
+```
+
+[3] [Deep Cox Mixtures for Survival Regression. Conference on Machine Learning for
+Healthcare (2021)](https://arxiv.org/abs/2101.06536)</a>
+
+```
+  @article{nagpal2021dcm,
+  title={Deep Cox mixtures for survival regression},
+  author={Nagpal, Chirag and Yadlowsky, Steve and Rostamzadeh, Negar and Heller, Katherine},
+  journal={arXiv preprint arXiv:2101.06536},
+  year={2021}
+  }
+```
+
 
 Compatibility
 -------------
@@ -187,3 +227,4 @@ from dsm.dsm_api import DeepSurvivalMachines
 from dsm.dsm_api import DeepConvolutionalSurvivalMachines
 from dsm.dsm_api import DeepRecurrentSurvivalMachines
 from dsm.dsm_api import DeepCNNRNNSurvivalMachines
+from dsm.contrib.dcm_api import DeepCoxMixtures
