@@ -100,8 +100,6 @@ corresponding failure times. The module automatically takes care of appropriate
 batching and padding of variable length sequences.
 
 
-..warning:: Not Implemented Yet!
-
 Deep Convolutional Survival Machines
 ------------------------------------
 
