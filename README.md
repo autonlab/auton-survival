@@ -77,6 +77,18 @@ before determining the underlying survival distributions.
 
 > :warning: **Not Implemented Yet!**
 
+Deep Cox Mixtures
+------------------
+The Cox Mixture involves the assumption that the survival function
+of the individual to be a mixture of K Cox Models. Conditioned on each
+subgroup Z=k; the PH assumptions are assumed to hold and the baseline
+hazard rates is determined non-parametrically using an spline-interpolated
+Breslow's estimator.
+For full details on Deep Cox Mixture, refer to the paper:
+
+<a href="https://arxiv.org/abs/2101.06536">Deep Cox Mixtures
+for Survival Regression. Machine Learning in Health Conference (2021)</a>
+
 
 Installation
 ------------
@@ -127,6 +139,16 @@ AAAI Spring Symposium (2021)](http://proceedings.mlr.press/v146/nagpal21a.html)<
   }
 ```
 
+[3] [Deep Cox Mixtures for Survival Regression. Machine Learning for Healthcare (2021)](https://arxiv.org/abs/2101.06536)
+
+```
+@article{nagpal2021deep,
+  title={Deep Cox mixtures for survival regression},
+  author={Nagpal, Chirag and Yadlowsky, Steve and Rostamzadeh, Negar and Heller, Katherine},
+  journal={arXiv preprint arXiv:2101.06536},
+  year={2021}
+}
+```
 
 Compatibility
 -------------
