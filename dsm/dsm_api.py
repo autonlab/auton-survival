@@ -108,9 +108,9 @@ class DSMBase():
 
     """
 
-    processed_data = self._prepocess_training_data(x, t, e,
-                                                   vsize, val_data,
-                                                   random_state)
+    processed_data = self._preprocess_training_data(x, t, e,
+                                                    vsize, val_data,
+                                                    random_state)
     x_train, t_train, e_train, x_val, t_val, e_val = processed_data
 
     #Todo: Change this somehow. The base design shouldn't depend on child
@@ -133,7 +133,7 @@ class DSMBase():
     self.torch_model = model.eval()
     self.fitted = True
 
-    return self    
+    return self 
 
 
   def compute_nll(self, x, t, e):
@@ -158,7 +158,7 @@ class DSMBase():
       raise Exception("The model has not been fitted yet. Please fit the " +
                       "model using the `fit` method on some training data " +
                       "before calling `_eval_nll`.")
-    processed_data = self._prepocess_training_data(x, t, e, 0, None, 0)
+    processed_data = self._preprocess_training_data(x, t, e, 0, None, 0)
     _, _, _, x_val, t_val, e_val = processed_data
     x_val, t_val, e_val = x_val,\
         _reshape_tensor_with_nans(t_val),\
@@ -170,10 +170,10 @@ class DSMBase():
                     risk=str(r+1)).detach().numpy())
     return loss
 
-  def _prepocess_test_data(self, x):
+  def _preprocess_test_data(self, x):
     return torch.from_numpy(x)
 
-  def _prepocess_training_data(self, x, t, e, vsize, val_data, random_state):
+  def _preprocess_training_data(self, x, t, e, vsize, val_data, random_state):
 
     idx = list(range(x.shape[0]))
     np.random.seed(random_state)
@@ -201,8 +201,7 @@ class DSMBase():
       t_val = torch.from_numpy(t_val).double()
       e_val = torch.from_numpy(e_val).double()
 
-    return (x_train, t_train, e_train,
-            x_val, t_val, e_val)
+    return (x_train, t_train, e_train, x_val, t_val, e_val)
 
 
   def predict_mean(self, x, risk=1):
@@ -218,7 +217,7 @@ class DSMBase():
     """
 
     if self.fitted:
-      x = self._prepocess_test_data(x)
+      x = self._preprocess_test_data(x)
       scores = losses.predict_mean(self.torch_model, x, risk=str(risk))
       return scores
     else:
@@ -264,7 +263,7 @@ class DSMBase():
       np.array: numpy array of the survival probabilites at each time in t.
 
     """
-    x = self._prepocess_test_data(x)
+    x = self._preprocess_test_data(x)
     if not isinstance(t, list):
       t = [t]
     if self.fitted:
@@ -290,7 +289,7 @@ class DSMBase():
       np.array: numpy array of the estimated pdf at each time in t.
 
     """
-    x = self._prepocess_test_data(x)
+    x = self._preprocess_test_data(x)
     if not isinstance(t, list):
       t = [t]
     if self.fitted:
@@ -300,8 +299,6 @@ class DSMBase():
       raise Exception("The model has not been fitted yet. Please fit the " +
                       "model using the `fit` method on some training data " +
                       "before calling `predict_survival`.")
-
-
 
 
 class DeepSurvivalMachines(DSMBase):
@@ -396,10 +393,10 @@ class DeepRecurrentSurvivalMachines(DSMBase):
                                               typ=self.typ,
                                               risks=risks)
 
-  def _prepocess_test_data(self, x):
+  def _preprocess_test_data(self, x):
     return torch.from_numpy(_get_padded_features(x))
 
-  def _prepocess_training_data(self, x, t, e, vsize, val_data, random_state):
+  def _preprocess_training_data(self, x, t, e, vsize, val_data, random_state):
     """RNNs require different preprocessing for variable length sequences"""
 
     idx = list(range(x.shape[0]))
@@ -438,8 +435,7 @@ class DeepRecurrentSurvivalMachines(DSMBase):
       t_val = torch.from_numpy(t_val).double()
       e_val = torch.from_numpy(e_val).double()
 
-    return (x_train, t_train, e_train,
-            x_val, t_val, e_val)
+    return (x_train, t_train, e_train, x_val, t_val, e_val)
 
 
 class DeepConvolutionalSurvivalMachines(DSMBase):
