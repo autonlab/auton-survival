@@ -123,8 +123,8 @@ Deep Cox Mixtures
 for Survival Regression. Machine Learning in Health Conference (2021)</a>
 
 The Deep Cox Mixture involves the assumption that the survival function
-of the individual to be a mixture of K Cox Models. Conditioned on each
-subgroup Z=k; the PH assumptions are assumed to hold and the baseline
+of the individual to be a mixture of \( K \)  Cox Models. Conditioned on each
+subgroup \( Z=k \) ; the PH assumptions are assumed to hold and the baseline
 hazard rates is determined non-parametrically using an spline-interpolated
 Breslow's estimator.
 
