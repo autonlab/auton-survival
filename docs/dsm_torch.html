@@ -236,7 +236,7 @@ a torch.tensor of the input features.</p></div>
 </dd>
 <dt id="dsm.dsm_torch.DeepConvolutionalSurvivalMachinesTorch"><code class="flex name class">
 <span>class <span class="ident">DeepConvolutionalSurvivalMachinesTorch</span></span>
-<span>(</span><span>inputdim, k, typ='ConvNet', hidden=None, dist='Weibull', temp=1000.0, discount=1.0, optimizer='Adam', risks=1)</span>
+<span>(</span><span>inputdim, k, embedding=None, hidden=None, dist='Weibull', temp=1000.0, discount=1.0, optimizer='Adam', risks=1)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>A Torch implementation of Deep Convolutional Survival Machines model.</p>
@@ -258,11 +258,10 @@ Please use the API inferface
 <dd>Dimensionality of the input features. A tuple (height, width).</dd>
 <dt><strong><code>k</code></strong> :&ensp;<code>int</code></dt>
 <dd>The number of underlying parametric distributions.</dd>
+<dt><strong><code>embedding</code></strong> :&ensp;<code>torch.nn.Module</code></dt>
+<dd>A torch CNN to obtain the representation of the input data.</dd>
 <dt><strong><code>hidden</code></strong> :&ensp;<code>int</code></dt>
 <dd>The number of neurons in each hidden layer.</dd>
-<dt><strong><code>init</code></strong> :&ensp;<code>tuple</code></dt>
-<dd>A tuple for initialization of the parameters for the underlying
-distributions. (shape, scale).</dd>
 <dt><strong><code>dist</code></strong> :&ensp;<code>str</code></dt>
 <dd>Choice of the underlying survival distributions.
 One of 'Weibull', 'LogNormal'.
