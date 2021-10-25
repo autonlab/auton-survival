@@ -62,6 +62,18 @@ Analysis'. The key idea behind Deep Survival Machines is to model the
 underlying event outcome distribution as a mixure of some fixed <span><span class="MathJax_Preview"> k </span><script type="math/tex"> k </script></span>
 parametric distributions. The parameters of these mixture distributions as
 well as the mixing weights are modelled using Neural Networks.</p>
+<h2 id="example-usage">Example Usage</h2>
+<pre><code class="language-python-repl">&gt;&gt;&gt; from dsm import DeepSurvivalMachines
+&gt;&gt;&gt; from dsm import datasets
+&gt;&gt;&gt; # load the SUPPORT dataset.
+&gt;&gt;&gt; x, t, e = datasets.load_dataset('SUPPORT')
+&gt;&gt;&gt; # instantiate a DeepSurvivalMachines model.
+&gt;&gt;&gt; model = DeepSurvivalMachines()
+&gt;&gt;&gt; # fit the model to the dataset.
+&gt;&gt;&gt; model.fit(x, t, e)
+&gt;&gt;&gt; # estimate the predicted risks at the time
+&gt;&gt;&gt; model.predict_risk(x, 10)
+</code></pre>
 <h2 id="deep-recurrent-survival-machines">Deep Recurrent Survival Machines</h2>
 <p><strong>Deep Recurrent Survival Machines (DRSM)</strong> builds on the original <strong>DSM</strong>
 model and allows for learning of representations of the input covariates using
@@ -97,18 +109,6 @@ of the individual to be a mixture of K Cox Models. Conditioned on each
 subgroup Z=k; the PH assumptions are assumed to hold and the baseline
 hazard rates is determined non-parametrically using an spline-interpolated
 Breslow's estimator.</p>
-<h2 id="example-usage">Example Usage</h2>
-<pre><code class="language-python-repl">&gt;&gt;&gt; from dsm import DeepSurvivalMachines
-&gt;&gt;&gt; from dsm import datasets
-&gt;&gt;&gt; # load the SUPPORT dataset.
-&gt;&gt;&gt; x, t, e = datasets.load_dataset('SUPPORT')
-&gt;&gt;&gt; # instantiate a DeepSurvivalMachines model.
-&gt;&gt;&gt; model = DeepSurvivalMachines()
-&gt;&gt;&gt; # fit the model to the dataset.
-&gt;&gt;&gt; model.fit(x, t, e)
-&gt;&gt;&gt; # estimate the predicted risks at the time
-&gt;&gt;&gt; model.predict_risk(x, 10)
-</code></pre>
 <h2 id="references">References</h2>
 <p>Please cite the following papers if you are using the <code><a title="dsm" href="#dsm">dsm</a></code> package.</p>
 <p>[1] <a href="https://arxiv.org/abs/2003.01176">Deep Survival Machines:
@@ -254,10 +254,10 @@ These losses are optimized when training DSM.</p>
 <ul>
 <li><a href="#what-is-survival-analysis">What is Survival Analysis?</a></li>
 <li><a href="#deep-survival-machines">Deep Survival Machines</a></li>
+<li><a href="#example-usage">Example Usage</a></li>
 <li><a href="#deep-recurrent-survival-machines">Deep Recurrent Survival Machines</a></li>
 <li><a href="#deep-convolutional-survival-machines">Deep Convolutional Survival Machines</a></li>
 <li><a href="#deep-cox-mixtures">Deep Cox Mixtures</a></li>
-<li><a href="#example-usage">Example Usage</a></li>
 <li><a href="#references">References</a></li>
 <li><a href="#compatibility">Compatibility</a></li>
 <li><a href="#contributing">Contributing</a></li>

@@ -68,6 +68,20 @@ underlying event outcome distribution as a mixure of some fixed \( k \)
 parametric distributions. The parameters of these mixture distributions as
 well as the mixing weights are modelled using Neural Networks.
 
+Example Usage
+-------------
+
+>>> from dsm import DeepSurvivalMachines
+>>> from dsm import datasets
+>>> # load the SUPPORT dataset.
+>>> x, t, e = datasets.load_dataset('SUPPORT')
+>>> # instantiate a DeepSurvivalMachines model.
+>>> model = DeepSurvivalMachines()
+>>> # fit the model to the dataset.
+>>> model.fit(x, t, e)
+>>> # estimate the predicted risks at the time
+>>> model.predict_risk(x, 10)
+
 
 Deep Recurrent Survival Machines
 --------------------------------
@@ -102,7 +116,7 @@ before determining the underlying survival distributions.
 
 
 Deep Cox Mixtures
-------------------------------------
+------------------
 
 `dsm` includes pytorch implementation of the Deep Cox Mixture model proposed in
 <a href="https://arxiv.org/abs/2101.06536">Deep Cox Mixtures
@@ -114,20 +128,6 @@ subgroup Z=k; the PH assumptions are assumed to hold and the baseline
 hazard rates is determined non-parametrically using an spline-interpolated
 Breslow's estimator.
 
-
-Example Usage
--------------
-
->>> from dsm import DeepSurvivalMachines
->>> from dsm import datasets
->>> # load the SUPPORT dataset.
->>> x, t, e = datasets.load_dataset('SUPPORT')
->>> # instantiate a DeepSurvivalMachines model.
->>> model = DeepSurvivalMachines()
->>> # fit the model to the dataset.
->>> model.fit(x, t, e)
->>> # estimate the predicted risks at the time
->>> model.predict_risk(x, 10)
 
 References
 ----------
