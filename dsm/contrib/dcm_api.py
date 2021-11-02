@@ -134,7 +134,7 @@ class DeepCoxMixtures():
 
     model = self._gen_torch_model(inputdim, optimizer)
 
-    model, self.breslows = train_dcm(model,
+    model, _ = train_dcm(model,
                          (x_train, t_train, e_train),
                          (x_val, t_val, e_val),
                          epochs=iters,
