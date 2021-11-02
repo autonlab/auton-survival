@@ -4,8 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.9.1" />
-<title>dsm.losses API documentation</title>
-<meta name="description" content="Loss function definitions for the Deep Survival Machines model …" />
+<title>dsm.contrib API documentation</title>
+<meta name="description" content="`dsm` includes extended functionality for survival analysis as part
+of `dsm.contrib` …" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
 <link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
@@ -24,66 +25,52 @@ ga('create', 'G-TTD30SJCTB', 'auto'); ga('send', 'pageview');
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>dsm.losses</code></h1>
+<h1 class="title">Module <code>dsm.contrib</code></h1>
 </header>
 <section id="section-intro">
-<p>Loss function definitions for the Deep Survival Machines model</p>
-<p>In this module we define the various losses for the censored and uncensored
-instances of data corresponding to Weibull and LogNormal distributions.
-These losses are optimized when training DSM.</p>
-<div class="admonition todo">
-<p class="admonition-title">TODO</p>
-<p>Use torch.distributions</p>
-</div>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>NOT DESIGNED TO BE CALLED DIRECTLY!!!</p>
-</div>
+<p><code><a title="dsm" href="../index.html">dsm</a></code> includes extended functionality for survival analysis as part
+of <code><a title="dsm.contrib" href="#dsm.contrib">dsm.contrib</a></code>.</p>
+<h2 id="contributed-modules">Contributed Modules</h2>
+<p>This submodule incorporates contributed survival analysis methods.</p>
+<h2 id="deep-cox-mixtures">Deep Cox Mixtures</h2>
+<p>The Cox Mixture involves the assumption that the survival function
+of the individual to be a mixture of K Cox Models. Conditioned on each
+subgroup Z=k; the PH assumptions are assumed to hold and the baseline
+hazard rates is determined non-parametrically using an spline-interpolated
+Breslow's estimator.</p>
+<p>For full details on Deep Cox Mixture, refer to the paper [1].</p>
+<h2 id="references">References</h2>
+<p>[1] <a href="https://arxiv.org/abs/2101.06536">Deep Cox Mixtures
+for Survival Regression. Machine Learning in Health Conference (2021)</a></p>
+<pre><code>  @article{nagpal2021dcm,
+  title={Deep Cox mixtures for survival regression},
+  author={Nagpal, Chirag and Yadlowsky, Steve and Rostamzadeh, Negar and Heller, Katherine},
+  journal={arXiv preprint arXiv:2101.06536},
+  year={2021}
+  }
+</code></pre>
 <div class="git-link-div"><a href="https://github.com/autonlab/DeepSurvivalMachines" class="git-link">Browse git</a></div>
 </section>
 <section>
-</section>
-<section>
-</section>
-<section>
-<h2 class="section-title" id="header-functions">Functions</h2>
+<h2 class="section-title" id="header-submodules">Sub-modules</h2>
 <dl>
-<dt id="dsm.losses.unconditional_loss"><code class="name flex">
-<span>def <span class="ident">unconditional_loss</span></span>(<span>model, t, e, risk='1')</span>
-</code></dt>
+<dt><code class="name"><a title="dsm.contrib.dcm_api" href="dcm_api.html">dsm.contrib.dcm_api</a></code></dt>
 <dd>
 <div class="desc"></div>
-<div class="git-link-div"><a href="https://github.com/autonlab/DeepSurvivalMachines" class="git-link">Browse git</a></div>
 </dd>
-<dt id="dsm.losses.conditional_loss"><code class="name flex">
-<span>def <span class="ident">conditional_loss</span></span>(<span>model, x, t, e, elbo=True, risk='1')</span>
-</code></dt>
+<dt><code class="name"><a title="dsm.contrib.dcm_torch" href="dcm_torch.html">dsm.contrib.dcm_torch</a></code></dt>
 <dd>
 <div class="desc"></div>
-<div class="git-link-div"><a href="https://github.com/autonlab/DeepSurvivalMachines" class="git-link">Browse git</a></div>
 </dd>
-<dt id="dsm.losses.predict_mean"><code class="name flex">
-<span>def <span class="ident">predict_mean</span></span>(<span>model, x, risk='1')</span>
-</code></dt>
+<dt><code class="name"><a title="dsm.contrib.dcm_utilities" href="dcm_utilities.html">dsm.contrib.dcm_utilities</a></code></dt>
 <dd>
 <div class="desc"></div>
-<div class="git-link-div"><a href="https://github.com/autonlab/DeepSurvivalMachines" class="git-link">Browse git</a></div>
-</dd>
-<dt id="dsm.losses.predict_pdf"><code class="name flex">
-<span>def <span class="ident">predict_pdf</span></span>(<span>model, x, t_horizon, risk='1')</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<div class="git-link-div"><a href="https://github.com/autonlab/DeepSurvivalMachines" class="git-link">Browse git</a></div>
-</dd>
-<dt id="dsm.losses.predict_cdf"><code class="name flex">
-<span>def <span class="ident">predict_cdf</span></span>(<span>model, x, t_horizon, risk='1')</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<div class="git-link-div"><a href="https://github.com/autonlab/DeepSurvivalMachines" class="git-link">Browse git</a></div>
 </dd>
 </dl>
+</section>
+<section>
+</section>
+<section>
 </section>
 <section>
 </section>
@@ -92,21 +79,23 @@ These losses are optimized when training DSM.</p>
 <img src="https://ndownloader.figshare.com/files/26367844">
 <h1>Index</h1>
 <div class="toc">
-<ul></ul>
+<ul>
+<li><a href="#contributed-modules">Contributed Modules</a></li>
+<li><a href="#deep-cox-mixtures">Deep Cox Mixtures</a></li>
+<li><a href="#references">References</a></li>
+</ul>
 </div>
 <ul id="index">
 <li><h3>Super-module</h3>
 <ul>
-<li><code><a title="dsm" href="index.html">dsm</a></code></li>
+<li><code><a title="dsm" href="../index.html">dsm</a></code></li>
 </ul>
 </li>
-<li><h3><a href="#header-functions">Functions</a></h3>
-<ul class="">
-<li><code><a title="dsm.losses.unconditional_loss" href="#dsm.losses.unconditional_loss">unconditional_loss</a></code></li>
-<li><code><a title="dsm.losses.conditional_loss" href="#dsm.losses.conditional_loss">conditional_loss</a></code></li>
-<li><code><a title="dsm.losses.predict_mean" href="#dsm.losses.predict_mean">predict_mean</a></code></li>
-<li><code><a title="dsm.losses.predict_pdf" href="#dsm.losses.predict_pdf">predict_pdf</a></code></li>
-<li><code><a title="dsm.losses.predict_cdf" href="#dsm.losses.predict_cdf">predict_cdf</a></code></li>
+<li><h3><a href="#header-submodules">Sub-modules</a></h3>
+<ul>
+<li><code><a title="dsm.contrib.dcm_api" href="dcm_api.html">dsm.contrib.dcm_api</a></code></li>
+<li><code><a title="dsm.contrib.dcm_torch" href="dcm_torch.html">dsm.contrib.dcm_torch</a></code></li>
+<li><code><a title="dsm.contrib.dcm_utilities" href="dcm_utilities.html">dsm.contrib.dcm_utilities</a></code></li>
 </ul>
 </li>
 </ul>

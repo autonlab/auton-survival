@@ -62,6 +62,18 @@ Analysis'. The key idea behind Deep Survival Machines is to model the
 underlying event outcome distribution as a mixure of some fixed <span><span class="MathJax_Preview"> k </span><script type="math/tex"> k </script></span>
 parametric distributions. The parameters of these mixture distributions as
 well as the mixing weights are modelled using Neural Networks.</p>
+<h2 id="example-usage">Example Usage</h2>
+<pre><code class="language-python-repl">&gt;&gt;&gt; from dsm import DeepSurvivalMachines
+&gt;&gt;&gt; from dsm import datasets
+&gt;&gt;&gt; # load the SUPPORT dataset.
+&gt;&gt;&gt; x, t, e = datasets.load_dataset('SUPPORT')
+&gt;&gt;&gt; # instantiate a DeepSurvivalMachines model.
+&gt;&gt;&gt; model = DeepSurvivalMachines()
+&gt;&gt;&gt; # fit the model to the dataset.
+&gt;&gt;&gt; model.fit(x, t, e)
+&gt;&gt;&gt; # estimate the predicted risks at the time
+&gt;&gt;&gt; model.predict_risk(x, 10)
+</code></pre>
 <h2 id="deep-recurrent-survival-machines">Deep Recurrent Survival Machines</h2>
 <p><strong>Deep Recurrent Survival Machines (DRSM)</strong> builds on the original <strong>DSM</strong>
 model and allows for learning of representations of the input covariates using
@@ -75,9 +87,6 @@ involve historical context from previous time steps. <strong>DRSM</strong> imple
 <code>DeepRecurrentSurvivalMachines</code> that accepts lists of data streams and
 corresponding failure times. The module automatically takes care of appropriate
 batching and padding of variable length sequences.</p>
-<div class="admonition warning">
-<p class="admonition-title">Warning:&ensp;Not Implemented Yet!</p>
-</div>
 <h2 id="deep-convolutional-survival-machines">Deep Convolutional Survival Machines</h2>
 <p>Predictive maintenance and medical imaging sometimes requires to work with
 image streams. Deep Convolutional Survival Machines extends <strong>DSM</strong> and
@@ -88,48 +97,46 @@ before determining the underlying survival distributions.</p>
 <div class="admonition warning">
 <p class="admonition-title">Warning:&ensp;Not Implemented Yet!</p>
 </div>
-<h2 id="example-usage">Example Usage</h2>
-<pre><code class="language-python-repl">&gt;&gt;&gt; from dsm import DeepSurvivalMachines
-&gt;&gt;&gt; from dsm import datasets
-&gt;&gt;&gt; # load the SUPPORT dataset.
-&gt;&gt;&gt; x, t, e = datasets.load_dataset('SUPPORT')
-&gt;&gt;&gt; # instantiate a DeepSurvivalMachines model.
-&gt;&gt;&gt; model = DeepSurvivalMachines()
-&gt;&gt;&gt; # fit the model to the dataset.
-&gt;&gt;&gt; model.fit(x, t, e)
-&gt;&gt;&gt; # estimate the predicted risks at the time
-&gt;&gt;&gt; model.predict_risk(x, 10)
-</code></pre>
-<h2 id="installation">Installation</h2>
-<pre><code class="language-console">foo@bar:~$ git clone https://github.com/autonlab/DeepSurvivalMachines.git
-foo@bar:~$ cd DeepSurvivalMachines
-foo@bar:~$ pip install -r requirements.txt
-</code></pre>
-<h2 id="examples">Examples</h2>
-<ol>
-<li><a href="https://nbviewer.jupyter.org/github/autonlab/DeepSurvivalMachines/blob/master/examples/DSM%20on%20SUPPORT%20Dataset.ipynb">Deep Survival Machines on the SUPPORT Dataset</a></li>
-</ol>
+<h2 id="deep-cox-mixtures">Deep Cox Mixtures</h2>
+<p><code><a title="dsm" href="#dsm">dsm</a></code> includes pytorch implementation of the Deep Cox Mixture model proposed in
+<a href="https://arxiv.org/abs/2101.06536">Deep Cox Mixtures
+for Survival Regression. Machine Learning in Health Conference (2021)</a></p>
+<p>The Deep Cox Mixture involves the assumption that the survival function
+of the individual to be a mixture of <span><span class="MathJax_Preview"> K </span><script type="math/tex"> K </script></span>
+Cox Models. Conditioned on each
+subgroup <span><span class="MathJax_Preview"> Z=k </span><script type="math/tex"> Z=k </script></span> ; the PH assumptions are assumed to hold and the baseline
+hazard rates is determined non-parametrically using an spline-interpolated
+Breslow's estimator.</p>
 <h2 id="references">References</h2>
 <p>Please cite the following papers if you are using the <code><a title="dsm" href="#dsm">dsm</a></code> package.</p>
 <p>[1] <a href="https://arxiv.org/abs/2003.01176">Deep Survival Machines:
 Fully Parametric Survival Regression and
-Representation Learning for Censored Data with Competing Risks.
-IEEE Journal of Biomedical \&amp; Health Informatics (2021)</a></a></p>
+Representation Learning for Censored Data with Competing Risks."
+arXiv preprint arXiv:2003.01176 (2020)</a></a></p>
 <pre><code>  @article{nagpal2020deep,
   title={Deep Survival Machines: Fully Parametric Survival Regression and\
   Representation Learning for Censored Data with Competing Risks},
   author={Nagpal, Chirag and Li, Xinyu and Dubrawski, Artur},
-  journal={IEEE Journal of Biomedical and Health Informatics},
-  year={2021}
+  journal={arXiv preprint arXiv:2003.01176},
+  year={2020}
   }
 </code></pre>
-<p>[2] <a href="">Recurrent Deep Survival Machines:
-Deep Parametric Time-to-Event Regression with Time-Varying Covariates.
-AAAI Spring Symposium (2021)</a></a></p>
-<pre><code>  @article{nagpal2021rdsm,
+<p>[2] <a href="http://proceedings.mlr.press/v146/nagpal21a.html">Deep Parametric Time-to-Event Regression with Time-Varying Covariates. AAAI
+Spring Symposium (2021)</a></a></p>
+<pre><code>  @InProceedings{pmlr-v146-nagpal21a,
   title={Deep Parametric Time-to-Event Regression with Time-Varying Covariates},
   author={Nagpal, Chirag and Jeanselme, Vincent and Dubrawski, Artur},
-  journal={AAAI Spring Symposium on Survival Analysis},
+  booktitle={Proceedings of AAAI Spring Symposium on Survival Prediction - Algorithms, Challenges, and Applications 2021},
+  series={Proceedings of Machine Learning Research},
+  publisher={PMLR},
+  }
+</code></pre>
+<p>[3] <a href="https://arxiv.org/abs/2101.06536">Deep Cox Mixtures for Survival Regression. Conference on Machine Learning for
+Healthcare (2021)</a></a></p>
+<pre><code>  @article{nagpal2021dcm,
+  title={Deep Cox mixtures for survival regression},
+  author={Nagpal, Chirag and Yadlowsky, Steve and Rostamzadeh, Negar and Heller, Katherine},
+  journal={arXiv preprint arXiv:2101.06536},
   year={2021}
   }
 </code></pre>
@@ -168,6 +175,30 @@ user/themes/auton/images/AutonLogo.png"></p>
 <section>
 <h2 class="section-title" id="header-submodules">Sub-modules</h2>
 <dl>
+<dt><code class="name"><a title="dsm.contrib" href="contrib/index.html">dsm.contrib</a></code></dt>
+<dd>
+<div class="desc"><p><code><a title="dsm" href="#dsm">dsm</a></code> includes extended functionality for survival analysis as part
+of <code><a title="dsm.contrib" href="contrib/index.html">dsm.contrib</a></code>.</p>
+<h2 id="contributed-modules">Contributed Modules</h2>
+<p>This submodule incorporates contributed survival analysis methods.</p>
+<h2 id="deep-cox-mixtures">Deep Cox Mixtures</h2>
+<p>The Cox Mixture involves the assumption that the survival function
+of the individual to be a mixture of K Cox Models. Conditioned on each
+subgroup Z=k; the PH assumptions are assumed to hold and the baseline
+hazard rates is determined non-parametrically using an spline-interpolated
+Breslow's estimator.</p>
+<p>For full details on Deep Cox Mixture, refer to the paper [1].</p>
+<h2 id="references">References</h2>
+<p>[1] <a href="https://arxiv.org/abs/2101.06536">Deep Cox Mixtures
+for Survival Regression. Machine Learning in Health Conference (2021)</a></p>
+<pre><code>  @article{nagpal2021dcm,
+  title={Deep Cox mixtures for survival regression},
+  author={Nagpal, Chirag and Yadlowsky, Steve and Rostamzadeh, Negar and Heller, Katherine},
+  journal={arXiv preprint arXiv:2101.06536},
+  year={2021}
+  }
+</code></pre></div>
+</dd>
 <dt><code class="name"><a title="dsm.datasets" href="datasets.html">dsm.datasets</a></code></dt>
 <dd>
 <div class="desc"><p>Utility functions to load standard datasets to train and evaluate the
@@ -221,11 +252,10 @@ These losses are optimized when training DSM.</p>
 <ul>
 <li><a href="#what-is-survival-analysis">What is Survival Analysis?</a></li>
 <li><a href="#deep-survival-machines">Deep Survival Machines</a></li>
+<li><a href="#example-usage">Example Usage</a></li>
 <li><a href="#deep-recurrent-survival-machines">Deep Recurrent Survival Machines</a></li>
 <li><a href="#deep-convolutional-survival-machines">Deep Convolutional Survival Machines</a></li>
-<li><a href="#example-usage">Example Usage</a></li>
-<li><a href="#installation">Installation</a></li>
-<li><a href="#examples">Examples</a></li>
+<li><a href="#deep-cox-mixtures">Deep Cox Mixtures</a></li>
 <li><a href="#references">References</a></li>
 <li><a href="#compatibility">Compatibility</a></li>
 <li><a href="#contributing">Contributing</a></li>
@@ -235,6 +265,7 @@ These losses are optimized when training DSM.</p>
 <ul id="index">
 <li><h3><a href="#header-submodules">Sub-modules</a></h3>
 <ul>
+<li><code><a title="dsm.contrib" href="contrib/index.html">dsm.contrib</a></code></li>
 <li><code><a title="dsm.datasets" href="datasets.html">dsm.datasets</a></code></li>
 <li><code><a title="dsm.dsm_api" href="dsm_api.html">dsm.dsm_api</a></code></li>
 <li><code><a title="dsm.dsm_torch" href="dsm_torch.html">dsm.dsm_torch</a></code></li>

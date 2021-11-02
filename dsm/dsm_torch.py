@@ -184,17 +184,13 @@ class DeepSurvivalMachinesTorch(nn.Module):
     self.optimizer = optimizer
     self.risks = risks
 
-    if layers is None:
-      layers = []
+    if layers is None: layers = []
     self.layers = layers
 
-    if len(layers) == 0:
-      lastdim = inputdim
-    else:
-      lastdim = layers[-1]
+    if len(layers) == 0: lastdim = inputdim
+    else: lastdim = layers[-1]
 
     self._init_dsm_layers(lastdim)
-
     self.embedding = create_representation(inputdim, layers, 'ReLU6')
 
 
@@ -213,8 +209,7 @@ class DeepSurvivalMachinesTorch(nn.Module):
            self.gate[risk](xrep)/self.temp)
 
   def get_shape_scale(self, risk='1'):
-    return(self.shape[risk],
-           self.scale[risk])
+    return(self.shape[risk], self.scale[risk])
 
 class DeepRecurrentSurvivalMachinesTorch(DeepSurvivalMachinesTorch):
   """A Torch implementation of Deep Recurrent Survival Machines model.
@@ -261,6 +256,7 @@ class DeepRecurrentSurvivalMachinesTorch(DeepSurvivalMachinesTorch):
                hidden=None, dist='Weibull',
                temp=1000., discount=1.0,
                optimizer='Adam', risks=1):
+               
     super(DeepSurvivalMachinesTorch, self).__init__()
 
     self.k = k

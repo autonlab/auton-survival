@@ -218,6 +218,30 @@ to be computed</dd>
 <dd>numpy array of the survival probabilites at each time in t.</dd>
 </dl></div>
 </dd>
+<dt id="dsm.dsm_api.DeepSurvivalMachines.predict_pdf"><code class="name flex">
+<span>def <span class="ident">predict_pdf</span></span>(<span>self, x, t, risk=1)</span>
+</code></dt>
+<dd>
+<p class="inheritance">
+<em>Inherited from:</em>
+<code><a title="dsm.dsm_api.DSMBase" href="#dsm.dsm_api.DSMBase">DSMBase</a></code>.<code><a title="dsm.dsm_api.DSMBase.predict_pdf" href="#dsm.dsm_api.DSMBase.predict_pdf">predict_pdf</a></code>
+</p>
+<div class="desc"><p>Returns the estimated pdf at time <span><span class="MathJax_Preview"> t </span><script type="math/tex"> t </script></span>,
+<span><span class="MathJax_Preview"> \widehat{\mathbb{P}}(T = t|X) </span><script type="math/tex"> \widehat{\mathbb{P}}(T = t|X) </script></span> for some input data <span><span class="MathJax_Preview"> x </span><script type="math/tex"> x </script></span>. </p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>x</code></strong> :&ensp;<code>np.ndarray</code></dt>
+<dd>A numpy array of the input features, <span><span class="MathJax_Preview"> x </span><script type="math/tex"> x </script></span>.</dd>
+<dt><strong><code>t</code></strong> :&ensp;<code>list</code> or <code>float</code></dt>
+<dd>a list or float of the times at which pdf is
+to be computed</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>np.array</code></dt>
+<dd>numpy array of the estimated pdf at each time in t.</dd>
+</dl></div>
+</dd>
 </dl>
 </dd>
 <dt id="dsm.dsm_api.DeepRecurrentSurvivalMachines"><code class="flex name class">
@@ -226,7 +250,12 @@ to be computed</dd>
 </code></dt>
 <dd>
 <div class="desc"><p>The Deep Recurrent Survival Machines model to handle data with
-time-dependent covariates.</p></div>
+time-dependent covariates.</p>
+<p>For full details on Deep Recurrent Survival Machines, refer to our paper [1].</p>
+<h2 id="references">References</h2>
+<p>[1] <a href="http://proceedings.mlr.press/v146/nagpal21a.html">
+Deep Parametric Time-to-Event Regression with Time-Varying Covariates
+AAAI Spring Symposium on Survival Prediction</a></p></div>
 <div class="git-link-div"><a href="https://github.com/autonlab/DeepSurvivalMachines" class="git-link">Browse git</a></div>
 <h3>Methods</h3>
 <dl>
@@ -362,6 +391,30 @@ to be computed</dd>
 <dl>
 <dt><code>np.array</code></dt>
 <dd>numpy array of the survival probabilites at each time in t.</dd>
+</dl></div>
+</dd>
+<dt id="dsm.dsm_api.DeepRecurrentSurvivalMachines.predict_pdf"><code class="name flex">
+<span>def <span class="ident">predict_pdf</span></span>(<span>self, x, t, risk=1)</span>
+</code></dt>
+<dd>
+<p class="inheritance">
+<em>Inherited from:</em>
+<code><a title="dsm.dsm_api.DSMBase" href="#dsm.dsm_api.DSMBase">DSMBase</a></code>.<code><a title="dsm.dsm_api.DSMBase.predict_pdf" href="#dsm.dsm_api.DSMBase.predict_pdf">predict_pdf</a></code>
+</p>
+<div class="desc"><p>Returns the estimated pdf at time <span><span class="MathJax_Preview"> t </span><script type="math/tex"> t </script></span>,
+<span><span class="MathJax_Preview"> \widehat{\mathbb{P}}(T = t|X) </span><script type="math/tex"> \widehat{\mathbb{P}}(T = t|X) </script></span> for some input data <span><span class="MathJax_Preview"> x </span><script type="math/tex"> x </script></span>. </p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>x</code></strong> :&ensp;<code>np.ndarray</code></dt>
+<dd>A numpy array of the input features, <span><span class="MathJax_Preview"> x </span><script type="math/tex"> x </script></span>.</dd>
+<dt><strong><code>t</code></strong> :&ensp;<code>list</code> or <code>float</code></dt>
+<dd>a list or float of the times at which pdf is
+to be computed</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>np.array</code></dt>
+<dd>numpy array of the estimated pdf at each time in t.</dd>
 </dl></div>
 </dd>
 </dl>
@@ -510,6 +563,30 @@ to be computed</dd>
 <dd>numpy array of the survival probabilites at each time in t.</dd>
 </dl></div>
 </dd>
+<dt id="dsm.dsm_api.DeepConvolutionalSurvivalMachines.predict_pdf"><code class="name flex">
+<span>def <span class="ident">predict_pdf</span></span>(<span>self, x, t, risk=1)</span>
+</code></dt>
+<dd>
+<p class="inheritance">
+<em>Inherited from:</em>
+<code><a title="dsm.dsm_api.DSMBase" href="#dsm.dsm_api.DSMBase">DSMBase</a></code>.<code><a title="dsm.dsm_api.DSMBase.predict_pdf" href="#dsm.dsm_api.DSMBase.predict_pdf">predict_pdf</a></code>
+</p>
+<div class="desc"><p>Returns the estimated pdf at time <span><span class="MathJax_Preview"> t </span><script type="math/tex"> t </script></span>,
+<span><span class="MathJax_Preview"> \widehat{\mathbb{P}}(T = t|X) </span><script type="math/tex"> \widehat{\mathbb{P}}(T = t|X) </script></span> for some input data <span><span class="MathJax_Preview"> x </span><script type="math/tex"> x </script></span>. </p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>x</code></strong> :&ensp;<code>np.ndarray</code></dt>
+<dd>A numpy array of the input features, <span><span class="MathJax_Preview"> x </span><script type="math/tex"> x </script></span>.</dd>
+<dt><strong><code>t</code></strong> :&ensp;<code>list</code> or <code>float</code></dt>
+<dd>a list or float of the times at which pdf is
+to be computed</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>np.array</code></dt>
+<dd>numpy array of the estimated pdf at each time in t.</dd>
+</dl></div>
+</dd>
 </dl>
 </dd>
 <dt id="dsm.dsm_api.DeepCNNRNNSurvivalMachines"><code class="flex name class">
@@ -656,6 +733,30 @@ to be computed</dd>
 <dd>numpy array of the survival probabilites at each time in t.</dd>
 </dl></div>
 </dd>
+<dt id="dsm.dsm_api.DeepCNNRNNSurvivalMachines.predict_pdf"><code class="name flex">
+<span>def <span class="ident">predict_pdf</span></span>(<span>self, x, t, risk=1)</span>
+</code></dt>
+<dd>
+<p class="inheritance">
+<em>Inherited from:</em>
+<code><a title="dsm.dsm_api.DeepRecurrentSurvivalMachines" href="#dsm.dsm_api.DeepRecurrentSurvivalMachines">DeepRecurrentSurvivalMachines</a></code>.<code><a title="dsm.dsm_api.DeepRecurrentSurvivalMachines.predict_pdf" href="#dsm.dsm_api.DeepRecurrentSurvivalMachines.predict_pdf">predict_pdf</a></code>
+</p>
+<div class="desc"><p>Returns the estimated pdf at time <span><span class="MathJax_Preview"> t </span><script type="math/tex"> t </script></span>,
+<span><span class="MathJax_Preview"> \widehat{\mathbb{P}}(T = t|X) </span><script type="math/tex"> \widehat{\mathbb{P}}(T = t|X) </script></span> for some input data <span><span class="MathJax_Preview"> x </span><script type="math/tex"> x </script></span>. </p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>x</code></strong> :&ensp;<code>np.ndarray</code></dt>
+<dd>A numpy array of the input features, <span><span class="MathJax_Preview"> x </span><script type="math/tex"> x </script></span>.</dd>
+<dt><strong><code>t</code></strong> :&ensp;<code>list</code> or <code>float</code></dt>
+<dd>a list or float of the times at which pdf is
+to be computed</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>np.array</code></dt>
+<dd>numpy array of the estimated pdf at each time in t.</dd>
+</dl></div>
+</dd>
 </dl>
 </dd>
 </dl>
@@ -677,42 +778,46 @@ to be computed</dd>
 <ul>
 <li>
 <h4><code><a title="dsm.dsm_api.DeepSurvivalMachines" href="#dsm.dsm_api.DeepSurvivalMachines">DeepSurvivalMachines</a></code></h4>
-<ul class="">
+<ul class="two-column">
 <li><code><a title="dsm.dsm_api.DeepSurvivalMachines.fit" href="#dsm.dsm_api.DeepSurvivalMachines.fit">fit</a></code></li>
 <li><code><a title="dsm.dsm_api.DeepSurvivalMachines.compute_nll" href="#dsm.dsm_api.DeepSurvivalMachines.compute_nll">compute_nll</a></code></li>
 <li><code><a title="dsm.dsm_api.DeepSurvivalMachines.predict_mean" href="#dsm.dsm_api.DeepSurvivalMachines.predict_mean">predict_mean</a></code></li>
 <li><code><a title="dsm.dsm_api.DeepSurvivalMachines.predict_risk" href="#dsm.dsm_api.DeepSurvivalMachines.predict_risk">predict_risk</a></code></li>
 <li><code><a title="dsm.dsm_api.DeepSurvivalMachines.predict_survival" href="#dsm.dsm_api.DeepSurvivalMachines.predict_survival">predict_survival</a></code></li>
+<li><code><a title="dsm.dsm_api.DeepSurvivalMachines.predict_pdf" href="#dsm.dsm_api.DeepSurvivalMachines.predict_pdf">predict_pdf</a></code></li>
 </ul>
 </li>
 <li>
 <h4><code><a title="dsm.dsm_api.DeepRecurrentSurvivalMachines" href="#dsm.dsm_api.DeepRecurrentSurvivalMachines">DeepRecurrentSurvivalMachines</a></code></h4>
-<ul class="">
+<ul class="two-column">
 <li><code><a title="dsm.dsm_api.DeepRecurrentSurvivalMachines.fit" href="#dsm.dsm_api.DeepRecurrentSurvivalMachines.fit">fit</a></code></li>
 <li><code><a title="dsm.dsm_api.DeepRecurrentSurvivalMachines.compute_nll" href="#dsm.dsm_api.DeepRecurrentSurvivalMachines.compute_nll">compute_nll</a></code></li>
 <li><code><a title="dsm.dsm_api.DeepRecurrentSurvivalMachines.predict_mean" href="#dsm.dsm_api.DeepRecurrentSurvivalMachines.predict_mean">predict_mean</a></code></li>
 <li><code><a title="dsm.dsm_api.DeepRecurrentSurvivalMachines.predict_risk" href="#dsm.dsm_api.DeepRecurrentSurvivalMachines.predict_risk">predict_risk</a></code></li>
 <li><code><a title="dsm.dsm_api.DeepRecurrentSurvivalMachines.predict_survival" href="#dsm.dsm_api.DeepRecurrentSurvivalMachines.predict_survival">predict_survival</a></code></li>
+<li><code><a title="dsm.dsm_api.DeepRecurrentSurvivalMachines.predict_pdf" href="#dsm.dsm_api.DeepRecurrentSurvivalMachines.predict_pdf">predict_pdf</a></code></li>
 </ul>
 </li>
 <li>
 <h4><code><a title="dsm.dsm_api.DeepConvolutionalSurvivalMachines" href="#dsm.dsm_api.DeepConvolutionalSurvivalMachines">DeepConvolutionalSurvivalMachines</a></code></h4>
-<ul class="">
+<ul class="two-column">
 <li><code><a title="dsm.dsm_api.DeepConvolutionalSurvivalMachines.fit" href="#dsm.dsm_api.DeepConvolutionalSurvivalMachines.fit">fit</a></code></li>
 <li><code><a title="dsm.dsm_api.DeepConvolutionalSurvivalMachines.compute_nll" href="#dsm.dsm_api.DeepConvolutionalSurvivalMachines.compute_nll">compute_nll</a></code></li>
 <li><code><a title="dsm.dsm_api.DeepConvolutionalSurvivalMachines.predict_mean" href="#dsm.dsm_api.DeepConvolutionalSurvivalMachines.predict_mean">predict_mean</a></code></li>
 <li><code><a title="dsm.dsm_api.DeepConvolutionalSurvivalMachines.predict_risk" href="#dsm.dsm_api.DeepConvolutionalSurvivalMachines.predict_risk">predict_risk</a></code></li>
 <li><code><a title="dsm.dsm_api.DeepConvolutionalSurvivalMachines.predict_survival" href="#dsm.dsm_api.DeepConvolutionalSurvivalMachines.predict_survival">predict_survival</a></code></li>
+<li><code><a title="dsm.dsm_api.DeepConvolutionalSurvivalMachines.predict_pdf" href="#dsm.dsm_api.DeepConvolutionalSurvivalMachines.predict_pdf">predict_pdf</a></code></li>
 </ul>
 </li>
 <li>
 <h4><code><a title="dsm.dsm_api.DeepCNNRNNSurvivalMachines" href="#dsm.dsm_api.DeepCNNRNNSurvivalMachines">DeepCNNRNNSurvivalMachines</a></code></h4>
-<ul class="">
+<ul class="two-column">
 <li><code><a title="dsm.dsm_api.DeepCNNRNNSurvivalMachines.fit" href="#dsm.dsm_api.DeepCNNRNNSurvivalMachines.fit">fit</a></code></li>
 <li><code><a title="dsm.dsm_api.DeepCNNRNNSurvivalMachines.compute_nll" href="#dsm.dsm_api.DeepCNNRNNSurvivalMachines.compute_nll">compute_nll</a></code></li>
 <li><code><a title="dsm.dsm_api.DeepCNNRNNSurvivalMachines.predict_mean" href="#dsm.dsm_api.DeepCNNRNNSurvivalMachines.predict_mean">predict_mean</a></code></li>
 <li><code><a title="dsm.dsm_api.DeepCNNRNNSurvivalMachines.predict_risk" href="#dsm.dsm_api.DeepCNNRNNSurvivalMachines.predict_risk">predict_risk</a></code></li>
 <li><code><a title="dsm.dsm_api.DeepCNNRNNSurvivalMachines.predict_survival" href="#dsm.dsm_api.DeepCNNRNNSurvivalMachines.predict_survival">predict_survival</a></code></li>
+<li><code><a title="dsm.dsm_api.DeepCNNRNNSurvivalMachines.predict_pdf" href="#dsm.dsm_api.DeepCNNRNNSurvivalMachines.predict_pdf">predict_pdf</a></code></li>
 </ul>
 </li>
 </ul>
