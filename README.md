@@ -32,7 +32,7 @@ As compared to typical regression problems, Survival Analysis differs in two maj
 
 Deep Survival Machines
 ----------------------
-<img width=80% src=https://ndownloader.figshare.com/files/25259852>
+<img width=100% src=https://ndownloader.figshare.com/files/25259852>
 
 
 **Deep Survival Machines (DSM)** is a **fully parametric** approach to model
@@ -55,7 +55,7 @@ model.predict_risk()
 
 Recurrent Deep Survival Machines
 --------------------------------
-<img width=80% src=https://ndownloader.figshare.com/files/28329918>
+<img width=100% src=https://ndownloader.figshare.com/files/28329918>
 
 
 **Recurrent Deep Survival Machines (RDSM)** builds on the original **DSM**
@@ -79,6 +79,8 @@ before determining the underlying survival distributions.
 
 Deep Cox Mixtures
 ------------------
+<img width=100% align="center" src=https://ndownloader.figshare.com/files/28316535>
+
 The Cox Mixture involves the assumption that the survival function
 of the individual to be a mixture of K Cox Models. Conditioned on each
 subgroup Z=k; the PH assumptions are assumed to hold and the baseline
