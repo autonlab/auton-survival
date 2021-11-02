@@ -180,7 +180,7 @@ class DSMBase():
                     risk=str(r+1)).item())
     return loss
 
-  def _prepocess_test_data(self, x):
+  def _preprocess_test_data(self, x):
     data = torch.from_numpy(x)
     if self.cuda:
       data = data.cuda()
@@ -411,7 +411,7 @@ class DeepRecurrentSurvivalMachines(DSMBase):
                                               typ=self.typ,
                                               risks=risks)
 
-  def _prepocess_test_data(self, x):
+  def _preprocess_test_data(self, x):
     data = torch.from_numpy(_get_padded_features(x))
     if self.cuda:
       data = data.cuda()
