@@ -35,13 +35,9 @@ class DeepCoxMixtures():
   >>> model.fit(x, t, e)
 
   """
-  def __init__(self, k=3, layers=None, distribution="Weibull",
-               temp=1000., discount=1.0):
+  def __init__(self, k=3, layers=None):
     self.k = k
     self.layers = layers
-    self.dist = distribution
-    self.temp = temp
-    self.discount = discount
     self.fitted = False
 
   def __call__(self):
@@ -138,7 +134,7 @@ class DeepCoxMixtures():
 
     model = self._gen_torch_model(inputdim, optimizer)
 
-    model, _ = train_dcm(model,
+    model, self.breslows = train_dcm(model,
                          (x_train, t_train, e_train),
                          (x_val, t_val, e_val),
                          epochs=iters,
