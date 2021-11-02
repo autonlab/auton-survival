@@ -142,7 +142,7 @@ AAAI Spring Symposium (2021)](http://proceedings.mlr.press/v146/nagpal21a.html)<
 [3] [Deep Cox Mixtures for Survival Regression. Machine Learning for Healthcare (2021)](https://arxiv.org/abs/2101.06536)
 
 ```
-@article{nagpal2021deep,
+@article{nagpal2021dcm,
   title={Deep Cox mixtures for survival regression},
   author={Nagpal, Chirag and Yadlowsky, Steve and Rostamzadeh, Negar and Heller, Katherine},
   journal={arXiv preprint arXiv:2101.06536},
