@@ -6,7 +6,7 @@ from dsm.contrib.dcm_torch import DeepCoxMixturesTorch
 from dsm.contrib.dcm_utilities import train_dcm, predict_survival
 
 
-class DeepCoxMixtures():
+class DeepCoxMixtures:
   """A Deep Cox Mixture model.
 
   This is the main interface to a Deep Cox Mixture model.
@@ -35,13 +35,9 @@ class DeepCoxMixtures():
   >>> model.fit(x, t, e)
 
   """
-  def __init__(self, k=3, layers=None, distribution="Weibull",
-               temp=1000., discount=1.0):
+  def __init__(self, k=3, layers=None):
     self.k = k
     self.layers = layers
-    self.dist = distribution
-    self.temp = temp
-    self.discount = discount
     self.fitted = False
 
   def __call__(self):
