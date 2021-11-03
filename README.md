@@ -88,7 +88,7 @@ hazard rates is determined non-parametrically using an spline-interpolated
 Breslow's estimator.
 For full details on Deep Cox Mixture, refer to the paper:
 
-<a href="https://arxiv.org/abs/2101.06536">Deep Cox Mixtures
+<a href="https://proceedings.mlr.press/v149/nagpal21a">Deep Cox Mixtures
 for Survival Regression. Machine Learning in Health Conference (2021)</a>
 
 
@@ -141,14 +141,18 @@ AAAI Spring Symposium (2021)](http://proceedings.mlr.press/v146/nagpal21a.html)<
   }
 ```
 
-[3] [Deep Cox Mixtures for Survival Regression. Machine Learning for Healthcare (2021)](https://arxiv.org/abs/2101.06536)
+[3] [Deep Cox Mixtures for Survival Regression. Machine Learning for Healthcare (2021)](https://proceedings.mlr.press/v149/nagpal21a)
 
 ```
-@article{nagpal2021dcm,
-  title={Deep Cox mixtures for survival regression},
+@InProceedings{nagpal2021dcm,
+  title={Deep Cox Mixtures for Survival Regression},
   author={Nagpal, Chirag and Yadlowsky, Steve and Rostamzadeh, Negar and Heller, Katherine},
-  journal={arXiv preprint arXiv:2101.06536},
-  year={2021}
+  booktitle={Proceedings of the 6th Machine Learning for Healthcare Conference},
+  pages={674--708},
+  year={2021},
+  volume={149},
+  series={Proceedings of Machine Learning Research},
+  publisher={PMLR},
 }
 ```
 
