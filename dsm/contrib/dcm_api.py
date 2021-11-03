@@ -3,7 +3,7 @@ import torch
 import numpy as np
 
 from dsm.contrib.dcm_torch import DeepCoxMixturesTorch
-from dsm.contrib.dcm_utilities import train_dcm, predict_survival
+from dsm.contrib.dcm_utilities import *
 
 
 class DeepCoxMixtures():
@@ -179,3 +179,13 @@ class DeepCoxMixtures():
       raise Exception("The model has not been fitted yet. Please fit the " +
                       "model using the `fit` method on some training data " +
                       "before calling `predict_survival`.")
+
+  def compute_nll(self, x, t, e):
+    if not self.fitted:
+      raise Exception("The model has not been fitted yet. Please fit the " +
+                      "model using the `fit` method on some training data " +
+                      "before calling `_eval_nll`.")
+    processed_data = self._preprocess_training_data(x, t, e, 0, None, 0)
+    _, _, _, x_val, t_val, e_val = processed_data
+    with torch.no_grad():
+      return - get_posteriors(repair_probs(get_likelihood(self.torch_model[0], self.torch_model[1], x_val, t_val, e_val))).sum().item()
