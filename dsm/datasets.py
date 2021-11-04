@@ -54,7 +54,7 @@ def increase_censoring(e, t, p):
 
   return e, t
 
-def _load_framingham_dataset(sequential):
+def _load_framingham_dataset(sequential, competing = False):
   """Helper function to load and preprocess the Framingham dataset.
 
   The Framingham Dataset is a subset of 4,434 participants of the well known,
@@ -86,25 +86,31 @@ def _load_framingham_dataset(sequential):
   dat_num = data[['TOTCHOL', 'AGE', 'SYSBP', 'DIABP',
                   'CIGPDAY', 'BMI', 'HEARTRTE', 'GLUCOSE']]
 
-  x1 = pd.get_dummies(dat_cat).values
-  x2 = dat_num.values
-  x = np.hstack([x1, x2])
+  x1 = pd.get_dummies(dat_cat)
+  x2 = dat_num
+  x = np.hstack([x1.values, x2.values])
 
   time = (data['TIMEDTH'] - data['TIME']).values
   event = data['DEATH'].values
+
+  if competing:
+    time_cvd = (data['TIMECVD'] - data['TIME']).values
+    event_type = np.argmin(np.vstack([time, time_cvd]), 0)
+    event[event_type == 1] = 2
+    time[event_type == 1] = time_cvd[event_type == 1]
 
   x = SimpleImputer(missing_values=np.nan, strategy='mean').fit_transform(x)
   x_ = StandardScaler().fit_transform(x)
 
   if not sequential:
-    return x_, time, event
+    return x_, time, event, np.concatenate([x1.columns, x2.columns])
   else:
     x, t, e = [], [], []
     for id_ in sorted(list(set(data['RANDID']))):
       x.append(x_[data['RANDID'] == id_])
       t.append(time[data['RANDID'] == id_])
       e.append(event[data['RANDID'] == id_])
-    return x, t, e
+    return x, t, e, np.concatenate([x1.columns, x2.columns])
 
 def _load_pbc_dataset(sequential):
   """Helper function to load and preprocess the PBC dataset
@@ -137,10 +143,10 @@ def _load_pbc_dataset(sequential):
                   'SGOT', 'platelets', 'prothrombin']]
   age = data['age'] + data['years']
 
-  x1 = pd.get_dummies(dat_cat).values
-  x2 = dat_num.values
-  x3 = age.values.reshape(-1, 1)
-  x = np.hstack([x1, x2, x3])
+  x1 = pd.get_dummies(dat_cat)
+  x2 = dat_num
+  x3 = age
+  x = np.hstack([x1.values, x2.values, x3.values.reshape(-1, 1)])
 
   time = (data['years'] - data['year']).values
   event = data['status2'].values
@@ -156,7 +162,7 @@ def _load_pbc_dataset(sequential):
       x.append(x_[data['id'] == id_])
       t.append(time[data['id'] == id_])
       e.append(event[data['id'] == id_])
-    return x, t, e
+    return x, t, e, np.concatenate([x1.columns, x2.columns, x3.columns])
 
 def _load_support_dataset():
   """Helper function to load and preprocess the SUPPORT dataset.
@@ -192,7 +198,7 @@ def _load_support_dataset():
   x = StandardScaler().fit_transform(x)
 
   remove = ~np.isnan(t)
-  return x[remove], t[remove], e[remove]
+  return x[remove], t[remove], e[remove], np.concatenate([x1.columns, x2.columns])
 
 def _load_mnist():
   """Helper function to load and preprocess the MNIST dataset.
@@ -222,7 +228,7 @@ def _load_mnist():
 
   e, t = increase_censoring(np.ones(t.shape), t, p=.5)
 
-  return x, t, e
+  return x, t, e, train.data.columns
 
 def load_dataset(dataset='SUPPORT', **kwargs):
   """Helper function to load datasets to test Survival Analysis models.
@@ -273,13 +279,14 @@ def load_dataset(dataset='SUPPORT', **kwargs):
 
   """
   sequential = kwargs.get('sequential', False)
+  competing = kwargs.get('competing', False)
 
   if dataset == 'SUPPORT':
     return _load_support_dataset()
   if dataset == 'PBC':
     return _load_pbc_dataset(sequential)
   if dataset == 'FRAMINGHAM':
-    return _load_framingham_dataset(sequential)
+    return _load_framingham_dataset(sequential, competing)
   if dataset == 'MNIST':
     return _load_mnist()
   else:
