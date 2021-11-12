@@ -80,6 +80,10 @@ def _load_framingham_dataset(sequential, competing = False):
   data = pkgutil.get_data(__name__, 'datasets/framingham.csv')
   data = pd.read_csv(io.BytesIO(data))
 
+  if not sequential:
+    # Consider only first event
+    data = data.groupby('RANDID').first()
+
   dat_cat = data[['SEX', 'CURSMOKE', 'DIABETES', 'BPMEDS',
                   'educ', 'PREVCHD', 'PREVAP', 'PREVMI',
                   'PREVSTRK', 'PREVHYP']]
@@ -103,12 +107,13 @@ def _load_framingham_dataset(sequential, competing = False):
   x_ = StandardScaler().fit_transform(x)
 
   if not sequential:
-    return x_, time, event, np.concatenate([x1.columns, x2.columns])
+    return x_, time + 1, event, np.concatenate([x1.columns, x2.columns])
   else:
+    x_, data, time, event = x_[time > 0], data[time > 0], time[time > 0], event[time > 0]
     x, t, e = [], [], []
     for id_ in sorted(list(set(data['RANDID']))):
       x.append(x_[data['RANDID'] == id_])
-      t.append(time[data['RANDID'] == id_])
+      t.append(time[data['RANDID'] == id_] + 1)
       e.append(event[data['RANDID'] == id_])
     return x, t, e, np.concatenate([x1.columns, x2.columns])
 
@@ -155,12 +160,12 @@ def _load_pbc_dataset(sequential):
   x_ = StandardScaler().fit_transform(x)
 
   if not sequential:
-    return x_, time, event
+    return x_, time + 1, event
   else:
     x, t, e = [], [], []
     for id_ in sorted(list(set(data['id']))):
       x.append(x_[data['id'] == id_])
-      t.append(time[data['id'] == id_])
+      t.append(time[data['id'] == id_] + 1)
       e.append(event[data['id'] == id_])
     return x, t, e, np.concatenate([x1.columns, x2.columns, x3.columns])
 
@@ -198,7 +203,7 @@ def _load_support_dataset():
   x = StandardScaler().fit_transform(x)
 
   remove = ~np.isnan(t)
-  return x[remove], t[remove], e[remove], np.concatenate([x1.columns, x2.columns])
+  return x[remove], t[remove] + 1, e[remove], np.concatenate([x1.columns, x2.columns])
 
 def _load_mnist():
   """Helper function to load and preprocess the MNIST dataset.
@@ -228,7 +233,7 @@ def _load_mnist():
 
   e, t = increase_censoring(np.ones(t.shape), t, p=.5)
 
-  return x, t, e, train.data.columns
+  return x, t + 1, e, train.data.columns
 
 def load_dataset(dataset='SUPPORT', **kwargs):
   """Helper function to load datasets to test Survival Analysis models.
