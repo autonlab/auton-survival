@@ -193,4 +193,4 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 DEALINGS IN THE SOFTWARE.
 
 <img align="left" height ="110px" src="https://www.cs.cmu.edu/~chiragn/auton_logo.png"> 
-<img align="left" height ="150px" src="https://www.cmu.edu/brand/downloads/assets/images/wordmarks-600x600-min.jpg">
+<img align="left" height ="120px" src="https://www.cs.cmu.edu/~chiragn/cmu_logo.jpeg">
