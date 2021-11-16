@@ -191,7 +191,8 @@ PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS 
 FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
-<table>
-<tr><td><img style="float: right; padding-top:25px" width = "150px" src="https://www.cs.cmu.edu/~chiragn/auton_logo.png"> 
-<td><img style="float: right; padding-top:25px" width ="150px" src="https://www.cmu.edu/brand/downloads/assets/images/wordmarks-600x600-min.jpg">
+
+<table align="right" style="border: 0;">
+<tr><td style="border: 0;"><img align="right" style="padding-top:25px" width = "150px" src="https://www.cs.cmu.edu/~chiragn/auton_logo.png"> 
+<td style="border: 0;"><img align="right" style="padding-top:25px" width ="150px" src="https://www.cmu.edu/brand/downloads/assets/images/wordmarks-600x600-min.jpg">
 </div>
