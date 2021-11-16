@@ -193,4 +193,4 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 DEALINGS IN THE SOFTWARE.
 
 <img style="float: left; padding-top:25px" width ="150px" src="https://www.cmu.edu/brand/downloads/assets/images/wordmarks-600x600-min.jpg">
-<img style="float: right; padding-top:25px" width = "150px" src="https://www.autonlab.org/user/themes/auton/images/AutonLogo.png"> 
+<img style="float: right; padding-top:25px" width = "150px" src="https://www.cs.cmu.edu/~chiragn/auton_logo.svg"> 
