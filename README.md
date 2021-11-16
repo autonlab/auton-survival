@@ -192,7 +192,5 @@ FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TOR
 OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
-<img align="right" style="padding-top:5px" width = "150px" src="https://www.cs.cmu.edu/~chiragn/auton_logo.png"> 
-<br><br><br><br>
-
-<img align="right" style="padding-top:5px" width ="150px" src="https://www.cmu.edu/brand/downloads/assets/images/wordmarks-600x600-min.jpg">
+<img align="left" height ="110px" src="https://www.cs.cmu.edu/~chiragn/auton_logo.png"> 
+<img align="left" height ="150px" src="https://www.cmu.edu/brand/downloads/assets/images/wordmarks-600x600-min.jpg">
