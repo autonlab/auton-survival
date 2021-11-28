@@ -49,7 +49,7 @@ class DeepCoxMixturesTorch(nn.Module):
 
     x = self.embedding(x)
 
-    log_hazard_ratios = torch.clamp(self.expert(x), min=-7e-1, max=7e-1)
+    log_hazard_ratios = torch.clamp(self.expert(x), min=-5e-2, max=5e-1)
     #log_hazard_ratios = self.expert(x)
     #log_hazard_ratios = torch.nn.Tanh()(self.expert(x))
     log_gate_prob = torch.nn.LogSoftmax(dim=1)(self.gate(x))
