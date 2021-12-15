@@ -99,9 +99,9 @@ def _load_framingham_dataset(sequential, competing = False):
 
   if competing:
     time_cvd = (data['TIMECVD'] - data['TIME']).values
-    event_type = np.argmin(np.vstack([time, time_cvd]), 0)
-    event[event_type == 1] = 2
-    time[event_type == 1] = time_cvd[event_type == 1]
+    event *= 2
+    event[data['CVD'] == 1] = 1
+    time[data['CVD'] == 1] = time_cvd[data['CVD'] == 1]
 
   x = SimpleImputer(missing_values=np.nan, strategy='mean').fit_transform(x)
   x_ = StandardScaler().fit_transform(x)
