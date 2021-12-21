@@ -189,3 +189,13 @@ class DeepCoxMixtures():
     _, _, _, x_val, t_val, e_val = processed_data
     with torch.no_grad():
       return - get_posteriors(repair_probs(get_likelihood(self.torch_model[0], self.torch_model[1], x_val, t_val, e_val))).sum().item()
+
+  def predict_alphas(self, x):
+    x = self._preprocess_test_data(x)
+    if self.fitted:
+      alphas, _ = self.torch_model[0](x)
+      return alphas.detach().exp().cpu().numpy()
+    else:
+      raise Exception("The model has not been fitted yet. Please fit the " +
+                      "model using the `fit` method on some training data " +
+                      "before calling `predict_alphas`.")
