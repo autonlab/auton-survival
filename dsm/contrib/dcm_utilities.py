@@ -20,7 +20,7 @@ def randargmax(b,**kw):
   """ a random tie-breaking argmax"""
   return np.argmax(np.random.random(b.shape) * (b==b.max()), **kw)
 
-def partial_ll_loss(lrisks, tb, eb, eps=1e-2):  
+def partial_ll_loss(lrisks, tb, eb, eps=1e-2):
 
   tb = tb + eps*np.random.random(len(tb))
   sindex = np.argsort(-tb)
@@ -30,7 +30,7 @@ def partial_ll_loss(lrisks, tb, eb, eps=1e-2):
 
   lrisks = lrisks[sindex] # lrisks = tf.gather(lrisks, sindex)
   # lrisksdenom = tf.math.cumulative_logsumexp(lrisks)
-  lrisksdenom = torch.logcumsumexp(lrisks, dim = 0) 
+  lrisksdenom = torch.logcumsumexp(lrisks, dim = 0)
 
   plls = lrisks - lrisksdenom
   pll = plls[eb == 1]
@@ -45,7 +45,7 @@ def fit_spline(t, surv, s=1e-4):
 def smooth_bl_survival(breslow, smoothing_factor):
 
   blsurvival = breslow.baseline_survival_
-  x, y = blsurvival.x, blsurvival.y 
+  x, y = blsurvival.x, blsurvival.y
   return fit_spline(x, y, s=smoothing_factor)
 
 def get_probability_(lrisks, ts, spl):
@@ -56,7 +56,7 @@ def get_probability_(lrisks, ts, spl):
 def get_survival_(lrisks, ts, spl):
   risks = np.exp(lrisks)
   return spl(ts)**risks
-    
+  
 def get_probability(lrisks, breslow_splines, t):
   psurv = []
   for i in range(lrisks.shape[1]):
@@ -125,9 +125,9 @@ def q_function(model, x, t, e, posteriors, typ='soft'):
   #log_smax_loss = -torch.nn.LogSoftmax(dim=1)(gates) # tf.nn.log_softmax(gates)
 
   gate_loss = posteriors.exp()*gates
-  gate_loss = -torch.sum(gate_loss)     
+  gate_loss = -torch.sum(gate_loss) 
   loss+=gate_loss
-  
+
   return loss
 
 def e_step(model, breslow_splines, x, t, e, log=False):
@@ -170,10 +170,11 @@ def fit_breslow(model, x, t, e, posteriors=None, smoothing_factor=1e-4, typ='sof
   if typ == 'soft': z = sample_hard_z(z_probs)
   else: z = get_hard_z(z_probs)
 
-  breslow_splines = {}    
+  breslow_splines = {}
   for i in range(model.k):
     breslowk = BreslowEstimator().fit(lrisks[:, i][z==i], e[z==i], t[z==i])
-    breslow_splines[i] = smooth_bl_survival(breslowk, smoothing_factor=smoothing_factor)
+    breslow_splines[i] = smooth_bl_survival(breslowk, 
+                                            smoothing_factor=smoothing_factor)
 
   return breslow_splines
 
@@ -207,7 +208,7 @@ def train_step(model, x, t, e, breslow_splines, optimizer,
     with torch.no_grad():
       try:
         if i%update_splines_after == 0:
-          if use_posteriors: 
+          if use_posteriors:
             posteriors = e_step(model, breslow_splines, x, t, e)
             breslow_splines = fit_breslow(model, x, t, e, posteriors=posteriors, typ='soft')
           else:
