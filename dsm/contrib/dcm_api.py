@@ -35,12 +35,14 @@ class DeepCoxMixtures:
   >>> model.fit(x, t, e)
 
   """
-  def __init__(self, k=3, layers=None, gamma=0.95, use_activation=False):
+
+  def __init__(self, k=3, layers=None, gamma=0.95, smoothing_factor=1e-4, use_activation=False):
 
     self.k = k
     self.layers = layers
     self.fitted = False
-    self.gamma = gamma 
+    self.gamma = gamma
+    self.smoothing_factor = smoothing_factor
     self.use_activation = use_activation
 
   def __call__(self):
@@ -146,8 +148,8 @@ class DeepCoxMixtures:
                          lr=learning_rate,
                          bs=batch_size,
                          return_losses=True,
-                         smoothing_factor=None,
-                         use_posteriors=True,)
+                         smoothing_factor=self.smoothing_factor,
+                         use_posteriors=True)
 
     self.torch_model = (model[0].eval(), model[1])
     self.fitted = True

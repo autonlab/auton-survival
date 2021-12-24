@@ -6,7 +6,7 @@ import torch
 import numpy as np
 
 from scipy.interpolate import UnivariateSpline
-from sksurv.linear_model.coxph import BreslowEstimator 
+from sksurv.linear_model.coxph import BreslowEstimator
 
 from sklearn.utils import shuffle
 
@@ -247,11 +247,8 @@ def train_dcm(model, train_data, val_data, epochs=50,
   xt, tt, et = train_data
   xv, tv, ev = val_data
 
-  unique_times = np.unique(tt)
-
   optimizer = torch.optim.Adam(model.parameters(), lr=lr)
   optimizer = get_optimizer(model, lr)
-
 
   valc = np.inf
   patience_ = 0
