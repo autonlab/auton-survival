@@ -13,7 +13,7 @@ from dsm.dsm_torch import create_representation
 
 class DeepCoxMixturesTorch(nn.Module):
   """PyTorch model definition of the Deep Cox Mixture Survival Model.
-  
+
   The Cox Mixture involves the assumption that the survival function
   of the individual to be a mixture of K Cox Models. Conditioned on each
   subgroup Z=k; the PH assumptions are assumed to hold and the baseline
