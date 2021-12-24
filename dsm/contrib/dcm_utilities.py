@@ -56,7 +56,7 @@ def get_probability_(lrisks, ts, spl):
 def get_survival_(lrisks, ts, spl):
   risks = np.exp(lrisks)
   return spl(ts)**risks
-  
+
 def get_probability(lrisks, breslow_splines, t):
   psurv = []
   for i in range(lrisks.shape[1]):
@@ -125,13 +125,13 @@ def q_function(model, x, t, e, posteriors, typ='soft'):
   #log_smax_loss = -torch.nn.LogSoftmax(dim=1)(gates) # tf.nn.log_softmax(gates)
 
   gate_loss = posteriors.exp()*gates
-  gate_loss = -torch.sum(gate_loss) 
+  gate_loss = -torch.sum(gate_loss)
   loss+=gate_loss
 
   return loss
 
 def e_step(model, breslow_splines, x, t, e, log=False):
-    
+
   # TODO: Do this in `Log Space`
   if breslow_splines is None:
       # If Breslow splines are not available, like in the first
