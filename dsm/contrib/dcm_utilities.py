@@ -43,7 +43,7 @@ def fit_spline(t, surv, s=1e-4):
   return UnivariateSpline(t, surv, s=s, ext=3, k=1)
 
 def smooth_bl_survival(breslow, smoothing_factor):
-    
+
   blsurvival = breslow.baseline_survival_
   x, y = blsurvival.x, blsurvival.y 
   return fit_spline(x, y, s=smoothing_factor)
@@ -84,12 +84,12 @@ def sample_hard_z(gates_prob):
   return torch.multinomial(gates_prob.exp(), num_samples=1)[:, 0]
 
 def repair_probs(probs):
-  probs[torch.isnan(probs)] = -10   
+  probs[torch.isnan(probs)] = -10
   probs[probs<-10] = -10
   return probs
 
 def get_likelihood(model, breslow_splines, x, t, e, log=False):
-  
+ 
   # Function requires numpy/torch
 
   gates, lrisks = model(x)
@@ -143,9 +143,9 @@ def e_step(model, breslow_splines, x, t, e, log=False):
     posteriors = get_posteriors(repair_probs(probs))
 
   return posteriors
-      
+
 def m_step(model, optimizer, x, t, e, posteriors, typ='soft'):
-            
+
   optimizer.zero_grad()  
   loss = q_function(model, x, t, e, posteriors, typ)    
   loss.backward()
@@ -210,7 +210,7 @@ def train_step(model, x, t, e, breslow_splines, optimizer,
           if use_posteriors: 
             posteriors = e_step(model, breslow_splines, x, t, e)
             breslow_splines = fit_breslow(model, x, t, e, posteriors=posteriors, typ='soft')
-          else: 
+          else:
             breslow_splines = fit_breslow(model, x, t, e, posteriors=None, typ='soft')
           # print(f'Duration of Breslow spline estimation: {time.time() - estimate_breslow_start}')
       except Exception as exce:
@@ -262,10 +262,10 @@ def train_dcm(model, train_data, val_data, epochs=50,
   for epoch in tqdm(range(epochs)):
 
     # train_step_start = time.time()
-    breslow_splines = train_step(model, xt, tt, et, breslow_splines, 
+    breslow_splines = train_step(model, xt, tt, et, breslow_splines,
                                  optimizer, bs=bs, seed=epoch, typ=typ,
-                                 use_posteriors=use_posteriors, 
-                                 update_splines_after=update_splines_after, 
+                                 use_posteriors=use_posteriors,
+                                 update_splines_after=update_splines_after,
                                  smoothing_factor=smoothing_factor)
     # print(f'Duration of train-step: {time.time() - train_step_start}')
     # test_step_start = time.time()
@@ -281,8 +281,8 @@ def train_dcm(model, train_data, val_data, epochs=50,
     else: patience_ = 0
 
     if patience_ == patience:
-        if return_losses: return (model, breslow_splines), losses
-        else: return (model, breslow_splines)
+      if return_losses: return (model, breslow_splines), losses
+      else: return (model, breslow_splines)
 
     valc = valcn
 
@@ -307,3 +307,13 @@ def predict_survival(model, x, t):
     predictions.append((gate_probs*expert_output).sum(axis=1))
 
   return np.array(predictions).T
+
+def predict_latent_z(model, x):
+
+  model, _ = model
+  gates, _ = model(x)
+
+  gate_probs = torch.exp(gates).detach().numpy()
+
+  return gate_probs
+
