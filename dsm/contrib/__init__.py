@@ -58,4 +58,5 @@ for Survival Regression. Machine Learning in Health Conference (2021)</a>
 
 """
 
-from dsm.contrib.dcm_api import DeepCoxMixtures
+from dsm.contrib.dcm.dcm_api import DeepCoxMixtures
+from dsm.contrib.dcph.dcph_api import DeepCoxPH, DeepRecurrentCoxPH
