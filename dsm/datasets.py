@@ -117,7 +117,7 @@ def _load_framingham_dataset(sequential, competing = False):
       e.append(event[data['RANDID'] == id_])
     return x, t, e, np.concatenate([x1.columns, x2.columns])
 
-def _load_pbc_dataset(sequential):
+def _load_pbc_dataset(sequential, competing = False):
   """Helper function to load and preprocess the PBC dataset
 
   The Primary biliary cirrhosis (PBC) Dataset [1] is well known
@@ -155,19 +155,22 @@ def _load_pbc_dataset(sequential):
 
   time = (data['years'] - data['year']).values
   event = data['status2'].values
+  if competing:
+    event *= 2 # Death is 2
+    event[data['status'] == 'transpanted'] = 1
 
   x = SimpleImputer(missing_values=np.nan, strategy='mean').fit_transform(x)
   x_ = StandardScaler().fit_transform(x)
 
   if not sequential:
-    return x_, time + 1, event
+    return x_, time + 1, event, x1.columns.tolist() + x2.columns.tolist() + [x3.name]
   else:
     x, t, e = [], [], []
     for id_ in sorted(list(set(data['id']))):
       x.append(x_[data['id'] == id_])
       t.append(time[data['id'] == id_] + 1)
       e.append(event[data['id'] == id_])
-    return x, t, e, np.concatenate([x1.columns, x2.columns, x3.columns])
+    return x, t, e, np.concatenate([x1.columns, x2.columns, x3.name])
 
 def _load_support_dataset():
   """Helper function to load and preprocess the SUPPORT dataset.
@@ -289,7 +292,7 @@ def load_dataset(dataset='SUPPORT', **kwargs):
   if dataset == 'SUPPORT':
     return _load_support_dataset()
   if dataset == 'PBC':
-    return _load_pbc_dataset(sequential)
+    return _load_pbc_dataset(sequential, competing)
   if dataset == 'FRAMINGHAM':
     return _load_framingham_dataset(sequential, competing)
   if dataset == 'MNIST':
