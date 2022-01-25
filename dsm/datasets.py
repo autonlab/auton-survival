@@ -157,7 +157,7 @@ def _load_pbc_dataset(sequential, competing = False):
   event = data['status2'].values
   if competing:
     event *= 2 # Death is 2
-    event[data['status'] == 'transpanted'] = 1
+    event[data['status'] == 'transplanted'] = 1
 
   x = SimpleImputer(missing_values=np.nan, strategy='mean').fit_transform(x)
   x_ = StandardScaler().fit_transform(x)
