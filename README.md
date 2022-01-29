@@ -96,8 +96,8 @@ Installation
 ------------
 
 ```console
-foo@bar:~$ git clone https://github.com/autonlab/DeepSurvivalMachines.git
-foo@bar:~$ cd DeepSurvivalMachines
+foo@bar:~$ git clone https://github.com/autonlab/auton-survival.git
+foo@bar:~$ cd auton-survival
 foo@bar:~$ pip install -r requirements.txt
 ```
 
