@@ -8,7 +8,7 @@
 
 <img align="right" width=50% src=https://ndownloader.figshare.com/files/26367844>
 
-Package: `dsm`
+Package: `auton-survival`
 -------------
 
 Python package `dsm` provides an API to train the Deep Survival Machines
