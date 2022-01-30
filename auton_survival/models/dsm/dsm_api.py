@@ -27,16 +27,16 @@ This module is a wrapper around torch implementations and
 provides a convenient API to train Deep Survival Machines.
 """
 
-from dsm.dsm_torch import DeepSurvivalMachinesTorch
-from dsm.dsm_torch import DeepRecurrentSurvivalMachinesTorch
-from dsm.dsm_torch import DeepConvolutionalSurvivalMachinesTorch
-from dsm.dsm_torch import DeepCNNRNNSurvivalMachinesTorch
+from .dsm_torch import DeepSurvivalMachinesTorch
+from .dsm_torch import DeepRecurrentSurvivalMachinesTorch
+from .dsm_torch import DeepConvolutionalSurvivalMachinesTorch
+from .dsm_torch import DeepCNNRNNSurvivalMachinesTorch
 
-import dsm.losses as losses
+import .losses as losses
 
-from dsm.utilities import train_dsm
-from dsm.utilities import _get_padded_features, _get_padded_targets
-from dsm.utilities import _reshape_tensor_with_nans
+from .utilities import train_dsm
+from .utilities import _get_padded_features, _get_padded_targets
+from .utilities import _reshape_tensor_with_nans
 
 import torch
 import numpy as np
