@@ -32,7 +32,7 @@ from .dsm_torch import DeepRecurrentSurvivalMachinesTorch
 from .dsm_torch import DeepConvolutionalSurvivalMachinesTorch
 from .dsm_torch import DeepCNNRNNSurvivalMachinesTorch
 
-import .losses as losses
+from . import losses
 
 from .utilities import train_dsm
 from .utilities import _get_padded_features, _get_padded_targets
