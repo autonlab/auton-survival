@@ -11,7 +11,7 @@
 Package: `auton-survival`
 -------------
 
-Python package `dsm` provides an API to train the Deep Survival Machines
+Python package `auton-survival` provides an API to train the Deep Survival Machines
 and associated models for problems in survival analysis. The underlying model
 is implemented in `pytorch`.
 
