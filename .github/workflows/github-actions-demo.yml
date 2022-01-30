@@ -24,4 +24,4 @@ jobs:
     - name: Analysing the code with pylint
       run: |
         python -m pytest tests/ --cov
-        pylint --fail-under=8 dsm/
+        pylint --fail-under=8 auton_survival/
