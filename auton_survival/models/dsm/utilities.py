@@ -24,8 +24,8 @@
 
 """Utility functions to train the Deep Survival Machines models"""
 
-from dsm.dsm_torch import DeepSurvivalMachinesTorch
-from dsm.losses import unconditional_loss, conditional_loss
+from .dsm_torch import DeepSurvivalMachinesTorch
+from .losses import unconditional_loss, conditional_loss
 
 from tqdm import tqdm
 from copy import deepcopy
