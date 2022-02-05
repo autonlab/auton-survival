@@ -95,24 +95,21 @@ class IntersectionalPhenotyper(Phenotyper):
 
 class ClusteringPhenotyper(Phenotyper):
 
-  """A Phenotyper that first reduces feature dimensionality followed by clustering.
+  """Phenotyper that performs dimensionality reduction followed by clustering.
 
   """
 
-  _VALID_DIMRED_METHODS = ['pca', 'kpca', 'nnmf']
+  _VALID_DIMRED_METHODS = ['pca', 'kpca', 'nnmf', None]
   _VALID_CLUSTERING_METHODS = ['kmeans', 'dbscan', 'gmm', 'hierarchical']
 
-  def __init__(self, clustering_method = 'kmeans', dim_red_method = None,
-               random_seed=0, **kwargs):
-
-    super(ClusteringPhenotyper).__init__(random_seed=random_seed)
+  def __init__(self, clustering_method = 'kmeans', dim_red_method = None, random_seed=0, **kwargs):
 
     assert clustering_method in ClusteringPhenotyper._VALID_CLUSTERING_METHODS, "Please specify a valid Clustering method"
     assert dim_red_method in ClusteringPhenotyper._VALID_DIMRED_METHODS, "Please specify a valid Dimensionality Reduction method"
 
      # Raise warning if "hierarchical" is used with dim_redcution
     if (clustering_method in ['hierarchical']) and (dim_red_method is not None):
-      print("WARNING: Are you sure you want to run hierarchical clustering on decomposed features?. Such behaviour is atypical.")
+      print("WARNING: Are you sure you want to run hierarchical clustering on decomposed features?. Such behaviour is atypical.") 
 
     # Dimensionality Reduction Step:
     if dim_red_method is not None:
@@ -121,13 +118,13 @@ class ClusteringPhenotyper(Phenotyper):
       elif dim_red_method == 'nnmf':
         dim_red_model = decomposition.NMF
       elif 'kpca' in dim_red_method:
-        dim_red_model = decomposition.KernelPCA
+        dim_red_model = decomposition.KernelPCA  
       else:
         raise NotImplementedError("Dimensionality Reduction method: "+dim_red_method+ " Not Implemented.")
 
     if clustering_method == 'kmeans':
-      clustering_model=  cluster.KMeans  
-    elif clustering_method == 'dbscan':
+      clustering_model=  cluster.KMeans    
+    elif clustering_method == 'dbscan': 
       clustering_model = cluster.DBSCAN
     elif clustering_method == 'gmm':
       clustering_model = mixture.GaussianMixture
@@ -136,24 +133,25 @@ class ClusteringPhenotyper(Phenotyper):
     else:
       raise NotImplementedError("Clustering method: "+clustering_method+ " Not Implemented.")
 
-    self.clustering_method = clustering_method
+    self.clustering_method = clustering_method 
     self.dim_red_method = dim_red_method
 
     c_kwargs = _get_method_kwargs(clustering_model, kwargs)
-    d_kwargs = _get_method_kwargs(dim_red_model, kwargs)
-
     if clustering_method == 'gmm': 
       if 'covariance_type' not in c_kwargs:
         c_kwargs['covariance_type'] = 'diag'
-      c_kwargs['n_components'] = c_kwargs.get('n_clusters', 3)
-    if dim_red_method == 'kpca':
-      if 'kernel' not in d_kwargs:
-        d_kwargs['kernel'] = 'rbf'
-        d_kwargs['n_jobs'] = -1
-        d_kwargs['max_iter'] = 500
+      c_kwargs['n_components'] = c_kwargs.get('n_clusters', 3) 
 
-    self.dim_red_model = dim_red_model(**d_kwargs)
     self.clustering_model = clustering_model(**c_kwargs)
+    if dim_red_method is not None:
+      d_kwargs = _get_method_kwargs(dim_red_model, kwargs)
+      if dim_red_method == 'kpca':
+        if 'kernel' not in d_kwargs:
+          d_kwargs['kernel'] = 'rbf'
+          d_kwargs['n_jobs'] = -1
+          d_kwargs['max_iter'] = 500
+
+      self.dim_red_model = dim_red_model(**d_kwargs)
 
   def fit(self, features):
     
@@ -177,24 +175,25 @@ class ClusteringPhenotyper(Phenotyper):
 
     negative_exp_distances = np.exp(-self.clustering_model.transform(features))
     probs = negative_exp_distances/negative_exp_distances.sum(axis=1).reshape((-1, 1))
-
+    
     #assert int(np.sum(probs)) == len(probs), 'Not valid probabilities'
 
     return probs
 
   def phenotype(self, features):
-
+ 
     assert self.fitted, "Phenotyper must be `fitted` before calling `phenotype`."
-
+ 
     if self.dim_red_method is not None:
       features =  self.dim_red_model.transform(features)
     if self.clustering_method == 'gmm': 
       return self.clustering_model.predict_proba(features) 
     elif self.clustering_method == 'kmeans':
       return self._predict_proba_kmeans(features)
-
+ 
   def fit_phenotype(self, features):
     return self.fit(features).phenotype(features)
+
 
 
 class CoxMixturePhenotyper(Phenotyper):
