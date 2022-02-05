@@ -49,7 +49,8 @@ def survival_regression_metric(metric, predictions, outcomes, times,
     return float(metrics.cumulative_dynamic_auc(survival_train, survival_test,
                                                 1-predictions_test, times)[0])
   elif metric == 'ctd':
-    return metrics.concordance_index_ipcw(survival_train, survival_test, 1-predictions_test, tau=times)[0]
+    return metrics.concordance_index_ipcw(survival_train, survival_test,
+                                          1-predictions_test, tau=times)[0]
   else:
     raise NotImplementedError()
 
@@ -143,14 +144,18 @@ def __get_restricted_area(km_estimate, horizon):
 def _restricted_mean_diff(treated_outcomes, control_outcomes, horizon, seed=None, **kwargs):
 
   if seed is not None:
-    treated_outcomes = treated_outcomes.sample(n=len(treated_outcomes), random_state=seed, replace=True)
-    control_outcomes = control_outcomes.sample(n=len(control_outcomes), random_state=seed, replace=True)
+    treated_outcomes = treated_outcomes.sample(n=len(treated_outcomes),
+                                               random_state=seed, replace=True)
+    control_outcomes = control_outcomes.sample(n=len(control_outcomes),
+                                               random_state=seed, replace=True)
 
-  treatment_survival = KaplanMeierFitter().fit(treated_outcomes['time'], treated_outcomes['event'])
-  control_survival = KaplanMeierFitter().fit(control_outcomes['time'], control_outcomes['event'])
+  treatment_survival = KaplanMeierFitter().fit(treated_outcomes['time'],
+                                               treated_outcomes['event'])
+  control_survival = KaplanMeierFitter().fit(control_outcomes['time'],
+                                             control_outcomes['event'])
 
   return __get_restricted_area(treatment_survival, horizon) - __get_restricted_area(control_survival, horizon)
- 
+
 def _survival_at_diff(treated_outcomes, control_outcomes, horizon, interpolate=True, seed=None):
 
   if seed is not None:
@@ -194,7 +199,6 @@ def survival_diff_metric(metric, outcomes, arms, treatment_arm, control_arm,  ho
 
   if metric in ['restricted_mean', 'survival_at_time', 'time_to']:
     assert horizon is not None, "Please specify Event Horizon"
-
   if metric == 'hazard_ratio':
     print("WARNING: You are computing Hazard Ratios.\nMake sure you have tested the PH Assumptions.")
 
@@ -212,8 +216,12 @@ def survival_diff_metric(metric, outcomes, arms, treatment_arm, control_arm,  ho
   elif metric == 'hazard_ratio': _metric = _hazard_ratio
   else: raise NotImplementedError()
 
-  if bootstrap is None: 
+  if bootstrap is None:
     return _metric(treated_outcomes, control_outcomes,
                    horizon=horizon, interpolate=interpolate)
   else:
-    return [_metric(treated_outcomes, control_outcomes, horizon=horizon, interpolate=interpolate, seed=i) for i in range(bootstrap)]
+    return [_metric(treated_outcomes,
+                    control_outcomes,
+                    horizon=horizon,
+                    interpolate=interpolate,
+                    seed=i) for i in range(bootstrap)]
