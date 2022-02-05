@@ -20,7 +20,8 @@ class Imputer:
     - **ignore**: Keep all null values
     - **mode**: Replace null values with most commonly occurring category.
 
-    For numerical/continuous features, the user can choose between the following strategies:
+    For numerical/continuous features,
+    the user can choose between the following strategies:
 
     - **mean**: Replace all null values with the mean in the column.
     - **median**: Replace all null values with the median in the column.
@@ -44,7 +45,9 @@ class Imputer:
   _VALID_NUM_IMPUTE_STRAT = ['mean', 'median', 'knn', 'missforest']
   _VALID_REMAINING_STRAT = ['ignore', 'drop']
 
-  def __init__(self, cat_feat_strat='ignore', num_feat_strat='mean', remaining='drop'):
+  def __init__(self, cat_feat_strat='ignore',
+                     num_feat_strat='mean',
+                     remaining='drop'):
 
     assert cat_feat_strat in Imputer._VALID_CAT_IMPUTE_STRAT 
     assert num_feat_strat in Imputer._VALID_NUM_IMPUTE_STRAT
@@ -89,7 +92,8 @@ class Imputer:
       elif self.num_feat_strat == 'median':
         self._num_base_imputer = SimpleImputer(strategy='median').fit(df[num_feats])
       elif self.num_feat_strat == 'knn':
-        self._num_base_imputer = KNNImputer(n_neighbors=n_neighbors, **kwargs).fit(df[num_feats])
+        self._num_base_imputer = KNNImputer(n_neighbors=n_neighbors, 
+                                            **kwargs).fit(df[num_feats])
       elif self.num_feat_strat == 'missforest':
         from missingpy import MissForest
         self._num_base_imputer = MissForest(**kwargs).fit(df[num_feats])
@@ -114,8 +118,8 @@ class Imputer:
 
     return df
 
-
-  def fit_transform(self, data, cat_feats, num_feats, fill_value=-1, n_neighbors=5, **kwargs):
+  def fit_transform(self, data, cat_feats, num_feats,
+                          fill_value=-1, n_neighbors=5, **kwargs):
 
     """Imputes dataset using imputation strategies.
 
@@ -146,7 +150,7 @@ class Imputer:
 class Scaler:
 
   """Scaler to rescale numerical features.
-  
+
   Scaling is the second key aspect of the preprocessing workflow.
   It transforms continuous values to improve the performance of the
   machine learning algorithms.
@@ -167,8 +171,6 @@ class Scaler:
   _VALID_SCALING_STRAT = ['standard', 'minmax', 'none']
 
   def __init__(self, scaling_strategy='standard'):
-
-
 
     assert scaling_strategy in Scaler._VALID_SCALING_STRAT
 
@@ -207,7 +209,7 @@ class Scaler:
     return df
 
 class Preprocessor:
-  
+
   """Class to perform full preprocessing pipeline.
 
   Parameters
@@ -222,8 +224,10 @@ class Preprocessor:
       Strategy for handling remaining columns.
   """
 
-  def __init__(self, cat_feat_strat='ignore', num_feat_strat='mean', scaling_strategy='standard', remaining='drop'):
-
+  def __init__(self, cat_feat_strat='ignore',
+                     num_feat_strat='mean',
+                     scaling_strategy='standard',
+                     remaining='drop'):
 
     self.imputer = Imputer(cat_feat_strat=cat_feat_strat,
                            num_feat_strat=num_feat_strat,
