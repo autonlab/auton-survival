@@ -8,9 +8,8 @@ from sklearn import cluster, decomposition, mixture
 from auton_survival.utils import _get_method_kwargs
 
 
-
-
 class Phenotyper:
+  """Base class for all phenotyping methods."""
 
   def __init__(self, random_seed=0):
 
@@ -22,8 +21,8 @@ class IntersectionalPhenotyper(Phenotyper):
   """A phenotyper using all possible combinations of specified variables.
   """
 
-  def __init__(self, cat_vars=None, num_vars=None, num_vars_quantiles=[0, .5, 1.0]):
-    
+  def __init__(self, cat_vars=None, num_vars=None, num_vars_quantiles=(0, .5, 1.0)):
+
     if isinstance(cat_vars, str): cat_vars = [cat_vars]
     if isinstance(num_vars, str): num_vars = [num_vars] 
 
@@ -32,20 +31,21 @@ class IntersectionalPhenotyper(Phenotyper):
 
     assert len(cat_vars+num_vars) != 0, "Please specify intersectional Groups"
 
-    self.cat_vars = cat_vars 
+    self.cat_vars = cat_vars
     self.num_vars = num_vars
     self.num_vars_quantiles = num_vars_quantiles
 
     self.fitted = False
 
   def fit(self, features):
-    
+
     self.cut_bins = {}
     self.min_max = {}
 
     for num_var in self.num_vars:
 
-      binmin, binmax = float(features[num_var].min()), float(features[num_var].max())
+      binmin = float(features[num_var].min())
+      binmax = float(features[num_var].max())
 
       self.min_max[num_var] = binmin, binmax
       _, self.cut_bins[num_var] = pd.qcut(features[num_var], self.num_vars_quantiles, retbins=True)
@@ -68,15 +68,16 @@ class IntersectionalPhenotyper(Phenotyper):
 
     assert self.fitted, "Phenotyper must be `fitted` before calling `phenotype`."
     features = deepcopy(features)
-    
+
     for num_var in self.num_vars:
       
       var_min, var_max = self.min_max[num_var]
 
       features[num_var][features[num_var]>=var_max] = var_max 
       features[num_var][features[num_var]<=var_min] = var_min
-      
-      features[num_var] = pd.cut(features[num_var], self.cut_bins[num_var], include_lowest=True)
+
+      features[num_var] = pd.cut(features[num_var], self.cut_bins[num_var],
+                                 include_lowest=True)
 
     demographics = [group.tolist() for group in features[self.cat_vars+self.num_vars].values]
     demographics = self._rename(demographics)
@@ -84,27 +85,31 @@ class IntersectionalPhenotyper(Phenotyper):
     demographics = np.array(demographics)
 
     return demographics
-  
+
   def fit_phenotype(self, features):
     return self.fit(features).phenotype(features)
 
 
 class ClusteringPhenotyper(Phenotyper):
-  
+
   """A Phenotyper that first reduces feature dimensionality followed by clustering.
+
   """
 
   _VALID_DIMRED_METHODS = ['pca', 'kpca', 'nnmf']
   _VALID_CLUSTERING_METHODS = ['kmeans', 'dbscan', 'gmm', 'hierarchical']
 
-  def __init__(self, clustering_method = 'kmeans', dim_red_method = None, random_seed=0, **kwargs):
+  def __init__(self, clustering_method = 'kmeans', dim_red_method = None,
+               random_seed=0, **kwargs):
+
+    super(ClusteringPhenotyper).__init__(random_seed=random_seed)
 
     assert clustering_method in ClusteringPhenotyper._VALID_CLUSTERING_METHODS, "Please specify a valid Clustering method"
     assert dim_red_method in ClusteringPhenotyper._VALID_DIMRED_METHODS, "Please specify a valid Dimensionality Reduction method"
 
      # Raise warning if "hierarchical" is used with dim_redcution
     if (clustering_method in ['hierarchical']) and (dim_red_method is not None):
-      print("WARNING: Are you sure you want to run hierarchical clustering on decomposed features?. Such behaviour is atypical.") 
+      print("WARNING: Are you sure you want to run hierarchical clustering on decomposed features?. Such behaviour is atypical.")
 
     # Dimensionality Reduction Step:
     if dim_red_method is not None:
@@ -118,8 +123,8 @@ class ClusteringPhenotyper(Phenotyper):
         raise NotImplementedError("Dimensionality Reduction method: "+dim_red_method+ " Not Implemented.")
 
     if clustering_method == 'kmeans':
-      clustering_model=  cluster.KMeans    
-    elif clustering_method == 'dbscan': 
+      clustering_model=  cluster.KMeans   
+    elif clustering_method == 'dbscan':
       clustering_model = cluster.DBSCAN
     elif clustering_method == 'gmm':
       clustering_model = mixture.GaussianMixture
@@ -128,7 +133,7 @@ class ClusteringPhenotyper(Phenotyper):
     else:
       raise NotImplementedError("Clustering method: "+clustering_method+ " Not Implemented.")
 
-    self.clustering_method = clustering_method 
+    self.clustering_method = clustering_method
     self.dim_red_method = dim_red_method
 
     c_kwargs = _get_method_kwargs(clustering_model, kwargs)
@@ -137,7 +142,7 @@ class ClusteringPhenotyper(Phenotyper):
     if clustering_method == 'gmm': 
       if 'covariance_type' not in c_kwargs:
         c_kwargs['covariance_type'] = 'diag'
-      c_kwargs['n_components'] = c_kwargs.get('n_clusters', 3) 
+      c_kwargs['n_components'] = c_kwargs.get('n_clusters', 3)
     if dim_red_method == 'kpca':
       if 'kernel' not in d_kwargs:
         d_kwargs['kernel'] = 'rbf'
@@ -169,7 +174,7 @@ class ClusteringPhenotyper(Phenotyper):
 
     negative_exp_distances = np.exp(-self.clustering_model.transform(features))
     probs = negative_exp_distances/negative_exp_distances.sum(axis=1).reshape((-1, 1))
-    
+
     #assert int(np.sum(probs)) == len(probs), 'Not valid probabilities'
 
     return probs

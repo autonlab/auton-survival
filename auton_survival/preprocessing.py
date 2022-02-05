@@ -1,7 +1,9 @@
 import pandas as pd
+
 import sklearn
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
-from sklearn.impute import SimpleImputer, KNNImputer  
+from sklearn.impute import SimpleImputer, KNNImputer
+
 import sys
 
 sys.modules['sklearn.neighbors.base'] = sklearn.neighbors._base
@@ -41,7 +43,7 @@ class Imputer:
         One of `'ignore'`, `'drop'`. Default is `drop`.
     """
 
-  _VALID_CAT_IMPUTE_STRAT = ['replace', 'ignore', 'mode'] 
+  _VALID_CAT_IMPUTE_STRAT = ['replace', 'ignore', 'mode']
   _VALID_NUM_IMPUTE_STRAT = ['mean', 'median', 'knn', 'missforest']
   _VALID_REMAINING_STRAT = ['ignore', 'drop']
 
@@ -49,7 +51,7 @@ class Imputer:
                      num_feat_strat='mean',
                      remaining='drop'):
 
-    assert cat_feat_strat in Imputer._VALID_CAT_IMPUTE_STRAT 
+    assert cat_feat_strat in Imputer._VALID_CAT_IMPUTE_STRAT
     assert num_feat_strat in Imputer._VALID_NUM_IMPUTE_STRAT
     assert remaining in Imputer._VALID_REMAINING_STRAT
 
@@ -81,7 +83,7 @@ class Imputer:
     ####### CAT VARIABLES
     if len(cat_feats):
       if self.cat_feat_strat == 'replace':
-        self._cat_base_imputer = SimpleImputer(strategy='constant', fill_value=fill_value).fit(df[cat_feats]) 
+        self._cat_base_imputer = SimpleImputer(strategy='constant', fill_value=fill_value).fit(df[cat_feats])
       elif self.cat_feat_strat == 'mode':
         self._cat_base_imputer = SimpleImputer(strategy='most_frequent', fill_value=fill_value).fit(df[cat_feats])
 
@@ -183,7 +185,7 @@ class Scaler:
     ----------
     data: pandas.DataFrame
         Dataframe to be scaled.
-    feats: list 
+    feats: list
         List of numerical/continuous features to be scaled - if left empty,
         all features are interpreted as numerical features.
 
@@ -256,6 +258,7 @@ class Preprocessor:
         Passed on.
 
     Returns:
+    --------
         pandas.DataFrame: Imputed and scaled dataset.
     """
 
