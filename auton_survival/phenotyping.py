@@ -21,13 +21,14 @@ class IntersectionalPhenotyper(Phenotyper):
   """A phenotyper using all possible combinations of specified variables.
   """
 
-  def __init__(self, cat_vars=None, num_vars=None, num_vars_quantiles=(0, .5, 1.0)):
+  def __init__(self, cat_vars=None, num_vars=None,
+               num_vars_quantiles=(0, .5, 1.0)):
 
     if isinstance(cat_vars, str): cat_vars = [cat_vars]
-    if isinstance(num_vars, str): num_vars = [num_vars] 
+    if isinstance(num_vars, str): num_vars = [num_vars]
 
-    if cat_vars is None: cat_vars = [] 
-    if num_vars is None: num_vars = [] 
+    if cat_vars is None: cat_vars = []
+    if num_vars is None: num_vars = []
 
     assert len(cat_vars+num_vars) != 0, "Please specify intersectional Groups"
 
@@ -48,7 +49,9 @@ class IntersectionalPhenotyper(Phenotyper):
       binmax = float(features[num_var].max())
 
       self.min_max[num_var] = binmin, binmax
-      _, self.cut_bins[num_var] = pd.qcut(features[num_var], self.num_vars_quantiles, retbins=True)
+      _, self.cut_bins[num_var] = pd.qcut(features[num_var],
+                                          self.num_vars_quantiles,
+                                          retbins=True)
 
     self.fitted = True
     return self
@@ -118,12 +121,12 @@ class ClusteringPhenotyper(Phenotyper):
       elif dim_red_method == 'nnmf':
         dim_red_model = decomposition.NMF
       elif 'kpca' in dim_red_method:
-        dim_red_model = decomposition.KernelPCA  
+        dim_red_model = decomposition.KernelPCA
       else:
         raise NotImplementedError("Dimensionality Reduction method: "+dim_red_method+ " Not Implemented.")
 
     if clustering_method == 'kmeans':
-      clustering_model=  cluster.KMeans   
+      clustering_model=  cluster.KMeans  
     elif clustering_method == 'dbscan':
       clustering_model = cluster.DBSCAN
     elif clustering_method == 'gmm':
@@ -180,16 +183,16 @@ class ClusteringPhenotyper(Phenotyper):
     return probs
 
   def phenotype(self, features):
- 
+
     assert self.fitted, "Phenotyper must be `fitted` before calling `phenotype`."
- 
+
     if self.dim_red_method is not None:
       features =  self.dim_red_model.transform(features)
     if self.clustering_method == 'gmm': 
       return self.clustering_model.predict_proba(features) 
     elif self.clustering_method == 'kmeans':
       return self._predict_proba_kmeans(features)
- 
+
   def fit_phenotype(self, features):
     return self.fit(features).phenotype(features)
 
