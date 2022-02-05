@@ -164,21 +164,27 @@ def _fit_rsf(features, outcomes, random_seed, **hyperparams):
 
 def _fit_dsm(features, outcomes, random_seed, **hyperparams):
 
-  print("DSM Hyperparams:", hyperparams)
-
-  from dsm import DeepSurvivalMachines
+  from .models.dsm import DeepSurvivalMachines
 
   k = hyperparams.get("k", 3) 
   layers = hyperparams.get("layers", [100])
   iters = hyperparams.get("iters", 10)
+  distribution = hyperparams.get("distribution", "Weibull")
+  temperature = hyperparams.get("temperature", 1.0)
 
-  model = DeepSurvivalMachines(k=k, layers=layers)
-  model.fit(features.values, outcomes['time'].values, outcomes['event'].values, iters=iters)
+  model = DeepSurvivalMachines(k=k, layers=layers,
+                               distribution=distribution,
+                               temp=temperature)
+
+  model.fit(features.values, 
+            outcomes['time'].values,
+            outcomes['event'].values,
+            iters=iters)
 
   return model
 
 def _predict_dsm(model, features, times):
-  return model.predict_survival(features.values, float(times))[:, 0]
+  return model.predict_survival(features.values, times)
 
 def _predict_cph(model, features, times):
   if isinstance(times, float): times = [times] 
@@ -232,7 +238,7 @@ class SurvivalModel:
     self.fitted = True
     return self
 
-  def predict(self, features, times):
+  def predict_survival(self, features, times):
 
     if self.model == 'cph': return _predict_cph(self._model, features, times)
     elif self.model == 'rsf': return _predict_rsf(self._model, features, times)
@@ -241,6 +247,9 @@ class SurvivalModel:
     elif self.model == 'dcm': return _predict_dcm(self._model, features, times) 
     else : raise NotImplementedError()
 
+  def predict_risk(self, features, times):
+
+    return 1 - self.predict_survival(features, times)
 
 class CounterfactualSurvivalModel:
 
@@ -314,7 +323,7 @@ class DCMSubgroupModel(CounterfactualSurvivalModel):
     self._model = (model, breslow_splines)
     return self
     
-  def predict(self, features, times):
+  def predict_survival(self, features, times):
     
     from sdcm.dcm_subgroup_utils import predict_scores
     import torch

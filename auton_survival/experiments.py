@@ -59,7 +59,7 @@ class SurvivalRegressionCV:
         fold_models[fold] = fold_model 
 
         # Predict risk scores
-        predictions[folds==fold] = fold_model.predict(features.loc[folds==fold], times=unique_times)
+        predictions[folds==fold] = fold_model.predict_survival(features.loc[folds==fold], times=unique_times)
         # Evaluate IBS
       score_per_fold = [] 
       for fold in range(self.cv_folds):
@@ -84,7 +84,7 @@ class SurvivalRegressionCV:
       model.fit(features, outcomes)
 
       return model
-    
+ 
     else:
       return self
 
