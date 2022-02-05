@@ -165,7 +165,7 @@ def _survival_at_diff(treated_outcomes, control_outcomes, horizon, interpolate=T
   treatment_survival = KaplanMeierFitter().fit(treated_outcomes['time'], treated_outcomes['event'])
   control_survival = KaplanMeierFitter().fit(control_outcomes['time'], control_outcomes['event'])
 
-  return treatment_survival.predict(horizon, interpolate=interpolate) - control_survival.predict(horizon, interpolate=interpolate) 
+  return treatment_survival.predict(horizon, interpolate=interpolate) - control_survival.predict(horizon, interpolate=interpolate)
 
 def _time_to_diff(treated_outcomes, control_outcomes, horizon, interpolate=True):
 
