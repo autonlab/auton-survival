@@ -68,10 +68,10 @@ def _fit_dcph(features, outcomes, random_seed, **hyperparams):
   import torchtuples as ttup
 
   from pycox.models import CoxPH
-  
+
   torch.manual_seed(random_seed)
   np.random.seed(random_seed)
-    
+
   layers = hyperparams.get('layers', [100])
   lr = hyperparams.get('lr', 1e-3)
   bs = hyperparams.get('bs', 100)
