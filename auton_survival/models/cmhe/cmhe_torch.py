@@ -1,6 +1,6 @@
 import torch
 
-class CoxMixtureHeterogenousEffects(torch.nn.Module):
+class CoxMixtureHETorch(torch.nn.Module):
   """PyTorch model definition of the Cox Mixture with Hereogenous Effects Model.
 
   Cox Mixtures with Heterogenous Effects involves the assuming that the
@@ -14,7 +14,7 @@ class CoxMixtureHeterogenousEffects(torch.nn.Module):
 
   def __init__(self, k, g, inputdim, hidden=None):
 
-    super(CoxMixtureHeterogenousEffects, self).__init__()
+    super(CoxMixtureHETorch, self).__init__()
 
     assert isinstance(k, int)
 
@@ -57,13 +57,11 @@ class CoxMixtureHeterogenousEffects(torch.nn.Module):
 
     return logp_jointlatent_gate, logp_joint_hrs
 
-class DeepCoxMixtureHeterogenousEffects(CoxMixtureHeterogenousEffects):
+class DeepCoxMixtureHETorch(CoxMixtureHETorch):
 
   def __init__(self, k, g, inputdim, hidden):
 
-    super(DeepCoxMixtureHeterogenousEffects, self).__init__(k, g,
-                                                            inputdim,
-                                                            hidden)
+    super(DeepCoxMixtureHETorch, self).__init__(k, g, inputdim, hidden)
 
     # Get rich feature representations of the covariates
     self.embedding = torch.nn.Sequential(torch.nn.Linear(inputdim, hidden),

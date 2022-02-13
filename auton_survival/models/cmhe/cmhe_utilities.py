@@ -315,3 +315,21 @@ def predict_survival(model, x, a, t):
 
     predictions.append((gates*expert_outputs).sum(axis=1))
   return np.array(predictions).T
+
+def predict_latent_z(model, x):
+
+  model, _ = model
+  gates = model.model.embedding(x)
+
+  z_gate_probs = torch.exp(gates).sum(axis=2).detach().numpy()
+
+  return z_gate_probs
+
+def predict_latent_phi(model, x):
+
+  model, _ = model
+  gates, _ = model(x)
+
+  phi_gate_probs = torch.exp(gates).sum(axis=1).detach().numpy()
+
+  return phi_gate_probs
