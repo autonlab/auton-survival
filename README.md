@@ -6,10 +6,13 @@
 &nbsp;&nbsp;&nbsp;
 [![GitHub Repo stars](https://img.shields.io/github/stars/autonlab/auton-survival?style=social)](https://github.com/autonlab/auton-survival)
 
-<img align="right" width=50% src=https://ndownloader.figshare.com/files/26367844>
+<img align="right" width=50% src=https://ndownloader.figshare.com/files/34052981>
+
+
 
 Package: `auton-survival`
 -------------
+
 
 Python package `dsm` provides an API to train the Deep Survival Machines
 and associated models for problems in survival analysis. The underlying model
@@ -30,9 +33,11 @@ As compared to typical regression problems, Survival Analysis differs in two maj
 * There is presence of censoring i.e. a large number of instances of data are
   lost to follow up.
 
+
 Deep Survival Machines
 ----------------------
-<img width=100% src=https://ndownloader.figshare.com/files/25259852>
+
+<img align="left" width=30% src=https://ndownloader.figshare.com/files/26367844> <img width=100% src=https://ndownloader.figshare.com/files/25259852>
 
 
 **Deep Survival Machines (DSM)** is a **fully parametric** approach to model
