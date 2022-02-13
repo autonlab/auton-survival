@@ -295,7 +295,7 @@ def train_cmhe(model, train_data, val_data, epochs=50,
   if return_losses: return (model, breslow_splines), losses
   else: return (model, breslow_splines)
 
-def predict_scores(model, x, a, t):
+def predict_survival(model, x, a, t):
 
   if isinstance(t, (int, float)): t = [t]
 
