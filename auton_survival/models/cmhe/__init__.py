@@ -1,1 +1,1 @@
-from .cmhe_api import DeepCoxMixturesHE
+from .cmhe_api import DeepCoxMixturesHeterogenousEffects

@@ -32,9 +32,8 @@ Note: NOT DESIGNED TO BE CALLED DIRECTLY!!!
 
 """
 
-
-import torch.nn as nn
 import torch
+from torch import nn
 import numpy as np
 
 __pdoc__ = {}
@@ -79,6 +78,8 @@ def create_representation(inputdim, layers, activation):
     act = nn.ReLU()
   elif activation == 'SeLU':
     act = nn.SELU()
+  elif activation == 'Tanh':
+    act = nn.Tanh()
 
   modules = []
   prevdim = inputdim
@@ -92,7 +93,7 @@ def create_representation(inputdim, layers, activation):
 
 
 
-class DeepSurvivalMachinesTorch(nn.Module):
+class DeepSurvivalMachinesTorch(torch.nn.Module):
   """A Torch implementation of Deep Survival Machines model.
 
   This is an implementation of Deep Survival Machines model in torch.

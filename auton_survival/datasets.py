@@ -173,7 +173,7 @@ def load_support():
   outcomes['event'] =  data['death']
   outcomes['time'] = data['d.time']
   outcomes = outcomes[['event', 'time']]
-  
+
   cat_feats = ['sex', 'dzgroup', 'dzclass', 'income', 'race', 'ca']
   num_feats = ['age', 'num.co', 'meanbp', 'wblc', 'hrt', 'resp', 
                'temp', 'pafi', 'alb', 'bili', 'crea', 'sod', 'ph', 
@@ -240,6 +240,19 @@ def _load_mnist():
 
   return x, t, e
 
+def load_synthetic_cf_phenotyping():
+
+  data = pkgutil.get_data(__name__, 'datasets/synthetic_dataset.csv')
+  data = pd.read_csv(io.BytesIO(data))
+
+  outcomes = data[['event', 'time', 'uncensored time treated',
+                   'uncensored time control', 'Z','Zeta']]
+
+  features = data[['X1','X2','X3','X4','X5','X6','X7','X8']]
+  interventions = data['intervention']
+
+  return outcomes, features, interventions
+
 def load_dataset(dataset='SUPPORT', **kwargs):
   """Helper function to load datasets to test Survival Analysis models.
   Currently implemented datasets include:
@@ -255,6 +268,11 @@ def load_dataset(dataset='SUPPORT', **kwargs):
   hypertensive and arteriosclerotic cardiovascular disease. It is a popular
   dataset for longitudinal survival analysis with time dependent covariates.
   References
+  **SYNTHETIC**: This is a non-linear censored dataset for counterfactual
+  time-to-event phenotyping. Introduced in [4], the dataset is generated
+  such that the treatment effect is heterogenous conditioned on the covariates.
+
+  References
   -----------
   [1]: Knaus WA, Harrell FE, Lynn J et al. (1995): The SUPPORT prognostic
   model: Objective estimates of survival for seriously ill hospitalized
@@ -265,12 +283,16 @@ def load_dataset(dataset='SUPPORT', **kwargs):
   "Epidemiological approaches to heart disease: the Framingham Study."
   American Journal of Public Health and the Nations Health 41.3 (1951).
   Parameters
+  [4] Nagpal, C., Goswami M., Dufendach K., and Artur Dubrawski.
+  "Counterfactual phenotyping for censored Time-to-Events" (2022).
+
   ----------
   dataset: str
       The choice of dataset to load. Currently implemented is 'SUPPORT',
       'PBC' and 'FRAMINGHAM'.
   **kwargs: dict
       Dataset specific keyword arguments.
+
   Returns
   ----------
   tuple: (np.ndarray, np.ndarray, np.ndarray)
@@ -280,12 +302,14 @@ def load_dataset(dataset='SUPPORT', **kwargs):
   sequential = kwargs.get('sequential', False)
 
   if dataset == 'SUPPORT':
-    return _load_support_dataset()
+    return load_support()
   if dataset == 'PBC':
     return _load_pbc_dataset(sequential)
   if dataset == 'FRAMINGHAM':
     return _load_framingham_dataset(sequential)
   if dataset == 'MNIST':
     return _load_mnist()
+  if dataset == 'SYNTHETIC':
+    return load_synthetic_cf_phenotyping()
   else:
     raise NotImplementedError('Dataset '+dataset+' not implemented.')

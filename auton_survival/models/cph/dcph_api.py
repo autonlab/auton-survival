@@ -1,8 +1,8 @@
 import torch
 import numpy as np
 
-from dsm.contrib.dcph.dcph_torch import DeepCoxPHTorch, DeepRecurrentCoxPHTorch
-from dsm.contrib.dcph.dcph_utilities import train_dcph, predict_survival
+from .dcph_torch import DeepCoxPHTorch, DeepRecurrentCoxPHTorch
+from .dcph_utilities import train_dcph, predict_survival
 
 from dsm.utilities import _get_padded_features, _get_padded_targets
 
@@ -191,8 +191,8 @@ class DeepRecurrentCoxPH(DeepCoxPH):
   r"""A deep recurrent Cox PH model.
 
   This model is based on the paper:
-  <a href="https://aclanthology.org/2021.naacl-main.358.pdf"> Leveraging 
-  Deep Representations of Radiology Reports in Survival Analysis for 
+  <a href="https://aclanthology.org/2021.naacl-main.358.pdf"> Leveraging
+  Deep Representations of Radiology Reports in Survival Analysis for
   Predicting Heart Failure Patient Mortality. NAACL (2021)</a>
 
   Parameters

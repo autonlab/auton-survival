@@ -1,12 +1,11 @@
-from .cmhe_torch import CoxMixtureHETorch
-from .cmhe_torch import DeepCoxMixtureHETorch
+from .cmhe_torch import DeepCMHETorch
 from .cmhe_utilities import train_cmhe, predict_survival
 from .cmhe_utilities import predict_latent_phi, predict_latent_z
 
 import torch
 import numpy as np
 
-class DeepCoxMixturesHE:
+class DeepCoxMixturesHeterogenousEffects:
   """A Deep Cox Mixtures with Heterogenous Effects model.
 
   This is the main interface to a Deep Cox Mixture with Heterogenous Effects.
@@ -33,8 +32,8 @@ class DeepCoxMixturesHE:
 
   Example
   -------
-  >>> from auton_survival import CoxMixturesHeterogenousEffects
-  >>> model = CoxMixturesHeterogenousEffects()
+  >>> from auton_survival import DeepCoxMixturesHeterogenousEffects
+  >>> model = DeepCoxMixturesHeterogenousEffects(k=2, g=3)
   >>> model.fit(x, t, e, a)
 
   """
@@ -43,9 +42,9 @@ class DeepCoxMixturesHE:
 
     self.layers = layers
     self.fitted = False
-    self.k = k 
+    self.k = k
     self.g = g
-  
+
   def __call__(self):
     if self.fitted:
       print("A fitted instance of the CMHE model")
@@ -60,7 +59,8 @@ class DeepCoxMixturesHE:
     else:
       return torch.from_numpy(x).float()
 
-  def _preprocess_training_data(self, x, t, e, a, vsize, val_data, random_state):
+  def _preprocess_training_data(self, x, t, e, a, vsize, val_data,
+                                random_state):
 
     idx = list(range(x.shape[0]))
 
@@ -98,13 +98,9 @@ class DeepCoxMixturesHE:
 
   def _gen_torch_model(self, inputdim, optimizer):
     """Helper function to return a torch model."""
-    if len(self.layers):
-      return DeepCoxMixtureHETorch(inputdim, self.k, self.g,
-                                   layers=self.layers,
-                                   optimizer=optimizer)
-    else:
-      return CoxMixtureHETorch(inputdim, self.k, self.g, 
-                               optimizer=optimizer)
+    return DeepCMHETorch(self.k, self.g, inputdim,
+                         layers=self.layers,
+                         optimizer=optimizer)
 
   def fit(self, x, t, e, a, vsize=0.15, val_data=None,
           iters=1, learning_rate=1e-3, batch_size=100,
@@ -209,7 +205,7 @@ class DeepCoxMixturesHE:
 
   def predict_latent_z(self, x):
 
-    """Returns the estimated latent base survival group \( z \) given the confounders \( x \)."""
+    r"""Returns the estimated latent base survival group \( z \) given the confounders \( x \)."""
 
     x = self._preprocess_test_data(x)
 
@@ -223,7 +219,7 @@ class DeepCoxMixturesHE:
 
   def predict_latent_phi(self, x):
 
-    """Returns the estimated latent treatment effect group \( \phi \) given the confounders \( x \)."""
+    r"""Returns the estimated latent treatment effect group \( \phi \) given the confounders \( x \)."""
 
     x = self._preprocess_test_data(x)
 

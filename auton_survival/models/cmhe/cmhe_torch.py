@@ -1,6 +1,7 @@
 import torch
+from dsm.dsm_torch import create_representation
 
-class CoxMixtureHETorch(torch.nn.Module):
+class DeepCMHETorch(torch.nn.Module):
   """PyTorch model definition of the Cox Mixture with Hereogenous Effects Model.
 
   Cox Mixtures with Heterogenous Effects involves the assuming that the
@@ -12,31 +13,38 @@ class CoxMixtureHETorch(torch.nn.Module):
 
   """
 
-  def __init__(self, k, g, inputdim, hidden=None):
+  def _init_dcmhe_layers(self, lastdim):
 
-    super(CoxMixtureHETorch, self).__init__()
+    self.expert = torch.nn.Linear(lastdim, self.k, bias=False)
+    self.z_gate = torch.nn.Linear(lastdim, self.k, bias=False)
+    self.phi_gate = torch.nn.Linear(lastdim, self.g, bias=False)
+    self.omega = torch.nn.Parameter(torch.rand(self.g)-0.5)
+
+  def __init__(self, k, g, inputdim, layers=None, optimizer='Adam'):
+
+    super(DeepCMHETorch, self).__init__()
 
     assert isinstance(k, int)
 
-    if hidden is None:
-      hidden = inputdim
+    if layers is None: layers = []
+
+    self.optimizer = optimizer
 
     self.k = k # Base Physiology groups
     self.g = g # Treatment Effect groups
 
-    self.embedding = torch.nn.Identity()
+    if len(layers) == 0: lastdim = inputdim
+    else: lastdim = layers[-1]
 
-    self.expert = torch.nn.Linear(hidden, k, bias=False)
+    self._init_dcmhe_layers(lastdim)
 
-    self.z_gate = torch.nn.Linear(hidden, k, bias=False)
-    self.phi_gate = torch.nn.Linear(hidden, g, bias=False)
+    self.embedding = create_representation(inputdim, layers, 'Tanh')
 
-    self.omega = torch.nn.Parameter(torch.rand(g)-0.5)
 
   def forward(self, x, a):
 
     x = self.embedding(x)
-    a = 2*(a -0.5)
+    a = 2*(a-0.5)
 
     log_hrs = torch.clamp(self.expert(x), min=-100, max=100)
 
@@ -57,14 +65,14 @@ class CoxMixtureHETorch(torch.nn.Module):
 
     return logp_jointlatent_gate, logp_joint_hrs
 
-class DeepCoxMixtureHETorch(CoxMixtureHETorch):
+# class DeepCoxMixtureHETorch(CoxMixtureHETorch):
 
-  def __init__(self, k, g, inputdim, hidden):
+#   def __init__(self, k, g, inputdim, hidden):
 
-    super(DeepCoxMixtureHETorch, self).__init__(k, g, inputdim, hidden)
+#     super(DeepCoxMixtureHETorch, self).__init__(k, g, inputdim, hidden)
 
-    # Get rich feature representations of the covariates
-    self.embedding = torch.nn.Sequential(torch.nn.Linear(inputdim, hidden),
-                                         torch.nn.Tanh(),
-                                         torch.nn.Linear(hidden, hidden),
-                                         torch.nn.Tanh())
+#     # Get rich feature representations of the covariates
+#     self.embedding = torch.nn.Sequential(torch.nn.Linear(inputdim, hidden),
+#                                          torch.nn.Tanh(),
+#                                          torch.nn.Linear(hidden, hidden),
+#                                          torch.nn.Tanh())
