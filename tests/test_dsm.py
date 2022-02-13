@@ -4,9 +4,9 @@ models on certain standard datasets.
 """
 import unittest
 
-from dsm import DeepSurvivalMachines
-from dsm.dsm_torch import DeepSurvivalMachinesTorch
-from dsm import datasets
+from auton_survival.models.dsm import DeepSurvivalMachines
+from auton_survival.models.dsm.dsm_torch import DeepSurvivalMachinesTorch
+from auton_survival.models.dsm import datasets
 
 import numpy as np
 
