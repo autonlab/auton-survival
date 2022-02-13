@@ -21,8 +21,7 @@ def partial_ll_loss(lrisks, tb, eb, eps=1e-2):
 
   lrisks = lrisks[sindex] # lrisks = tf.gather(lrisks, sindex)
 
-  lrisksdenom = torch.logcumsumexp(lrisks, dim = 0) # lrisksdenom = tf.math.cumulative_logsumexp(lrisks)
-
+  lrisksdenom = torch.logcumsumexp(lrisks, dim = 0)
   plls = lrisks - lrisksdenom
   pll = plls[eb == 1]
 
@@ -173,7 +172,7 @@ def fit_breslow(model, x, t, e, a, log_likelihoods=None, smoothing_factor=1e-4, 
     z = get_hard_z(z_posteriors)
     zeta = get_hard_z(zeta_posteriors)
 
-  breslow_splines = {}   
+  breslow_splines = {}
   for i in range(model.k):
     breslowk = BreslowEstimator().fit(lrisks[:, i, :][range(len(zeta)), zeta][z==i], e[z==i], t[z==i])
     breslow_splines[i] = smooth_bl_survival(breslowk, smoothing_factor=smoothing_factor)
@@ -240,11 +239,11 @@ def test_step(model, x, t, e, a, breslow_splines, loss='q', typ='soft'):
   return float(loss/x.shape[0])
 
 
-def train(model, train_data, val_data, epochs=50,
-          patience=2, vloss='q', bs=256, typ='soft', lr=1e-3,
-          use_posteriors=False, debug=False, random_state=0,
-          return_losses=False, update_splines_after=10,
-          smoothing_factor=1e-4):
+def train_cmhe(model, train_data, val_data, epochs=50,
+               patience=2, vloss='q', bs=256, typ='soft', lr=1e-3,
+               use_posteriors=False, debug=False, random_state=0,
+               return_losses=False, update_splines_after=10,
+               smoothing_factor=1e-4):
 
   torch.manual_seed(random_state)
   np.random.seed(random_state)
@@ -298,7 +297,7 @@ def train(model, train_data, val_data, epochs=50,
 
 def predict_scores(model, x, a, t):
 
-  if isinstance(t, int) or isinstance(t, float): t = [t]
+  if isinstance(t, (int, float)): t = [t]
 
   model, breslow_splines = model
   gates, lrisks = model(x, a=a)
