@@ -1,0 +1,28 @@
+name: Linting
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.8"]
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install --upgrade pytest
+        pip install astroid>=2.7
+        pip install pylint>=2.7
+        pip install pytest-cov
+    - name: Analysing the code with pylint
+      run: |
+        python -m pytest tests/ --cov
+        pylint --fail-under=3 auton_survival/
