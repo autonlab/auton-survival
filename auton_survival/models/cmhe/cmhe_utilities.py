@@ -1,4 +1,27 @@
 
+# coding=utf-8
+# MIT License
+
+# Copyright (c) 2020 Carnegie Mellon University, Auton Lab
+
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
 import torch
 import numpy as np
 
@@ -104,8 +127,12 @@ def get_likelihood(model, breslow_splines, x, t, e, a):
 
 def q_function(model, x, t, e, a, log_likelihoods, typ='soft'):
 
-  z_posteriors = repair_probs(get_posteriors(torch.logsumexp(log_likelihoods, dim=2)))
-  zeta_posteriors = repair_probs(get_posteriors(torch.logsumexp(log_likelihoods, dim=1)))
+  z_posteriors = repair_probs(
+                    get_posteriors(
+                      torch.logsumexp(log_likelihoods, dim=2)))
+  zeta_posteriors = repair_probs(
+                      get_posteriors(
+                        torch.logsumexp(log_likelihoods, dim=1)))
 
   if typ == 'hard':
     z = get_hard_z(z_posteriors)
@@ -123,7 +150,10 @@ def q_function(model, x, t, e, a, log_likelihoods, typ='soft'):
 
   #log_smax_loss = -torch.nn.LogSoftmax(dim=1)(gates) # tf.nn.log_softmax(gates)
 
-  posteriors = repair_probs(get_posteriors(log_likelihoods.reshape(-1, model.k*model.g))).exp()
+  posteriors = repair_probs(
+                get_posteriors(
+                  log_likelihoods.reshape(-1, model.k*model.g))).exp()
+
   gate_loss = posteriors*gates.reshape(-1, model.k*model.g)
   gate_loss = -torch.sum(gate_loss)
   loss+=gate_loss
