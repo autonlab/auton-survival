@@ -27,6 +27,8 @@
 from .dsm_torch import DeepSurvivalMachinesTorch
 from .losses import unconditional_loss, conditional_loss
 
+from sklearn.utils import shuffle
+
 from tqdm import tqdm
 from copy import deepcopy
 
@@ -149,6 +151,9 @@ def train_dsm(model,
   costs = []
   i = 0
   for i in tqdm(range(n_iter)):
+
+    x_train, t_train, e_train = shuffle(x_train, t_train, e_train, random_state=i)
+
     for j in range(nbatches):
 
       xb = x_train[j*bs:(j+1)*bs]
