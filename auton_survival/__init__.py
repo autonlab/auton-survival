@@ -1,4 +1,32 @@
 '''
+
+[![Build Status](https://travis-ci.org/autonlab/DeepSurvivalMachines.svg?branch=master)](https://travis-ci.org/autonlab/DeepSurvivalMachines)
+&nbsp;&nbsp;&nbsp;
+[![codecov](https://codecov.io/gh/autonlab/DeepSurvivalMachines/branch/master/graph/badge.svg?token=FU1HB5O92D)](https://codecov.io/gh/autonlab/DeepSurvivalMachines)
+&nbsp;&nbsp;&nbsp;
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+&nbsp;&nbsp;&nbsp;
+[![GitHub Repo stars](https://img.shields.io/github/stars/autonlab/DeepSurvivalMachines?style=social)](https://github.com/autonlab/DeepSurvivalMachines)
+
+
+Python package `auton_survival` provides a flexible API for various problems
+in survival analysis, including regression, counterfactual estimation,
+and phenotyping.
+
+What is Survival Analysis?
+------------------------
+
+**Survival Analysis** involves estimating when an event of interest, \( T \)
+would take places given some features or covariates \( X \). In statistics
+and ML these scenarious are modelled as regression to estimate the conditional
+survival distribution, \( \mathbb{P}(T>t|X) \). As compared to typical
+regression problems, Survival Analysis differs in two major ways:
+
+* The Event distribution, \( T \) has positive support ie.
+  \( T \in [0, \infty) \).
+* There is presence of censoring ie. a large number of instances of data are
+  lost to follow up.
+
 # Auton Survival
 
 Repository of reusable code utilities for Survival Analysis projects.
@@ -90,9 +118,6 @@ scores = experiment.evaluate(time=1.)
 print(scores)
 ```
 
-
-
-
 ## `auton_survival.reporting`
 
 Helper functions to generate standard reports for popular Survival Analysis problems.
@@ -104,9 +129,52 @@ foo@bar:~$ git clone https://github.com/autonlab/auton_survival
 foo@bar:~$ pip install -r requirements.txt
 ```
 
-## Requirements
+Compatibility
+-------------
+`dsm` requires `python` 3.5+ and `pytorch` 1.1+.
 
- `scikit-learn`, `scikit-survival`, `lifelines`, `matplotlib`, `pandas`, `numpy`, `missingpy`
+To evaluate performance using standard metrics
+`dsm` requires `scikit-survival`.
+
+Contributing
+------------
+`dsm` is [on GitHub]. Bug reports and pull requests are welcome.
+
+[on GitHub]: https://github.com/chiragnagpal/deepsurvivalmachines
+
+License
+-------
+MIT License
+
+Copyright (c) 2020 Carnegie Mellon University, [Auton Lab](http://autonlab.org)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+
+<img style="float: right;" width ="200px" src="https://www.cmu.edu/brand/\
+downloads/assets/images/wordmarks-600x600-min.jpg">
+<img style="float: right;padding-top:50px" src="https://www.autonlab.org/\
+user/themes/auton/images/AutonLogo.png">
+
+<br><br><br><br><br>
+<br><br><br><br><br>
+
 '''
 
 from .models.dsm import DeepSurvivalMachines

@@ -270,11 +270,11 @@ def load_proud(endpoint=None, features=None, location=''):
 
     print("No Features Specified!! using default baseline features.")
 
-    categorical_features = ['RZGROUP', 'RACE', 'HISPANIC', 'ETHNIC', 
-                            'SEX', 'ESTROGEN', 'BLMEDS', 'MISTROKE', 
-                            'HXCABG', 'STDEPR', 'OASCVD', 'DIABETES', 
-                            'HDLLT35', 'LVHECG', 'WALL25', 'LCHD', 
-                            'CURSMOKE', 'ASPIRIN', 'LLT', 'RACE2', 
+    categorical_features = ['RZGROUP', 'RACE', 'HISPANIC', 'ETHNIC',
+                            'SEX', 'ESTROGEN', 'BLMEDS', 'MISTROKE',
+                            'HXCABG', 'STDEPR', 'OASCVD', 'DIABETES',
+                            'HDLLT35', 'LVHECG', 'WALL25', 'LCHD',
+                            'CURSMOKE', 'ASPIRIN', 'LLT', 'RACE2',
                             'BLMEDS2', 'GEOREGN']
 
     numeric_features = ['AGE', 'BLWGT', 'BLHGT', 'BLBMI', 'BV2SBP',
@@ -333,28 +333,28 @@ def load_sprint_pop():
 def load_stich():
   raise NotImplementedError()
 
- 
-def load_accord(endpoint=None, features=None, location=''):  
 
-  # Default Baseline Features to include: 
+def load_accord(endpoint=None, features=None, location=''):
+
+  # Default Baseline Features to include:
   if features is None:
 
     print("No Features Specified!! using default baseline features.")
 
     features = {
-      
+  
                 'ACCORD/3-Data Sets - Analysis/3a-Analysis Data Sets/accord_key.sas7bdat': ['female', 'baseline_age', 'arm', 
                                                                                             'cvd_hx_baseline', 'raceclass',
                                                                                             'treatment'],
-                
+
                 'ACCORD/3-Data Sets - Analysis/3a-Analysis Data Sets/bloodpressure.sas7bdat': ['sbp', 'dbp', 'hr'],
 
                 'ACCORD/4-Data Sets - CRFs/4a-CRF Data Sets/f01_inclusionexclusionsummary.sas7bdat': ['x1diab', 'x2mi', 
                 'x2stroke', 'x2angina','cabg','ptci','cvdhist','orevasc','x2hbac11','x2hbac9','x3malb','x3lvh','x3sten','x4llmeds',
                 'x4gender','x4hdlf', 'x4hdlm','x4bpmeds','x4notmed','x4smoke','x4bmi'],
-                
+
                 'ACCORD/3-Data Sets - Analysis/3a-Analysis Data Sets/lipids.sas7bdat': ['chol', 'trig', 'vldl', 'ldl', 'hdl'],
-                                
+        
                 'ACCORD/3-Data Sets - Analysis/3a-Analysis Data Sets/otherlabs.sas7bdat': ['fpg', 'alt', 'cpk', 
                                                                                          'potassium', 'screat', 'gfr',
                                                                                          'ualb', 'ucreat', 'uacr'],
@@ -380,20 +380,20 @@ def load_accord(endpoint=None, features=None, location=''):
 
   outcome_tbl = 'ACCORD/3-Data Sets - Analysis/3a-Analysis Data Sets/cvdoutcomes.sas7bdat'
 
-  outcomes, features = _load_generic_biolincc_dataset(outcome_tbl=outcome_tbl, 
-                                                      time_col=time, 
+  outcomes, features = _load_generic_biolincc_dataset(outcome_tbl=outcome_tbl,
+                                                      time_col=time,
                                                       event_col=event,
                                                       features=features,
                                                       id_col='MaskID',
-                                                      location=location, 
-                                                      visit_col='Visit', 
+                                                      location=location,
+                                                      visit_col='Visit',
                                                       baseline_visit=(b'BLR', b'S01'))
-  outcomes['event'] = 1-outcomes['event'] 
+  outcomes['event'] = 1-outcomes['event']
   outcomes['time'] = outcomes['time']
 
   outcomes = outcomes.loc[outcomes['time']>1.0]
   features = features.loc[outcomes.index]
 
-  outcomes['time'] = outcomes['time']-1 
+  outcomes['time'] = outcomes['time']-1
 
   return outcomes, features

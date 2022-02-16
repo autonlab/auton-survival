@@ -60,7 +60,8 @@ def phenotype_purity(phenotypes, outcomes,
 
   np.random.seed(0)
 
-  if folds is None: assert fold is None, "Please pass the data folds.."
+  if folds is None:
+    assert fold is None, "Please pass the data folds.."
 
   assert time is not None, "Please pass the time of evaluation!"
 
@@ -115,12 +116,18 @@ def phenotype_purity(phenotypes, outcomes,
                                                                                  interpolate=True).values
 
     if bootstrap is None:
-      return metrics.integrated_brier_score(survival_train, survival_test, predictions, times)
+      return metrics.integrated_brier_score(survival_train,
+                                            survival_test,
+                                            predictions,
+                                            times)
     else:
       scores = []
       for i in tqdm(range(bootstrap)):
         idx = np.random.choice(n, size=n, replace=True)
-        score = metrics.integrated_brier_score(survival_train, survival_test[idx], predictions[idx], times)
+        score = metrics.integrated_brier_score(survival_train,
+                                               survival_test[idx],
+                                               predictions[idx],
+                                               times)
         scores.append(score)
       return scores
 
@@ -130,23 +137,27 @@ def phenotype_purity(phenotypes, outcomes,
 
 def __get_restricted_area(km_estimate, horizon):
 
-  x = km_estimate.survival_function_.index.values 
+  x = km_estimate.survival_function_.index.values
   idx = x < horizon
   x = x[idx].tolist()
   y = km_estimate.survival_function_.KM_estimate.values[idx].tolist()
-  
+
   y = y + [float(km_estimate.predict(horizon))]
   x = x + [horizon]
 
   return auc(x, y)
 
 
-def _restricted_mean_diff(treated_outcomes, control_outcomes, horizon, seed=None, **kwargs):
+def _restricted_mean_diff(treated_outcomes, control_outcomes, horizon,
+                          treated_weights, control_weights,
+                          size_bootstrap=1.0, seed=None, **kwargs):
 
   if seed is not None:
-    treated_outcomes = treated_outcomes.sample(n=len(treated_outcomes),
+    treated_outcomes = treated_outcomes.sample(n=int(size_bootstrap*len(treated_outcomes)),
+                                               weights=treated_weights,
                                                random_state=seed, replace=True)
-    control_outcomes = control_outcomes.sample(n=len(control_outcomes),
+    control_outcomes = control_outcomes.sample(n=int(size_bootstrap*len(control_outcomes)),
+                                               weights=control_weights,
                                                random_state=seed, replace=True)
 
   treatment_survival = KaplanMeierFitter().fit(treated_outcomes['time'],
@@ -156,11 +167,17 @@ def _restricted_mean_diff(treated_outcomes, control_outcomes, horizon, seed=None
 
   return __get_restricted_area(treatment_survival, horizon) - __get_restricted_area(control_survival, horizon)
 
-def _survival_at_diff(treated_outcomes, control_outcomes, horizon, interpolate=True, seed=None):
+def _survival_at_diff(treated_outcomes, control_outcomes, horizon,
+                      treated_weights, control_weights,
+                      interpolate=True, size_bootstrap=1.0, seed=None):
 
   if seed is not None:
-    treated_outcomes = treated_outcomes.sample(n=len(treated_outcomes), random_state=seed, replace=True)
-    control_outcomes = control_outcomes.sample(n=len(control_outcomes), random_state=seed, replace=True)
+    treated_outcomes = treated_outcomes.sample(n=int(size_bootstrap*len(treated_outcomes)),
+                                               weights=treated_weights,
+                                               random_state=seed, replace=True)
+    control_outcomes = control_outcomes.sample(n=int(size_bootstrap*len(control_outcomes)),
+                                               weights=control_weights,
+                                               random_state=seed, replace=True)
 
   treatment_survival = KaplanMeierFitter().fit(treated_outcomes['time'], treated_outcomes['event'])
   control_survival = KaplanMeierFitter().fit(control_outcomes['time'], control_outcomes['event'])
@@ -174,12 +191,16 @@ def _time_to_diff(treated_outcomes, control_outcomes, horizon, interpolate=True)
   treatment_survival = KaplanMeierFitter().fit(treated_outcomes['time'], treated_outcomes['event'])
   control_survival = KaplanMeierFitter().fit(control_outcomes['time'], control_outcomes['event'])
 
-def _hazard_ratio(treated_outcomes, control_outcomes, seed=None, **kwargs):
+def _hazard_ratio(treated_outcomes, control_outcomes,
+                  treated_weights, control_weights,
+                  size_bootstrap=1.0, seed=None, **kwargs):
 
   if seed is not None:
-    treated_outcomes = treated_outcomes.sample(n=len(treated_outcomes),
+    treated_outcomes = treated_outcomes.sample(n=int(size_bootstrap*len(treated_outcomes)),
+                                               weights=treated_weights,
                                                random_state=seed, replace=True)
-    control_outcomes = control_outcomes.sample(n=len(control_outcomes),
+    control_outcomes = control_outcomes.sample(n=int(size_bootstrap*len(control_outcomes)),
+                                               weights=control_weights,
                                                random_state=seed, replace=True)
 
   treated_outcomes.insert(0, 'treated', 1.0)
@@ -192,22 +213,82 @@ def _hazard_ratio(treated_outcomes, control_outcomes, seed=None, **kwargs):
                            event_col='event').hazard_ratios_['treated']
 
 
-def survival_diff_metric(metric, outcomes, arms, treatment_arm, control_arm,  horizon=None,
-                           interpolate=True, bootstrap=None):
+def survival_diff_metric(metric, outcomes, treatment_indicator,
+                         weights=None, horizon=None, interpolate=True,
+                         weights_clip=1e-2,
+                         n_bootstrap=None, size_bootstrap=1.0, random_seed=0):
 
-  assert metric in ['median', 'hazard_ratio' ,'restricted_mean', 'survival_at', 'time_to']
+  """Metrics for comparing population level survival outcomes across treatment arms.
 
-  if metric in ['restricted_mean', 'survival_at_time', 'time_to']:
+  Parameters
+  ----------
+  metric : str
+      The metric to evalute. One of:
+
+      - **`hazard_ratio`**
+      - **`restricted_mean`**
+      - **`survival_at`**
+  outcomes : pd.DataFrame
+      The outcomes to compare. A pd.Daraframe with columns 'time' and 'event'.
+  treatment_indicator : np.array
+      Boolean numpy array of treatment indicators. True means individual was
+      assigned treatment.
+  weights : pd.Series
+      Treatment assignment propensity scores.
+      If None, all weights are set to 0.5. Default is None.
+  horizon : float
+      The time horizon at which to compare the survival curves.
+      Must be specified for metric 'restricted_mean' and 'survival_at'.
+      For 'hazard_ratio' this is ignored.
+  interpolate : bool
+      Whether to interpolate the survival curves. Default is True.
+  weights_clip : float
+      Weights below this value are clamped. This is to ensure IPTW estimation
+      is numerically stable. Large weights can result in estimator with high
+      variance.
+  n_bootstrap : int
+      The number of bootstrap samples to use. Default is None.
+      If None, no bootrapping is performed.
+  size_bootstrap : float
+      The fraction of the population to sample for each bootstrap sample.
+      Default is 1.0.
+  random_seed : int
+      The random seed to use for bootstrapping. Default is 0.
+
+  Returns:
+    float or list: The metric value(s) for the specified metric.
+
+  """
+
+  assert metric in ['median', 'hazard_ratio', 'restricted_mean', 'survival_at', 'time_to']
+
+  if metric in ['restricted_mean', 'survival_at', 'time_to']:
     assert horizon is not None, "Please specify Event Horizon"
+
   if metric == 'hazard_ratio':
-    print("WARNING: You are computing Hazard Ratios.\nMake sure you have tested the PH Assumptions.")
-
+    raise Warning("WARNING: You are computing Hazard Ratios.\n Make sure you have tested the PH Assumptions.")
+  if (n_bootstrap is None) and (weights is not None): 
+    raise Warning("Treatment Propensity weights would be ignored, Since no boostrapping is performed.
+                  "In order to incorporate IPTW weights please specify number of bootstrap iterations n_bootsrap>=1")
   # Bootstrapping ...
-  if bootstrap is not None: assert isinstance(bootstrap, int), "`bootstrap` must be None or int"
-  if isinstance(bootstrap, int): print("Bootstrapping... ", bootstrap, " number of times. This may take a while. Please be Patient...")
+  if n_bootstrap is not None:
+    assert isinstance(n_bootstrap, int), '`bootstrap` must be None or int'
 
-  treated_outcomes = outcomes[arms==treatment_arm]
-  control_outcomes = outcomes[arms==control_arm]
+  if isinstance(n_bootstrap, int):
+    print('Bootstrapping... ', n_bootstrap,
+          ' number of times. This may take a while. Please be Patient...')
+
+  is_treated = treatment_indicator.astype(float)
+  if weights is None:
+    weights = 0.5*np.ones(len(outcomes))
+
+  weights[weights>weights_clip] = 1-weights_clip
+  weights[weights<weights_clip] = weights_clip
+
+  iptw_weights = 1./((is_treated*weights)+((1-is_treated)*(1-weights)))
+
+  treated_outcomes = outcomes[treatment_indicator]
+  control_outcomes = outcomes[~treatment_indicator]
 
   if metric == 'survival_at': _metric = _survival_at_diff
   elif metric == 'time_to': _metric = _time_to_diff
@@ -216,12 +297,19 @@ def survival_diff_metric(metric, outcomes, arms, treatment_arm, control_arm,  ho
   elif metric == 'hazard_ratio': _metric = _hazard_ratio
   else: raise NotImplementedError()
 
-  if bootstrap is None:
-    return _metric(treated_outcomes, control_outcomes,
-                   horizon=horizon, interpolate=interpolate)
+  if n_bootstrap is None:
+    return _metric(treated_outcomes,
+                   control_outcomes,
+                   horizon=horizon,
+                   interpolate=interpolate,
+                   treated_weights=iptw_weights[treatment_indicator],
+                   control_weights=iptw_weights[~treatment_indicator])
   else:
     return [_metric(treated_outcomes,
                     control_outcomes,
                     horizon=horizon,
                     interpolate=interpolate,
-                    seed=i) for i in range(bootstrap)]
+                    treated_weights=iptw_weights[treatment_indicator],
+                    control_weights=iptw_weights[~treatment_indicator],
+                    size_bootstrap=size_bootstrap,
+                    seed=random_seed*i) for i in range(n_bootstrap)]

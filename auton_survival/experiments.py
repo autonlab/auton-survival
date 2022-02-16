@@ -34,10 +34,10 @@ class SurvivalRegressionCV:
 
     for fold in range(self.cv_folds):
 
-      fold_outcomes = outcomes.loc[folds==fold, 'time'] 
+      fold_outcomes = outcomes.loc[folds==fold, 'time']
 
-      if fold_outcomes.min() > time_min: time_min = fold_outcomes.min() 
-      if fold_outcomes.max() < time_max: time_max = fold_outcomes.max() 
+      if fold_outcomes.min() > time_min: time_min = fold_outcomes.min()
+      if fold_outcomes.max() < time_max: time_max = fold_outcomes.max()
       
     unique_times = unique_times[unique_times>=time_min]
     unique_times = unique_times[unique_times<time_max]
@@ -120,13 +120,22 @@ class CounterfactualSurvivalRegressionCV:
     self.random_seed = random_seed
     self.cv_folds = cv_folds
 
-    self.treated_experiment = SurvivalRegressionCV(model=model, cv_folds=cv_folds, random_seed=random_seed, hyperparam_grid=hyperparam_grid)
-    self.control_experiment = SurvivalRegressionCV(model=model, cv_folds=cv_folds, random_seed=random_seed, hyperparam_grid=hyperparam_grid)
+    self.treated_experiment = SurvivalRegressionCV(model=model,
+                                                   cv_folds=cv_folds,
+                                                   random_seed=random_seed,
+                                                   hyperparam_grid=hyperparam_grid)
+
+    self.control_experiment = SurvivalRegressionCV(model=model,
+                                                   cv_folds=cv_folds,
+                                                   random_seed=random_seed,
+                                                   hyperparam_grid=hyperparam_grid)
 
   def fit(self, features, outcomes, interventions):
-    
+
     treated, control = interventions==1, interventions!=1
-    treated_model = self.treated_experiment.fit(features.loc[treated], outcomes.loc[treated])
-    control_model = self.control_experiment.fit(features.loc[control], outcomes.loc[control])
+    treated_model = self.treated_experiment.fit(features.loc[treated],
+                                                outcomes.loc[treated])
+    control_model = self.control_experiment.fit(features.loc[control],
+                                                outcomes.loc[control])
 
     return CounterfactualSurvivalModel(treated_model, control_model)

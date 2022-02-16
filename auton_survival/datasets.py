@@ -157,6 +157,7 @@ def load_support():
   to estimate survival for seriously ill hospitalized adults [1].
   Please refer to http://biostat.mc.vanderbilt.edu/wiki/Main/SupportDesc.
   for the original datasource.
+
   References
   ----------
   [1]: Knaus WA, Harrell FE, Lynn J et al. (1995): The SUPPORT prognostic
@@ -175,8 +176,8 @@ def load_support():
   outcomes = outcomes[['event', 'time']]
 
   cat_feats = ['sex', 'dzgroup', 'dzclass', 'income', 'race', 'ca']
-  num_feats = ['age', 'num.co', 'meanbp', 'wblc', 'hrt', 'resp', 
-               'temp', 'pafi', 'alb', 'bili', 'crea', 'sod', 'ph', 
+  num_feats = ['age', 'num.co', 'meanbp', 'wblc', 'hrt', 'resp',
+               'temp', 'pafi', 'alb', 'bili', 'crea', 'sod', 'ph',
                'glucose', 'bun', 'urine', 'adlp', 'adls']
 
   return outcomes, data[cat_feats+num_feats]
@@ -255,19 +256,18 @@ def load_synthetic_cf_phenotyping():
 
 def load_dataset(dataset='SUPPORT', **kwargs):
   """Helper function to load datasets to test Survival Analysis models.
-  Currently implemented datasets include:
+  Currently implemented datasets include:\n
   **SUPPORT**: This dataset comes from the Vanderbilt University study
   to estimate survival for seriously ill hospitalized adults [1].
   (Refer to http://biostat.mc.vanderbilt.edu/wiki/Main/SupportDesc.
-  for the original datasource.)
+  for the original datasource.)\n
   **PBC**: The Primary biliary cirrhosis dataset [2] is well known
   dataset for evaluating survival analysis models with time
-  dependent covariates.
+  dependent covariates.\n
   **FRAMINGHAM**: This dataset is a subset of 4,434 participants of the well
   known, ongoing Framingham Heart study [3] for studying epidemiology for
   hypertensive and arteriosclerotic cardiovascular disease. It is a popular
-  dataset for longitudinal survival analysis with time dependent covariates.
-  References
+  dataset for longitudinal survival analysis with time dependent covariates.\n
   **SYNTHETIC**: This is a non-linear censored dataset for counterfactual
   time-to-event phenotyping. Introduced in [4], the dataset is generated
   such that the treatment effect is heterogenous conditioned on the covariates.
@@ -276,16 +276,16 @@ def load_dataset(dataset='SUPPORT', **kwargs):
   -----------
   [1]: Knaus WA, Harrell FE, Lynn J et al. (1995): The SUPPORT prognostic
   model: Objective estimates of survival for seriously ill hospitalized
-  adults. Annals of Internal Medicine 122:191-203.
+  adults. Annals of Internal Medicine 122:191-203.\n
   [2] Fleming, Thomas R., and David P. Harrington. Counting processes and
-  survival analysis. Vol. 169. John Wiley & Sons, 2011.
+  survival analysis. Vol. 169. John Wiley & Sons, 2011.\n
   [3] Dawber, Thomas R., Gilcin F. Meadors, and Felix E. Moore Jr.
   "Epidemiological approaches to heart disease: the Framingham Study."
-  American Journal of Public Health and the Nations Health 41.3 (1951).
-  Parameters
+  American Journal of Public Health and the Nations Health 41.3 (1951).\n
   [4] Nagpal, C., Goswami M., Dufendach K., and Artur Dubrawski.
   "Counterfactual phenotyping for censored Time-to-Events" (2022).
 
+  Parameters
   ----------
   dataset: str
       The choice of dataset to load. Currently implemented is 'SUPPORT',
