@@ -296,8 +296,9 @@ def load_dataset(dataset='SUPPORT', **kwargs):
   Returns
   ----------
   tuple: (np.ndarray, np.ndarray, np.ndarray)
-      A tuple of the form of (x, t, e) where x, t, e are the input covariates,
-      event times and the censoring indicators respectively.
+      A tuple of the form of \( (x, t, e) \) where \( x \)
+      are the input covariates, \( t \) the event times and
+      \( e \) the censoring indicators.
   """
   sequential = kwargs.get('sequential', False)
 

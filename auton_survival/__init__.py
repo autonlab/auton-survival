@@ -1,4 +1,4 @@
-'''
+r'''
 
 [![Build Status](https://travis-ci.org/autonlab/DeepSurvivalMachines.svg?branch=master)](https://travis-ci.org/autonlab/DeepSurvivalMachines)
 &nbsp;&nbsp;&nbsp;
@@ -6,7 +6,7 @@
 &nbsp;&nbsp;&nbsp;
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 &nbsp;&nbsp;&nbsp;
-[![GitHub Repo stars](https://img.shields.io/github/stars/autonlab/DeepSurvivalMachines?style=social)](https://github.com/autonlab/DeepSurvivalMachines)
+[![GitHub Repo stars](https://img.shields.io/github/stars/autonlab/auton-survival?style=social)](https://github.com/autonlab/auton-survival)
 
 
 Python package `auton_survival` provides a flexible API for various problems
@@ -14,7 +14,7 @@ in survival analysis, including regression, counterfactual estimation,
 and phenotyping.
 
 What is Survival Analysis?
-------------------------
+--------------------------
 
 **Survival Analysis** involves estimating when an event of interest, \( T \)
 would take places given some features or covariates \( X \). In statistics
@@ -27,11 +27,13 @@ regression problems, Survival Analysis differs in two major ways:
 * There is presence of censoring ie. a large number of instances of data are
   lost to follow up.
 
-# Auton Survival
+Auton Survival
+----------------
 
 Repository of reusable code utilities for Survival Analysis projects.
 
-## `auton_survival.datasets`
+Dataset Loading and Preprocessing
+---------------------------------
 
 Helper functions to load various trial data like `TOPCAT`, `BARI2D` and `ALLHAT`.
 
@@ -41,7 +43,7 @@ from auton_survival import dataset
 features, outcomes = datasets.load_topcat()
 ```
 
-## `auton_survival.preprocessing`
+### `auton_survival.preprocessing`
 This module provides a flexible API to perform imputation and data
 normalization for downstream machine learning models. The module has
 3 distinct classes, `Scaler`, `Imputer` and `Preprocessor`. The `Preprocessor`
@@ -58,9 +60,14 @@ features = Preprocessor().fit_transform(features,
 					num_feats=['height', 'weight'])
 
 # The `cat_feats` and `num_feats` lists would contain all the categorical and numerical features in the dataset.
+
 ```
 
-## `auton_survival.estimators`
+
+Survival Regression
+-------------------
+
+### `auton_survival.estimators`
 
 This module provids a wrapper to model BioLINNC datasets with standard
 survival (time-to-event) analysis methods.
@@ -87,7 +94,7 @@ features = Preprocessing().fit_transform(features)
 ```
 
 
-## `auton_survival.experiments`
+### `auton_survival.experiments`
 
 Modules to perform standard survival analysis experiments. This module
 provides a top-level interface to run `auton_survival` Style experiments
@@ -118,7 +125,17 @@ scores = experiment.evaluate(time=1.)
 print(scores)
 ```
 
-## `auton_survival.reporting`
+
+Phenotyping and Knowledge Discovery
+-----------------------------------
+
+### `auton_survival.phenotyping`
+
+
+Reporting
+----------
+
+### `auton_survival.reporting`
 
 Helper functions to generate standard reports for popular Survival Analysis problems.
 
