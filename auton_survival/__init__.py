@@ -71,9 +71,9 @@ Survival Regression
 
 This module provids a wrapper to model BioLINNC datasets with standard
 survival (time-to-event) analysis methods.
-The use of the wrapper allows a simple standard interface for multiple different
-survival models, and also helps standardize experiments across various differents
-research areas.
+The use of the wrapper allows a simple standard interface for multiple
+different survival models, and also helps standardize experiments across
+various differents research areas.
 
 Currently supported Survival Models are:
 
