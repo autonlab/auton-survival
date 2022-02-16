@@ -219,12 +219,10 @@ def survival_diff_metric(metric, outcomes, treatment_indicator,
                          n_bootstrap=None, size_bootstrap=1.0, random_seed=0):
 
   """Metrics for comparing population level survival outcomes across treatment arms.
-
   Parameters
   ----------
   metric : str
       The metric to evalute. One of:
-
       - **`hazard_ratio`**
       - **`restricted_mean`**
       - **`survival_at`**
@@ -254,10 +252,8 @@ def survival_diff_metric(metric, outcomes, treatment_indicator,
       Default is 1.0.
   random_seed : int
       The random seed to use for bootstrapping. Default is 0.
-
   Returns:
     float or list: The metric value(s) for the specified metric.
-
   """
 
   assert metric in ['median', 'hazard_ratio', 'restricted_mean', 'survival_at', 'time_to']
@@ -268,8 +264,8 @@ def survival_diff_metric(metric, outcomes, treatment_indicator,
   if metric == 'hazard_ratio':
     raise Warning("WARNING: You are computing Hazard Ratios.\n Make sure you have tested the PH Assumptions.")
   if (n_bootstrap is None) and (weights is not None): 
-    raise Warning("Treatment Propensity weights would be ignored, Since no boostrapping is performed.
-                  "In order to incorporate IPTW weights please specify number of bootstrap iterations n_bootsrap>=1")
+    raise Warning("Treatment Propensity weights would be ignored, Since no boostrapping is performed."+
+                  "In order to incorporate IPTW weights please specify number of bootstrap iterations n_bootstrap>=1")
   # Bootstrapping ...
   if n_bootstrap is not None:
     assert isinstance(n_bootstrap, int), '`bootstrap` must be None or int'
