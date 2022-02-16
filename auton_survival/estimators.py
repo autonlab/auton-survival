@@ -78,9 +78,9 @@ def _fit_dcph(features, outcomes, random_seed, **hyperparams):
   epochs = hyperparams.get('epochs', 50)
   activation = hyperparams.get('activation', 'relu')
 
-  if activation == 'relu': activation = torch.nn.ReLU()
-  elif activation == 'relu6': activation = torch.nn.ReLU6() 
-  elif activation == 'tanh': activation = torch.nn.Tanh() 
+  if activation == 'relu': activation = torch.nn.ReLU
+  elif activation == 'relu6': activation = torch.nn.ReLU6
+  elif activation == 'tanh': activation = torch.nn.Tanh
   else: raise NotImplementedError("Activation function not implemented")
 
   x = features.values.astype('float32')
