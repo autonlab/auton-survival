@@ -141,6 +141,10 @@ def _load_pbc_dataset(sequential, competing = False):
   data = pkgutil.get_data(__name__, 'datasets/pbc2.csv')
   data = pd.read_csv(io.BytesIO(data))
 
+  if not sequential:
+    # Consider only first event
+    data = data.groupby('id').first()
+
   data['histologic'] = data['histologic'].astype(str)
   dat_cat = data[['drug', 'sex', 'ascites', 'hepatomegaly',
                   'spiders', 'edema', 'histologic']]
