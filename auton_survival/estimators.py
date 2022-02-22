@@ -2,23 +2,23 @@ import numpy as np
 import pandas as pd
 
 def _get_valid_idx(n, size, random_seed):
-  """ Randomly select sample indices to split train and test sets.
+  """ Randomly select sample indices to split train and test data.
   
   Parameters:
   -----------
   n : np.array or int
       If an ndarray, a random sample is generated from its elements. 
-      If an int, the random sample is generated as if it were np.arange(a)
+      If an int, the random sample is generated as if it were np.arange(a).
       
   size : float
-      percentage of n samples to randomly draw
+      Percentage of n samples to randomly draw.
   
   random_seed : int
-      Controls the reproducibility of randomized indices
+      Controls the reproducibility of randomized indices.
   
   Return:
   -----------
-  np.array : A numpy array of randomly assigned boolean values
+  np.array : A numpy array of randomly assigned boolean values.
         
   """
 
@@ -33,28 +33,41 @@ def _get_valid_idx(n, size, random_seed):
   return vidx
 
 def _fit_dcm(features, outcomes, random_seed, **hyperparams):
-  """ Fit Deep Cox Mixtures model
+  """ This method is used to train an instance of the Deep Cox Mixtures model.
   
   Parameters
   -----------
   features : pd.DataFrame
-      A pandas DataFrame with rows corresponding to samples and columns corresponding to independent variables
+      A pandas dataframe with rows corresponding to samples and columns corresponding to independent variables.
       
   outcomes : pd.DataFrame
       A pandas dataframe with columns 'time' and 'event'.
   
   random_seed : int
-      Controls the reproducibility of called functions
+      Controls the reproducibility of called functions.
       
   hyperparams : dict
-     Optional arguements for the estimator stored in a python dictionary.
-     Keys correspond to parameter names as strings and items corresponding to parameter values.
+      Optional arguments for the estimator stored in a python dictionary.
+      Keys correspond to parameter names as strings and items correspond to parameter values.
+      Options include:
+      - 'k' : int, default=100
+          The number of underlying Cox distributions.
+      - 'layers' : list, default=[100]
+          A list consisting of the number of neurons in each hidden layer.
+      - 'bs' : int, default=100
+          learning is performed on mini-batches of input data. this parameter
+          specifies the size of each mini-batch.
+      - 'lr' : float, default=1e-3
+          Learning rate for the 'Adam' optimizer
+      - 'epochs' : int, default=50
+          Number of complete passes through the training data.
+      -'smoothing_factor' : int, default=0
   
   Returns
   -----------
-  model : Fitted Deep Cox Mixtures model
+  model : Trained instance of the Deep Cox Mixtures model
   breslow_splines : Splines used to interpolate baseline survival rates.
-  unique_times : ??
+  unique_times : A float or list of the times at which to compute the survival probability.
         
   """
 
@@ -92,21 +105,22 @@ def _fit_dcm(features, outcomes, random_seed, **hyperparams):
   return (model, breslow_splines, unique_times)
 
 def _predict_dcm(model, features, times):
-  """ Predict survival estimates using Deep Cox Mixtures model.
+  """ Predict survival probabilities at specified time(s) using the Deep Cox Mixtures model.
   
   Parameters
   -----------
-  model : Fitted Deep Cox Mixtures model.
+  model : Trained instance of the Deep Cox Mixtures model.
       
   features : pd.DataFrame
-      A pandas DataFrame with rows corresponding to samples and columns corresponding to independent variables
+      A pandas dataframe with rows corresponding to samples and columns corresponding to independent variables.
       
-  unique_times : np.array
-      uniques times in data
+  times: float or list
+      A float or list of the times at which to compute the survival probability.
   
   Returns
   -----------
-  A pd.DataFrame of survival predictions
+  np.array : numpy array of the survival probabilites at each time point in times.
+      Probabilities are interpolated using 'backfill' method at missing time points.
         
   """
 
@@ -123,12 +137,12 @@ def _predict_dcm(model, features, times):
     return survival_predictions
 
 def _fit_dcph(features, outcomes, random_seed, **hyperparams):
-  """ Fit Deep Cox Proportional Hazards model.
+  """ This method is used to train an instance of the Deep Cox Mixtures model.
   
   Parameters:
   -----------
   features : pd.DataFrame
-      A pandas DataFrame with rows corresponding to samples and columns corresponding to independent variables
+      A pandas dataframe with rows corresponding to samples and columns corresponding to independent variables
       
   outcomes : pd.DataFrame
       A pandas dataframe with columns 'time' and 'event'.
@@ -137,12 +151,25 @@ def _fit_dcph(features, outcomes, random_seed, **hyperparams):
       Controls the reproducibility of called functions
       
   hyperparams : dict
-     Optional arguements for the estimator stored in a python dictionary.
-     Keys correspond to parameter names as strings and items corresponding to parameter values. 
+      Optional arguments for the estimator stored in a python dictionary.
+      Keys correspond to parameter names as strings and items correspond to parameter values.
+      Options include:
+      - 'layers' : list, default=[100]
+          A list consisting of the number of neurons in each hidden layer.
+      - 'lr' : float, default=1e-3
+          Learning rate for the 'Adam' optimizer
+      - 'bs' : int, default=100
+          learning is performed on mini-batches of input data. this parameter
+          specifies the size of each mini-batch.
+      - 'epochs' : int, default=50
+          Number of complete passes through the training data.
+      - 'activation' : str, default='relu'
+          Activation function
+          Options include: 'relu', 'relu6', 'tanh'
   
   Return:
   -----------
-  Fitted Deep Cox Proportional Hazards model
+  Trained instance of the Deep Cox Proportional Hazards model.
         
   """
 
@@ -195,19 +222,19 @@ def _fit_dcph(features, outcomes, random_seed, **hyperparams):
   return model
 
 def __interpolate_missing_times(survival_predictions, times):
-  """ Interpolate survival predictions at missing time points
+  """ Interpolate survival estimates at missing time points
   
   Parameters
   -----------
-  survival_predictions : dfd
-      sdf
+  survival_predictions : pd.DataFrame
+      A pandas dataframe of the survival probabilites at each time in times.
       
-  times: np.array
-      The time points at which to compute survival estimates.
+  times: float or list
+      A float or list of the times at which to compute the survival probability.
   
   Returns
   -----------
-  pd.DataFrame : Survival predictions interpolated using 'backfill' method at missing time points
+  pd.DataFrame : Survival probabilities interpolated using 'backfill' method at missing time points.
         
   """
 
@@ -220,22 +247,22 @@ def __interpolate_missing_times(survival_predictions, times):
 
 
 def _predict_dcph(model, features, times):
-  """ Predict survival estimates using the Deep Cox Proportional Hazards model.
+  """ Predict survival probabilities at specified time(s) using the Deep Cox Mixtures model.
   
   Parameters
   -----------
-  model : Fitted Kaplan Meier estimator.
+  model : Trained instance of the Deep Cox Mixtures model.
       
   features : pd.DataFrame
-      A pandas DataFrame with rows corresponding to samples and columns corresponding to independent variables
+      A pandas dataframe with rows corresponding to samples and columns corresponding to independent variables
 
-  times: np.array
-      The time points at which to compute survival estimates.
+  times: float or list
+      A float or list of the times at which to compute the survival probability.
   
   Returns
   -----------
-  pd.DataFrame : Survival predictions at selected time points.
-      Predictions are interpolated using 'backfill' method at missing time points.
+  pd.DataFrame : A pandas dataframe of the survival probabilites at each time point in times.
+      Probabilities are interpolated using 'backfill' method at missing time points.
         
   """ 
   if isinstance(times, float) or isinstance(times, int):
@@ -247,12 +274,12 @@ def _predict_dcph(model, features, times):
 
 
 def _fit_cph(features, outcomes, random_seed, **hyperparams):
-  """ Fit Cox Proportional Hazards model.
+  """ This method is used to train an instance of the Cox Proportional Hazards model.
   
   Parameters
   -----------
   features : pd.DataFrame
-      A pandas DataFrame with rows corresponding to samples and columns corresponding to independent variables
+      A pandas dataframe with rows corresponding to samples and columns corresponding to independent variables
       
   outcomes : pd.DataFrame
       A pandas dataframe with columns 'time' and 'event'.
@@ -261,12 +288,15 @@ def _fit_cph(features, outcomes, random_seed, **hyperparams):
       Controls the reproducibility of called functions
       
   hyperparams : dict
-     Optional arguements for the estimator stored in a python dictionary.
-     Keys correspond to parameter names as strings and items corresponding to parameter values. 
+      Optional arguments for the estimator stored in a python dictionary.
+      Keys correspond to parameter names as strings and items correspond to parameter values.
+      Options include:
+      - 'lr' : float, default=1e-3
+          learning rate
   
   Returns
   -----------
-  Fitted Cox Proportional Hazards model.
+  Trained an instance of the Cox Proportional Hazards model.
         
   """
 
@@ -278,33 +308,40 @@ def _fit_cph(features, outcomes, random_seed, **hyperparams):
   return CoxPHFitter(penalizer=penalizer).fit(data, duration_col='time', event_col='event')
 
 def _fit_rsf(features, outcomes, random_seed, **hyperparams):
-  """ Fit Random Survival Forests model. 
-    Random Survival Forests [1] is an extension of Random Forests to the survival settings where risk scores are 
-    computed by creating Nelson-Aalen estimators in the splits induced by the Random Forest.
+  """ This method is used to train an instance of the Random Survival Forests model. 
+  Random Survival Forests [1] is an extension of Random Forests to the survival settings where risk scores are 
+  computed by creating Nelson-Aalen estimators in the splits induced by the Random Forest.
   
   References
   -----------
   [1] Hemant Ishwaran, Udaya B Kogalur, Eugene H Blackstone, Michael S Lauer, et al. Random
-    survival forests. The annals of applied statistics, 2(3):841–860, 2008.
+  survival forests. The annals of applied statistics, 2(3):841–860, 2008.
 
   Parameters
   -----------
   features : pd.DataFrame
-      A pandas DataFrame with rows corresponding to samples and columns corresponding to independent variables
+      A pandas dataframe with rows corresponding to samples and columns corresponding to independent variables
   
   outcomes : pd.DataFrame
       A pandas dataframe with columns 'time' and 'event'.
   
   random_seed : int
-      Controls the reproducibility of called functions
+      Controls the reproducibility of called functions.
   
   hyperparams : dict
-     Optional arguements for the estimator stored in a python dictionary.
-     Keys correspond to parameter names as strings and items corresponding to parameter values. 
+      Optional arguments for the estimator stored in a python dictionary.
+      Keys correspond to parameter names as strings and items correspond to parameter values.
+      Options include:
+      - 'n_estimaters' : int, default=50
+          Number of trees
+      - 'max_depth' : int, default=5
+          Maximum depth of the tree
+      - 'max_features' : str, default='sqrt'
+          Number of features to consider when looking for the best split
   
   Returns
   -----------
-  Fitted Random Survival Forests model
+  Trained an instance of the Random Survival Forests model.
         
   """
 
@@ -329,12 +366,12 @@ def _fit_rsf(features, outcomes, random_seed, **hyperparams):
 
 
 def _fit_dsm(features, outcomes, random_seed, **hyperparams):
-  """ Fit Deep Survival Machines model
+  """ This method is used to train an instance of the Deep Survival Machines model.
   
   Parameters
   -----------
   features : pd.DataFrame
-      A pandas DataFrame with rows corresponding to samples and columns corresponding to independent variables
+      A pandas dataframe with rows corresponding to samples and columns corresponding to independent variables.
   
   outcomes : pd.DataFrame
       A pandas dataframe with columns 'time' and 'event'.
@@ -343,12 +380,22 @@ def _fit_dsm(features, outcomes, random_seed, **hyperparams):
       Controls the reproducibility of called functions
   
   hyperparams : dict
-     Optional arguements for the estimator stored in a python dictionary.
-     Keys correspond to parameter names as strings and items corresponding to parameter values. 
+      Optional arguments for the estimator stored in a python dictionary.
+      Keys correspond to parameter names as strings and items correspond to parameter values.
+      Options include:
+      - 'layers' : list
+          A list of integers consisting of the number of neurons in each hidden layer.
+      - 'iters' : int, default=10
+          The maximum number of training iterations on the training dataset.
+      - 'distribution' : str, default='Weibull'
+          Choice of the underlying survival distributions.
+          One of 'Weibull', 'LogNormal'.
+      - 'temperature' : float, default=1.0
+          The value with which to rescale the logits for the gate.
   
   Returns
   -----------
-  Fitted Deep Survival Machines model.
+  Trained an instance of the Deep Survival Machines model.
 
   """
 
@@ -372,42 +419,42 @@ def _fit_dsm(features, outcomes, random_seed, **hyperparams):
   return model
 
 def _predict_dsm(model, features, times):
-  """ Predict survival estimates using Deep Suvival Machines model.
+  """ Predict survival probabilities at specified time(s) using the Deep Survival Machines model.
   
   Parameters
   -----------
-  model : Fitted Deep Suvival Machines model
+  model : Trained instance of the Deep Suvival Machines model
       
   features : pd.DataFrame
-      A pandas DataFrame with rows corresponding to samples and columns corresponding to independent variables
+      A pandas dataframe with rows corresponding to samples and columns corresponding to independent variables
   
-  times: np.array
-      The time points at which to compute survival estimates.
+  times: float or list
+      A float or list of the times at which to compute the survival probability.
   
   Returns
   -----------
-  pd.DataFrame : Survival predictions at selected time points..
+  np.array : numpy array of the survival probabilites at each time point in times.
 
   """
 
   return model.predict_survival(features.values, times)
 
 def _predict_cph(model, features, times):
-  """ Predict survival estimates using Cox Proportional Hazards model.
+  """ Predict survival probabilities at specified time(s) using the Cox Proportional Hazards model.
   
   Parameters
   -----------
-  model : Fitted Cox Proportional Hazards model
+  model : Trained instance of the Cox Proportional Hazards model
       
   features : pd.DataFrame
-      A pandas DataFrame with rows corresponding to samples and columns corresponding to independent variables
+      A pandas dataframe with rows corresponding to samples and columns corresponding to independent variables
   
-  times: np.array
-      The time points at which to compute survival estimates.
+  times: float or list
+      A float or list of the times at which to compute the survival probability.
   
   Returns
   -----------
-  pd.DataFrame : Survival predictions at selected time points.
+  np.array : numpy array of the survival probabilites at each time point in times.
 
   """
 
@@ -415,22 +462,22 @@ def _predict_cph(model, features, times):
   return model.predict_survival_function(features, times=times).values.T
 
 def _predict_rsf(model, features, times):
-  """ Predict survival estimates using Random Survival Forests model.
+  """ Predict survival probabilities at specified time(s) using the Random Survival Forests model.
   
   Parameters
   -----------
-  model : Fitted Random Survival Forests model
+  model : Trained instance of the Random Survival Forests model
       
   features : pd.DataFrame
-      A pandas DataFrame with rows corresponding to samples and columns corresponding to independent variables
+      A pandas dataframe with rows corresponding to samples and columns corresponding to independent variables
   
-  times: np.array
-      The time points at which to compute survival estimates.
+  times: float or list
+      A float or list of the times at which to compute the survival probability.
   
   Returns
   -----------
-  pd.DataFrame : Survival predictions at selected time points.
-      Predictions are interpolated using 'backfill' method at missing time points.
+  pd.DataFrame : A pandas dataframe of the survival probabilites at each time point in times.
+      Probabilities are interpolated using 'backfill' method at missing time points.
       
   """
 
@@ -443,22 +490,22 @@ def _predict_rsf(model, features, times):
   return __interpolate_missing_times(survival_predictions, times)
 
 def _predict_dcm(model, features, times):
-  """ Predict survival estimates using Deep Cox Mixtures model.
+  """ Predict survival probabilities at specified time(s) using the Deep Cox Mixtures model.
   
   Parameters
   -----------
-  model : Fitted Random Survival Forests model
+  model : Trained instance of the Deep Cox Mixtures model.
       
   features : pd.DataFrame
-      A pandas DataFrame with rows corresponding to samples and columns corresponding to independent variables
+      A pandas dataframe with rows corresponding to samples and columns corresponding to independent variables
   
-  times: np.array
-      The time points at which to compute survival estimates.
+  times: float or list
+      A float or list of the times at which to compute the survival probability.
   
   Returns
   -----------
-  pd.DataFrame : Survival predictions at selected time points.
-      Predictions are interpolated using 'backfill' method at missing time points.
+  pd.DataFrame : A pandas dataframe of the survival probabilites at each time point in times.
+      Probabilities are interpolated using 'backfill' method at missing time points.
   """
 
   if isinstance(times, float) or isinstance(times, int):
@@ -485,14 +532,14 @@ class SurvivalModel:
   
   Parameters
   -----------
-  model : Fitted survival regression model
+  model : Trained instance of the survival regression model.
   
-  random_seed : int
-      Controls the reproducibility of called functions
+  random_seed : int, default=0
+      Controls the reproducibility of called functions.
   
   hyperparams : dict
-      Optional arguements for the estimator stored in a python dictionary.
-      Keys correspond to parameter names as strings and items corresponding to parameter values. 
+      Optional arguments for the estimator stored in a python dictionary.
+      Keys correspond to parameter names as strings and items correspond to parameter values.
          
   """
 
@@ -504,19 +551,19 @@ class SurvivalModel:
     self.fitted = False
 
   def fit(self, features, outcomes):
-  """ Fit suvival model.
+  """ This method is used to train an instance of the survival model.
   
   Parameter
   -----------
   features : pd.DataFrame
-      A pandas DataFrame with rows corresponding to samples and columns corresponding to independent variables
+      A pandas dataframe with rows corresponding to samples and columns corresponding to independent variables
   
   outcomes : pd.DataFrame
       A pandas dataframe with columns 'time' and 'event'.
   
   Returns
   -----------
-  Fitted model
+  Trained an instance of the survival model.
         
   """
 
@@ -530,15 +577,15 @@ class SurvivalModel:
     return self
 
   def predict_survival(self, features, times):
-  """Predict survival estimate
+  """Predict survival probabilities at specified time(s).
   
   Parameter
   -----------
   features : pd.DataFrame
-      A pandas DataFrame with rows corresponding to samples and columns corresponding to independent variables
+      A pandas dataframe with rows corresponding to samples and columns corresponding to independent variables
   
-  times: np.array
-      The time points at which to compute survival estimates.
+  times: float or list
+      A float or list of the times at which to compute the survival probability.
         
   """
 
@@ -550,19 +597,19 @@ class SurvivalModel:
     else : raise NotImplementedError()
 
   def predict_risk(self, features, times):
-  """ Predict risk of an outcome.
+  """ Predict risk of an outcome at specified time(s).
   
   Parameter
   -----------
   features : pd.DataFrame
-      A pandas DataFrame with rows corresponding to samples and columns corresponding to independent variables
+      A pandas dataframe with rows corresponding to samples and columns corresponding to independent variables
   
-  times: np.array
-      The time points at which to compute risk of an outcome.
+  times: float or list
+      A float or list of the times at which to compute the survival probability.
       
   Returns
   -----------
-  pd.DataFrame : risk predictions of an outcome
+  np.array : numpy array of the outcome risks at each time point in times.
         
   """
 
@@ -591,26 +638,42 @@ class CounterfactualSurvivalModel:
     self.treated_model = treated_model
     self.control_model = control_model
 
-  def predict(self, features, times ):
-  """Predict survival estimate
+  def predict(self, features, times):
+  """Predict outcomes at specified time(s).
   
   Parameter
   -----------
   features : pd.DataFrame
-      A pandas DataFrame with rows corresponding to samples and columns corresponding to independent variables
+      A pandas dataframe with rows corresponding to samples and columns corresponding to independent variables
   
-  times: np.array
-      The time points at which to compute survival estimates.
+  times: float or list
+      A float or list of the times at which to compute the survival probability.
   
   Returns
   -----------
-  Outcome predictions for treated and control models
+  np.array : A numpy array of predicted outcomes. ??
         
   """
 
     raise NotImplementedError()
 
   def predict_counterfactual(self, features, times):
+  """Predict survival outcomes at specified time(s)?
+  
+  Parameter
+  -----------
+  features : pd.DataFrame
+      A pandas dataframe with rows corresponding to samples and columns corresponding to independent variables
+  
+  times: float or list
+      A float or list of the times at which to compute the survival probability.
+  
+  Returns
+  -----------
+  treated_outcomes : Predict outcomes for the treated group at each time point in times.??
+  control_outcomes : Predict outcomes for the control group at each time point in times.??
+        
+  """
     
     control_outcomes = self.control_model.predict(features, times)
     treated_outcomes = self.treated_model.predict(features, times)
@@ -625,12 +688,12 @@ class DCMSubgroupModel(CounterfactualSurvivalModel):
   
   Parameters
   -----------
-  random_seed : int
+  random_seed : int, default=0
       Controls the reproducibility of called functions
   
   hyperparams : dict
-     Optional arguements for the estimator stored in a python dictionary.
-     Keys correspond to parameter names as strings and items corresponding to parameter values. 
+      Optional arguments for the estimator stored in a python dictionary.
+      Keys correspond to parameter names as strings and items correspond to parameter values.
   
   """
 
@@ -639,12 +702,12 @@ class DCMSubgroupModel(CounterfactualSurvivalModel):
     self.hyperparams = hyperparams
 
   def fit(self, features, outcomes, intervention_col):
-  """ Fit Deep Cox Mixtures Subgroup model.
+  """ This method is used to train an instance of the Deep Cox Mixtures Subgroup model.
   
   Parameters
   -----------
   features : pd.DataFrame
-      A pandas DataFrame with rows corresponding to samples and columns corresponding to independent variables
+      A pandas dataframe with rows corresponding to samples and columns corresponding to independent variables.
   
   outcomes : pd.DataFrame
       A pandas dataframe with columns 'time' and 'event'.
@@ -654,7 +717,7 @@ class DCMSubgroupModel(CounterfactualSurvivalModel):
   
   Returns
   -----------
-  Self instances of hyperparameters, model, and breslow splines
+  Self instances of hyperparameters, model, and breslow splines.
         
   """
 
@@ -688,7 +751,7 @@ class DCMSubgroupModel(CounterfactualSurvivalModel):
 
     train_data = (x[~vidx], t[~vidx], e[~vidx], a[~vidx])
     val_data = (x[vidx], t[vidx], e[vidx], a[vidx])
-
+.
     (model, breslow_splines) = train(model, train_data, val_data, 
                                     epochs=epochs, lr=lr, bs=bs,
                                     use_posteriors=True, patience=5, return_losses=False)
@@ -697,19 +760,19 @@ class DCMSubgroupModel(CounterfactualSurvivalModel):
     return self
     
   def predict_survival(self, features, times):
-  """ Predict survival estimates using the Deep Cox Mixtures Subgroup model.
+  """ Predict survival probabilities at specified time(s) for treated and control sample groups.
   
   Parameter
   -----------
   features : pd.DataFrame
       A pandas DataFrame with rows corresponding to samples and columns corresponding to independent variables
   
-  times: np.array
-      The time points at which to compute survival estimates.
+  times: float or list
+      A float or list of the times at which to compute the survival probability.
   
   Returns
   -----------
-  Predicted survival estimates at specified times
+  np.array : numpy array of the survival probabilites at each time point in times.
         
   """
 
@@ -723,19 +786,20 @@ class DCMSubgroupModel(CounterfactualSurvivalModel):
     return predict_scores(self._model, x, a, times)
 
   def predict_counterfactual(self, features, times):
-  """ Predict counterfactual using the Deep Cox Mixtures Subgroup model.
+  """ Predict survival probabilities at specified time(s) for samples with counterfactual outcomes.
   
   Parameters
   -----------
   features : pd.DataFrame
       A pandas DataFrame with rows corresponding to samples and columns corresponding to independent variables
   
-  times: np.array
-      The time points at which to compute survival estimates.
+  times: float or list
+      A float or list of the times at which to compute the survival probability.
   
   Returns
   -----------
-  Predicted survival estimates for counterfactuals at specified times
+  np.array : numpy array of the survival probabilites at each time point in times for samples 
+  if an outcome were to be absent and if the outcome were to be present.
         
   """
 
