@@ -274,7 +274,7 @@ def _predict_dcph(model, features, times):
 
 
 def _fit_cph(features, outcomes, random_seed, **hyperparams):
-  """ This method is used to train an instance of the Cox Proportional Hazards model.
+  """This method is used to train an instance of the Cox Proportional Hazards model.
   
   Parameters
   -----------

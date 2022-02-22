@@ -5,6 +5,31 @@ from lifelines import KaplanMeierFitter, NelsonAalenFitter
 from copy import deepcopy
 
 from sklearn import cluster, decomposition, mixture
+# coding=utf-8
+# MIT License
+
+# Copyright (c) 2022 Carnegie Mellon University, Auton Lab
+
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+"""ONE LINER """
+
 from auton_survival.utils import _get_method_kwargs
 
 
@@ -12,26 +37,14 @@ class Phenotyper:
   """Base class for all phenotyping methods"""
 
   def __init__(self, random_seed=0):
-  """The constructor to initialize the phenotyper
-    
-  Parameters
-  -----------
-  random_seed : int, default=0
-      Controls the reproducibility of called functions
-      
-  """
 
-        self.random_seed = random_seed
-        self.fitted = False
+    self.random_seed = random_seed
+    self.fitted = False
 
 class IntersectionalPhenotyper(Phenotyper):
-  """A phenotyper that creates groups based on all possible combinations of specified categorical and numerical variables."""
-
-  def __init__(self, cat_vars=None, num_vars=None,
-               num_vars_quantiles=(0, .5, 1.0)):
-  """The constructor to initialize the intersectional phenotyper
-    
-  Parameters
+  """A phenotyper that creates groups based on all possible combinations of specified categorical and numerical variables.
+  
+   Parameters
   -----------
   cat_vars : list of python str(s), default=None
       The names of categorical independent variables inputed as python strings in a list
@@ -45,6 +58,9 @@ class IntersectionalPhenotyper(Phenotyper):
       
   """
 
+  def __init__(self, cat_vars=None, num_vars=None,
+               num_vars_quantiles=(0, .5, 1.0)):
+    
     if isinstance(cat_vars, str): cat_vars = [cat_vars]
     if isinstance(num_vars, str): num_vars = [num_vars]
 
