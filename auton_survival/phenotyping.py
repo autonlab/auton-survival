@@ -1,10 +1,3 @@
-import numpy as np
-import pandas as pd
-
-from lifelines import KaplanMeierFitter, NelsonAalenFitter
-from copy import deepcopy
-
-from sklearn import cluster, decomposition, mixture
 # coding=utf-8
 # MIT License
 
@@ -28,7 +21,16 @@ from sklearn import cluster, decomposition, mixture
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-"""ONE LINER """
+"""Functions to identify sample subgroups for use in comparing survival probability 
+among groups."""
+
+import numpy as np
+import pandas as pd
+
+from lifelines import KaplanMeierFitter, NelsonAalenFitter
+from copy import deepcopy
+
+from sklearn import cluster, decomposition, mixture
 
 from auton_survival.utils import _get_method_kwargs
 
@@ -36,25 +38,28 @@ from auton_survival.utils import _get_method_kwargs
 class Phenotyper:
   """Base class for all phenotyping methods"""
 
-  def __init__(self, random_seed=0):
+  def __init__(self, random_state=0):
 
-    self.random_seed = random_seed
+    self.random_state = random_state
     self.fitted = False
 
 class IntersectionalPhenotyper(Phenotyper):
   """A phenotyper that creates groups based on all possible combinations of specified categorical and numerical variables.
   
-   Parameters
+  Parameters
   -----------
   cat_vars : list of python str(s), default=None
       The names of categorical independent variables inputed as python strings in a list
-
   num_vars : list of python str(s), default=None
-     The names of continuous independent variables inputed as python strings in a list
-      
+     The names of continuous independent variables inputed as python strings in a list  
   num_vars_quantiles : int or list-like of float, default=(0, .5, 1.0)
       Either the number of quantiles as an integer or a list-like of quantile floats (inclusive of 0 and 1) 
       used to discretize continuous variables into equal-sized bins.
+  features : pd.DataFrame
+      A pandas DataFrame with rows corresponding to samples and columns corresponding to independent variables
+  phenotypes : np.array
+      A numpy array containing a list of strings corresponding to phenotype names from all possible combinations of specified 
+      categorical and numerical variables
       
   """
 
@@ -115,8 +120,8 @@ class IntersectionalPhenotyper(Phenotyper):
         
   Returns
   -----------
-  demographics : np.array
-      A numpy array containing a list of lists of strings corresponding to phenotype names from all possible combinations of specified 
+  phenotypes : np.array
+      A numpy array containing a list of strings corresponding to phenotype names from all possible combinations of specified 
       categorical and numerical variables
         
   """
@@ -134,24 +139,24 @@ class IntersectionalPhenotyper(Phenotyper):
       features[num_var] = pd.cut(features[num_var], self.cut_bins[num_var],
                                  include_lowest=True)
 
-    demographics = [group.tolist() for group in features[self.cat_vars+self.num_vars].values]
-    demographics = self._rename(demographics)
+    phenotypes = [group.tolist() for group in features[self.cat_vars+self.num_vars].values]
+    phenotypes = self._rename(phenotypes)
 
-    demographics = np.array(demographics)
+    phenotypes = np.array(phenotypes)
 
-    return demographics
+    return phenotypes
 
-  def _rename(self, demographics):
+  def _rename(self, phenotypes):
   """Create phenotype names from all possible combinations of specified categorical and numerical variables
     
   Parameters
   -----------
-  demographics : list
+  phenotypes : list
       List of lists containing all possible combinations of specified categorical and numerical variable values
         
   Returns
   -----------
-  List of lists of strings corresponding to phenotype names
+  list : python list of a list of strings corresponding to phenotype names
         
   """
 
@@ -179,52 +184,49 @@ class IntersectionalPhenotyper(Phenotyper):
       categorical and numerical variables
         
   """
+
     return self.fit(features).phenotype(features)
 
 
 class ClusteringPhenotyper(Phenotyper):
   """Phenotyper that performs dimensionality reduction followed by clustering. Learned clusters are considered phenotypes and used to 
-  group samples based on similar characteristics"""
+  group samples based on similar characteristics.
 
-  _VALID_DIMRED_METHODS = ['pca', 'kpca', 'nnmf', None]
-  _VALID_CLUSTERING_METHODS = ['kmeans', 'dbscan', 'gmm', 'hierarchical']
-
-  def __init__(self, clustering_method = 'kmeans', dim_red_method = None, random_seed=0, **kwargs):
-  """The constructor to initialize the clustering phenotyper
-    
   Parameters
   -----------
+  features : pd.DataFrame
+      A pandas DataFrame with rows corresponding to samples and columns corresponding to independent variables
   clustering_method : str, default='kmeans'
-    The clustering method applied for phenotyping. Options include:
+      The clustering method applied for phenotyping. Options include:
       - 'kmeans' : K-Means clustering'
       - 'dbscan' : Density-Based Spatial Clustering of Applications with Noise (DBSCAN)
       - 'gmm' : Gaussian Mixture
-      - 'hierarchical' : AgglomerativeClustering
-      
+      - 'hierarchical' : AgglomerativeClustering  
   dim_red_method : str, default=None
-    The dimensionality reductions method applied. Options include:
+      The dimensionality reductions method applied. Options include:
       - 'pca' : Principal Component Analysis
       - 'kpca' : Kernel Principal Component Analysis
       - 'nnmf' : Non-Negative Matrix Factorization 
-      - None : dimensionality reduction is not applied.
-      
-  random_seed : int, default=0
-      Controls the randomness and reproducibility of called functions
-      
+      - None : dimensionality reduction is not applied. 
+  random_state : int, default=0
+      Controls the randomness and reproducibility of called functions  
   kwargs : dict
       Additional arguments for dimensionality reduction and clustering
       Please include dictionary key and item pairs specified by the following sci-kit learn modules:
-      
       'pca' : sklearn.decomposition.PCA
       'nnmf' : sklearn.decomposition.NMF
       'kpca' : sklearn.decomposition.KernelPCA  
-      
       'kmeans' : sklearn.cluster.KMeans
       'dbscan' : sklearn.cluster.DBSCAN
       'gmm' : sklearn.mixture.GaussianMixture
       'hierarchical' : sklearn.cluster.AgglomerativeClustering
         
   """
+
+  _VALID_DIMRED_METHODS = ['pca', 'kpca', 'nnmf', None]
+  _VALID_CLUSTERING_METHODS = ['kmeans', 'dbscan', 'gmm', 'hierarchical']
+
+  def __init__(self, clustering_method = 'kmeans', dim_red_method = None, random_state=0, **kwargs):
 
     assert clustering_method in ClusteringPhenotyper._VALID_CLUSTERING_METHODS, "Please specify a valid Clustering method"
     assert dim_red_method in ClusteringPhenotyper._VALID_DIMRED_METHODS, "Please specify a valid Dimensionality Reduction method"
@@ -306,7 +308,7 @@ class ClusteringPhenotyper(Phenotyper):
   def _predict_proba_kmeans(self, features):
   """Obtain the distances to the kmeans cluster centers for each sample.
   Compute the fraction of distance to each cluster out of the total distance to all clusters to estimate
-  the liklihood of sample association to learned clusters, or groups.
+  the probability of sample association to learned clusters, or groups.
     
   Parameters
   -----------
@@ -315,7 +317,7 @@ class ClusteringPhenotyper(Phenotyper):
         
   Returns
   -----------
-  An numpy array of the likelihoods of sample association to learned clusters. 
+  np.array : A numpy array of probability estimates of sample association to learned clusters. 
         
   """
 
