@@ -21,8 +21,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-"""Functions to compute metrics used to assess survival model performance with additional.
-Includes support to compare survival of sample subgroups as well as treatment and control groups."""
+"""Functions to compute metrics used to assess survival outcomes and survival model 
+performance."""
 
 from sksurv import metrics, util
 from lifelines import KaplanMeierFitter, CoxPHFitter
@@ -140,7 +140,7 @@ def survival_diff_metric(metric, outcomes, treatment_indicator,
 
 def survival_regression_metric(metric, predictions, outcomes, times,
                                folds=None, fold=None):
-  """Compute metrics to assess the survival model performance.
+  """Compute metrics to assess survival model performance.
     
   Parameters
   -----------
@@ -213,20 +213,20 @@ def survival_regression_metric(metric, predictions, outcomes, times,
 def phenotype_purity(phenotypes, outcomes,
                      strategy='instantaneous', folds=None, 
                      fold=None, time=None, bootstrap=None):
-  """Compute the brier score to assess the survival model performance for specific phenotypes.
+  """Compute the brier score to assess survival model performance for specific sample subgroups.
   
   Parameters
   -----------
   phenotypes: np.array
-      A numpy array containing a list of strings corresponding to phenotype names
+      A numpy array containing a list of strings that define subgroups.
   outcomes : pd.DataFrame
       A pandas dataframe with columns 'time' and 'event'.
   strategy: string, default='instantaneous'
       Options include: 
       - 'instantaneous': Predict the Kaplan Meier survival estimate at a certain point in time and compute
           the brier score.
-      - 'integrated' : Predict the Kaplan Meier survival estimate at all unique times points stored in outcomes 
-          and compute the integrated brier score.
+      - 'integrated' : Predict the Kaplan Meier survival estimate at all unique times points and compute 
+          the integrated brier score.
   folds: pd.DataFrame, default=None
       A pandas dataframe of train and test folds.
   fold: int, default=None
@@ -240,7 +240,7 @@ def phenotype_purity(phenotypes, outcomes,
   -----------
   float: 
       The brier score is computed for the 'instantaneous' strategy.
-      The integreted brier scores is computed for the 'integrated' strategy.
+      The integreted brier score is computed for the 'integrated' strategy.
       
   """
 
@@ -322,7 +322,8 @@ def phenotype_purity(phenotypes, outcomes,
 
 
 def __get_restricted_area(km_estimate, horizon):
-  """Compute area under the Kaplan Meier curve (mean survival time) restricted by selected time horizion(s).
+  """Compute area under the Kaplan Meier curve (mean survival time) restricted by 
+  selected time horizion(s).
   
   Parameters
   -----------
@@ -379,7 +380,7 @@ def _restricted_mean_diff(treated_outcomes, control_outcomes, horizon,
   Returns
   -----------
   float : The difference in the area under the Kaplan Meier curve (mean survival time).
-      between the treatment and control groups.
+      between the control and treatment groups.
         
   """
 
@@ -401,8 +402,8 @@ def _restricted_mean_diff(treated_outcomes, control_outcomes, horizon,
 def _survival_at_diff(treated_outcomes, control_outcomes, horizon,
                       treated_weights, control_weights,
                       interpolate=True, size_bootstrap=1.0, random_state=None):
-  """Compute the difference in Kaplan Meier survival estimates between the control and treatments 
-  groups at certain time points. 
+  """Compute the difference in Kaplan Meier survival function estimates between the control and treatment 
+  groups at a specified time horizon.
   
   Parameters
   -----------
@@ -427,8 +428,8 @@ def _survival_at_diff(treated_outcomes, control_outcomes, horizon,
   
   Returns
   -----------
-  pd.Series : A pandas series of the difference in Kaplan Meier estimates for the survival function between
-      the control and treatments groups at specified points in time. 
+  pd.Series : A pandas series of the difference in Kaplan Meier survival estimates between
+      the control and treatment groups at a specified time horizon. 
         
   """
 
@@ -475,7 +476,8 @@ def _time_to_diff(treated_outcomes, control_outcomes, horizon, interpolate=True)
 def _hazard_ratio(treated_outcomes, control_outcomes,
                   treated_weights, control_weights,
                   size_bootstrap=1.0, random_state=None, **kwargs):
-  """Fit a Cox proportional hazards model and return the exp(coefficients) of the model.
+  """Train an instance of the Cox Proportional Hazards model and return the exp(coefficients)
+  (hazard ratios) of the model.
   
   Parameters
   -----------
@@ -498,7 +500,7 @@ def _hazard_ratio(treated_outcomes, control_outcomes,
   
   Returns
   -----------
-  float : The exp(coefficients) of the Cox proportional hazards model.
+  float : The exp(coefficients) (hazard ratios) of the Cox Proportional Hazards model.
   
   """
 

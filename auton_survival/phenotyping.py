@@ -21,8 +21,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-"""Functions to identify sample subgroups for use in comparing survival probability 
-among groups."""
+"""Functions to identify subgroups based on observable characteristics for use 
+in comparing survival probabilities among groups."""
 
 import numpy as np
 import pandas as pd
@@ -56,10 +56,9 @@ class IntersectionalPhenotyper(Phenotyper):
       Either the number of quantiles as an integer or a list-like of quantile floats (inclusive of 0 and 1) 
       used to discretize continuous variables into equal-sized bins.
   features : pd.DataFrame
-      A pandas DataFrame with rows corresponding to samples and columns corresponding to independent variables
-  phenotypes : np.array
-      A numpy array containing a list of strings corresponding to phenotype names from all possible combinations of specified 
-      categorical and numerical variables
+      A pandas dataframe with rows corresponding to samples and columns corresponding to independent variables
+  phenotypes : list
+      List of lists containing all possible combinations of specified categorical and numerical variable values
       
   """
 
@@ -81,16 +80,17 @@ class IntersectionalPhenotyper(Phenotyper):
     self.fitted = False
 
   def fit(self, features):
-  """Fit intersectional phenotyper. Obtain continous variable maximum and minimum and discretized value bins based on defined quantiles.
+  """Obtain discretized value bins based on defined quantiles for continous variables. 
+  Record continuous variable minimum and maximum for data clipping.
     
   Parameters
   -----------
   features : pd.DataFrame
-      A pandas DataFrame with rows corresponding to samples and columns corresponding to independent variables
+      A pandas dataframe with rows corresponding to samples and columns corresponding to independent variables.
         
   Returns
   -----------
-  Objects of continuous variable maximum, minimum, and discretized value bins
+  Trained instance of intersectional phenotyper
         
   """
 
@@ -116,13 +116,12 @@ class IntersectionalPhenotyper(Phenotyper):
   Parameters
   -----------
   features : pd.DataFrame
-      A pandas DataFrame with rows corresponding to samples and columns corresponding to independent variables
+      A pandas dataframe with rows corresponding to samples and columns corresponding to independent variables.
         
   Returns
   -----------
-  phenotypes : np.array
-      A numpy array containing a list of strings corresponding to phenotype names from all possible combinations of specified 
-      categorical and numerical variables
+  np.array : A numpy array containing a list of strings that define subgroups from all possible combinations 
+      of specified categorical and numerical variables.
         
   """
 
@@ -147,7 +146,7 @@ class IntersectionalPhenotyper(Phenotyper):
     return phenotypes
 
   def _rename(self, phenotypes):
-  """Create phenotype names from all possible combinations of specified categorical and numerical variables
+  """Create phenotype category names from all possible combinations of specified categorical and numerical variables.
     
   Parameters
   -----------
@@ -156,7 +155,7 @@ class IntersectionalPhenotyper(Phenotyper):
         
   Returns
   -----------
-  list : python list of a list of strings corresponding to phenotype names
+  list : python list of a list of strings that define subgroups.
         
   """
 
@@ -170,18 +169,17 @@ class IntersectionalPhenotyper(Phenotyper):
     return renamed
 
   def fit_phenotype(self, features):
-  """Fit intersectinal phenotyper to data and return phenotypes
+  """Train an instance of the intersectinal phenotyper and return subgroup .
     
   Parameters
   -----------
   features : pd.DataFrame
-      A pandas DataFrame with rows corresponding to samples and columns corresponding to independent variables
+      A pandas dataframe with rows corresponding to samples and columns corresponding to independent variables.
         
   Returns
   -----------
-  demographics : np.array
-      A numpy array containing a list of lists of strings corresponding to phenotype names from all possible combinations of specified 
-      categorical and numerical variables
+  np.array : A numpy array containing a list of strings that define subgroups from all possible combinations of specified 
+      categorical and numerical variables.
         
   """
 
@@ -190,12 +188,12 @@ class IntersectionalPhenotyper(Phenotyper):
 
 class ClusteringPhenotyper(Phenotyper):
   """Phenotyper that performs dimensionality reduction followed by clustering. Learned clusters are considered phenotypes and used to 
-  group samples based on similar characteristics.
+  group samples based on similar observable characteristics.
 
   Parameters
   -----------
   features : pd.DataFrame
-      A pandas DataFrame with rows corresponding to samples and columns corresponding to independent variables
+      A pandas dataframe with rows corresponding to samples and columns corresponding to independent variables.
   clustering_method : str, default='kmeans'
       The clustering method applied for phenotyping. Options include:
       - 'kmeans' : K-Means clustering'
@@ -278,16 +276,16 @@ class ClusteringPhenotyper(Phenotyper):
       self.dim_red_model = dim_red_model(**d_kwargs)
 
   def fit(self, features):
-  """Fit clustering phenotyper. Perform dimensionality reduction and fit clustering algorithm to the data.
+  """Perform dimensionality reduction and train an instance of the clustering algorithm.
     
   Parameters
   -----------
   features : pd.DataFrame
-      A pandas DataFrame with rows corresponding to samples and columns corresponding to independent variables
+      A pandas dataframe with rows corresponding to samples and columns corresponding to independent variables.
         
   Returns
   -----------
-  Fitted clustering model
+  Trained instance of clustering phenotyper
         
   """
     
@@ -308,7 +306,7 @@ class ClusteringPhenotyper(Phenotyper):
   def _predict_proba_kmeans(self, features):
   """Obtain the distances to the kmeans cluster centers for each sample.
   Compute the fraction of distance to each cluster out of the total distance to all clusters to estimate
-  the probability of sample association to learned clusters, or groups.
+  the probability of sample association to learned clusters, or subgroups.
     
   Parameters
   -----------
@@ -317,7 +315,7 @@ class ClusteringPhenotyper(Phenotyper):
         
   Returns
   -----------
-  np.array : A numpy array of probability estimates of sample association to learned clusters. 
+  np.array : A numpy array of probability estimates of sample association to learned subgroups. 
         
   """
 
@@ -331,16 +329,17 @@ class ClusteringPhenotyper(Phenotyper):
     return probs
 
   def phenotype(self, features):
-  """Peform dimensionality reduction, clustering, and create phenotypes based on the liklihood of sample association to learned clusters
+  """Peform dimensionality reduction, clustering, and create phenotypes based on the probability estimates
+  of sample association to learned clusters, or subgroups.
     
   Parameters
   -----------
   features : pd.DataFrame
-      A pandas DataFrame with rows corresponding to samples and columns corresponding to independent variables
+      A pandas dataframe with rows corresponding to samples and columns corresponding to independent variables.
         
   Returns
   -----------
-  An numpy array of the likelihoods of sample association to learned clusters
+  np.array : A numpy array of the probability estimates of sample association to learned subgroups.
         
   """
  
@@ -354,16 +353,17 @@ class ClusteringPhenotyper(Phenotyper):
       return self._predict_proba_kmeans(features)
  
   def fit_phenotype(self, features):
-  """Fit phenotyper and create phenotypes based on the liklihood of sample association to learned clusters
+  """Train an instance of the clustering phenotyper and identify subgroups based on the probability 
+  estimates of sample association to learned clusters, or subgroups.
     
   Parameters
   -----------
   features : pd.DataFrame
-      A pandas DataFrame with rows corresponding to samples and columns corresponding to independent variables
+      A pandas dataframe with rows corresponding to samples and columns corresponding to independent variables.
         
   Returns
   -----------
-  An numpy array of the likelihoods of sample association to learned clusters
+  np.array : A numpy array of the probability estimates of sample association to learned clusters.
         
   """
 
