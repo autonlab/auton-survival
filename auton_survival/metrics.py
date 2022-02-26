@@ -37,7 +37,7 @@ from tqdm import tqdm
 def survival_diff_metric(metric, outcomes, treatment_indicator,
                          weights=None, horizon=None, interpolate=True,
                          weights_clip=1e-2, n_bootstrap=None, 
-                         size_bootstrap=1.0, random_state=0):
+                         size_bootstrap=1.0, random_seed=0):
 
   """Compute metrics for comparing population level survival outcomes across treatment arms.
 
@@ -52,10 +52,9 @@ def survival_diff_metric(metric, outcomes, treatment_indicator,
       - 'restricted_mean'
       - 'survival_at'
   outcomes : pd.DataFrame
-      A pandas dataframe with columns 'time' and 'event'.
+      A pandas dataframe with rows corresponding to individual samples and columns 'time' and 'event'.
   treatment_indicator : np.array
-      Boolean numpy array of treatment indicators. True means individual was
-      assigned a specific treatment.
+      Boolean numpy array of treatment indicators. True means individual was assigned a specific treatment.
   weights : pd.Series, default=None
       Treatment assignment propensity scores, \( \widehat{\mathbb{P}}(A|X=x) \).
       If None, all weights are set to 0.5.
@@ -66,15 +65,14 @@ def survival_diff_metric(metric, outcomes, treatment_indicator,
   interpolate : bool, default=True
       Whether to interpolate the survival curves.
   weights_clip : float
-      Weights below this value are clipped. This is to ensure IPTW estimation
-      is numerically stable. Large weights can result in estimator with high 
-      variance.
+      Weights below this value are clipped. This is to ensure IPTW estimation is numerically stable.
+      Large weights can result in estimator with high variance.
   n_bootstrap : int, default=None
       The number of bootstrap samples to use.
       If None, bootrapping is not performed.
   size_bootstrap : float, default=1.0
       The fraction of the population to sample for each bootstrap sample.
-  random_state: int, default=0
+  random_seed: int, default=0
       Controls the reproducibility random sampling for bootstrapping.
       
   Returns
@@ -135,7 +133,7 @@ def survival_diff_metric(metric, outcomes, treatment_indicator,
                     treated_weights=iptw_weights[treatment_indicator],
                     control_weights=iptw_weights[~treatment_indicator],
                     size_bootstrap=size_bootstrap,
-                    random_state=random_state*i) for i in range(n_bootstrap)]
+                    random_seed=random_seed*i) for i in range(n_bootstrap)]
 
 
 def survival_regression_metric(metric, predictions, outcomes, times,
@@ -154,7 +152,7 @@ def survival_regression_metric(metric, predictions, outcomes, times,
   predictions: np.array
       A numpy array of survival time predictions for the samples.
   outcomes : pd.DataFrame
-      A pandas dataframe with columns 'time' and 'event'.
+      A pandas dataframe with rows corresponding to individual samples and columns 'time' and 'event'.
   times: np.array
       The time points at which to compute metric value(s).
   folds: pd.DataFrame, default=None
@@ -220,7 +218,7 @@ def phenotype_purity(phenotypes, outcomes,
   phenotypes: np.array
       A numpy array containing a list of strings that define subgroups.
   outcomes : pd.DataFrame
-      A pandas dataframe with columns 'time' and 'event'.
+      A pandas dataframe with rows corresponding to individual samples and columns 'time' and 'event'.
   strategy: string, default='instantaneous'
       Options include: 
       - 'instantaneous': Predict the Kaplan Meier survival estimate at a certain point in time and compute
@@ -322,8 +320,8 @@ def phenotype_purity(phenotypes, outcomes,
 
 
 def __get_restricted_area(km_estimate, horizon):
-  """Compute area under the Kaplan Meier curve (mean survival time) restricted by 
-  selected time horizion(s).
+  """Compute area under the Kaplan Meier curve (mean survival time) restricted by a specified
+  time horizion.
   
   Parameters
   -----------
@@ -352,7 +350,7 @@ def __get_restricted_area(km_estimate, horizon):
 
 def _restricted_mean_diff(treated_outcomes, control_outcomes, horizon,
                           treated_weights, control_weights,
-                          size_bootstrap=1.0, random_state=None, **kwargs):
+                          size_bootstrap=1.0, random_seed=None, **kwargs):
   """Compute the difference in the area under the Kaplan Meier curve (mean survival time) 
   between the treatment and control groups.
   
@@ -372,7 +370,7 @@ def _restricted_mean_diff(treated_outcomes, control_outcomes, horizon,
       A pandas series of the inverse probability of censoring weights for samples that did not receive a specific treatment.
   size_bootstrap : float, default=1.0
       The fraction of the population to sample for each bootstrap sample.
-  random_state: int, default=None
+  random_seed: int, default=None
       Controls the reproducibility random sampling for bootstrapping.
   kwargs : dict
       Additional arguments for the Kaplan Meier estimator??
@@ -384,13 +382,13 @@ def _restricted_mean_diff(treated_outcomes, control_outcomes, horizon,
         
   """
 
-  if random_state is not None:
+  if random_seed is not None:
     treated_outcomes = treated_outcomes.sample(n=int(size_bootstrap*len(treated_outcomes)),
                                                weights=treated_weights,
-                                               random_state=random_state, replace=True)
+                                               random_state=random_seed, replace=True)
     control_outcomes = control_outcomes.sample(n=int(size_bootstrap*len(control_outcomes)),
                                                weights=control_weights,
-                                               random_state=random_state, replace=True)
+                                               random_state=random_seed, replace=True)
 
   treatment_survival = KaplanMeierFitter().fit(treated_outcomes['time'],
                                                treated_outcomes['event'])
@@ -401,7 +399,7 @@ def _restricted_mean_diff(treated_outcomes, control_outcomes, horizon,
 
 def _survival_at_diff(treated_outcomes, control_outcomes, horizon,
                       treated_weights, control_weights,
-                      interpolate=True, size_bootstrap=1.0, random_state=None):
+                      interpolate=True, size_bootstrap=1.0, random_seed=None):
   """Compute the difference in Kaplan Meier survival function estimates between the control and treatment 
   groups at a specified time horizon.
   
@@ -423,7 +421,7 @@ def _survival_at_diff(treated_outcomes, control_outcomes, horizon,
       Whether to interpolate the survival curves.
   size_bootstrap : float, default=1.0
       The fraction of the population to sample for each bootstrap sample.
-  random_state: int, default=None
+  random_seed: int, default=None
       Controls the reproducibility random sampling for bootstrapping.
   
   Returns
@@ -433,13 +431,13 @@ def _survival_at_diff(treated_outcomes, control_outcomes, horizon,
         
   """
 
-  if random_state is not None:
+  if random_seed is not None:
     treated_outcomes = treated_outcomes.sample(n=int(size_bootstrap*len(treated_outcomes)),
                                                weights=treated_weights,
-                                               random_state=random_state, replace=True)
+                                               random_state=random_seed, replace=True)
     control_outcomes = control_outcomes.sample(n=int(size_bootstrap*len(control_outcomes)),
                                                weights=control_weights,
-                                               random_state=random_state, replace=True)
+                                               random_state=random_seed, replace=True)
 
   treatment_survival = KaplanMeierFitter().fit(treated_outcomes['time'], treated_outcomes['event'])
   control_survival = KaplanMeierFitter().fit(control_outcomes['time'], control_outcomes['event'])
@@ -475,7 +473,7 @@ def _time_to_diff(treated_outcomes, control_outcomes, horizon, interpolate=True)
 
 def _hazard_ratio(treated_outcomes, control_outcomes,
                   treated_weights, control_weights,
-                  size_bootstrap=1.0, random_state=None, **kwargs):
+                  size_bootstrap=1.0, random_seed=None, **kwargs):
   """Train an instance of the Cox Proportional Hazards model and return the exp(coefficients)
   (hazard ratios) of the model.
   
@@ -491,7 +489,7 @@ def _hazard_ratio(treated_outcomes, control_outcomes,
       A pandas series of the inverse probability of censoring weights for samples that did not receive a specific treatment.
   size_bootstrap : float, default=1.0
       The fraction of the population to sample for each bootstrap sample.
-  random_state: int, default=None
+  random_seed: int, default=None
       Controls the reproducibility random sampling for bootstrapping.
   kwargs : dict
       Additional arguments for the Cox proportional hazards model.
@@ -504,13 +502,13 @@ def _hazard_ratio(treated_outcomes, control_outcomes,
   
   """
 
-  if random_state is not None:
+  if random_seed is not None:
     treated_outcomes = treated_outcomes.sample(n=int(size_bootstrap*len(treated_outcomes)),
                                                weights=treated_weights,
-                                               random_state=random_state, replace=True)
+                                               random_state=random_seed, replace=True)
     control_outcomes = control_outcomes.sample(n=int(size_bootstrap*len(control_outcomes)),
                                                weights=control_weights,
-                                               random_state=random_state, replace=True)
+                                               random_state=random_seed, replace=True)
 
   treated_outcomes.insert(0, 'treated', 1.0)
   control_outcomes.insert(0, 'treated', 0.0)

@@ -26,7 +26,7 @@
 import numpy as np
 import pandas as pd
 
-def _get_valid_idx(n, size, random_state):
+def _get_valid_idx(n, size, random_seed):
   """Randomly select sample indices to split train and test data.
   
   Parameters:
@@ -36,7 +36,7 @@ def _get_valid_idx(n, size, random_state):
       If an int, the random sample is generated as if it were np.arange(a).
   size : float
       Percentage of n samples to randomly draw.
-  random_state : int
+  random_seed : int
       Controls the reproducibility of randomized indices.
   
   Return:
@@ -46,7 +46,7 @@ def _get_valid_idx(n, size, random_state):
   """
 
   import numpy as np
-  np.random.seed(random_state)
+  np.random.seed(random_seed)
 
 
   validx = sorted(np.random.choice(n, size=(int(size*n)), replace=False))
@@ -55,17 +55,24 @@ def _get_valid_idx(n, size, random_state):
 
   return vidx
 
-def _fit_dcm(features, outcomes, random_state, **hyperparams):
-  """This method is used to train an instance of the Deep Cox Mixtures model.
+def _fit_dcm(features, outcomes, random_seed, **hyperparams):
+  """Train an instance of the Deep Cox Mixtures (DCM) model [1].
+   DCM is an extension to the Cox model, modeling an individual’s survival function using a finite 
+   mixture of K Cox models, with the assignment of an individual i to each latent group mediated by 
+   a gating function.
+    
+  References
+  -----------
+  [1] Nagpal, C., Yadlowsky, S., Rostamzadeh, N., and Heller, K. (2021c). Deep cox mixtures for survival 
+  regression. In Machine Learning for Healthcare Conference, pages 674–708. PMLR
   
   Parameters
   -----------
   features : pd.DataFrame
-      A pandas dataframe with rows corresponding to samples and columns corresponding to independent
-      variables.
+      A pandas dataframe with rows corresponding to individual samples and columns as covariates.
   outcomes : pd.DataFrame
       A pandas dataframe with columns 'time' and 'event'.
-  random_state : int
+  random_seed : int
       Controls the reproducibility of called functions.
   hyperparams : dict
       Optional arguments for the estimator stored in a python dictionary.
@@ -79,14 +86,14 @@ def _fit_dcm(features, outcomes, random_state, **hyperparams):
           Learning is performed on mini-batches of input data. This parameter
           specifies the size of each mini-batch.
       - 'lr' : float, default=1e-3
-          Learning rate for the 'Adam' optimizer
+          Learning rate for the 'Adam' optimizer.
       - 'epochs' : int, default=50
           Number of complete passes through the training data.
       -'smoothing_factor' : int, default=0
   
   Returns
   -----------
-  Trained instance of the Deep Cox Mixtures model
+  Trained instance of the Deep Cox Mixtures model.
   np.array : breslow splines used to interpolate baseline survival rates.
   np.array : A float or list of the times at which to compute the survival probability.
         
@@ -96,8 +103,8 @@ def _fit_dcm(features, outcomes, random_state, **hyperparams):
   from sdcm.dcm_utils import train
 
   import torch
-  torch.manual_seedrandom_state)
-  np.random.seed(random_state)
+  torch.manual_seed(random_seed)
+  np.random.seed(random_seed)
 
   k = hyperparams.get("k", 3) 
   layers = hyperparams.get("layers", [100])
@@ -113,7 +120,7 @@ def _fit_dcm(features, outcomes, random_state, **hyperparams):
   t = torch.from_numpy(outcomes['time'].values.astype('float32'))
   e = torch.from_numpy(outcomes['event'].values.astype('float32'))
 
-  vidx = _get_valid_idx(x.shape[0], 0.15, random_state)
+  vidx = _get_valid_idx(x.shape[0], 0.15, random_seed)
 
   train_data = (x[~vidx], t[~vidx], e[~vidx])
   val_data = (x[vidx], t[vidx], e[vidx])
@@ -132,8 +139,7 @@ def _predict_dcm(model, features, times):
   -----------
   model : Trained instance of the Deep Cox Mixtures model.
   features : pd.DataFrame
-      A pandas dataframe with rows corresponding to samples and columns corresponding to independent
-      variables.
+      A pandas dataframe with rows corresponding to individual samples and columns as covariates.
   times: float or list
       A float or list of the times at which to compute the survival probability.
   
@@ -156,18 +162,25 @@ def _predict_dcm(model, features, times):
   else:
     return survival_predictions
 
-def _fit_dcph(features, outcomes, random_state, **hyperparams):
-  """This method is used to train an instance of the Deep Cox Mixtures model.
+def _fit_dcph(features, outcomes, random_seed, **hyperparams):
+  """Train an instance of the Deep Cox Mixtures (DCM) model [1].
+   DCM is an extension to the Cox model, modeling an individual’s survival function using a finite 
+   mixture of K Cox models, with the assignment of an individual i to each latent group mediated by 
+   a gating function.
+    
+  References
+  -----------
+  [1] Nagpal, C., Yadlowsky, S., Rostamzadeh, N., and Heller, K. (2021c). Deep cox mixtures for survival 
+  regression. In Machine Learning for Healthcare Conference, pages 674–708. PMLR
   
   Parameters:
   -----------
   features : pd.DataFrame
-      A pandas dataframe with rows corresponding to samples and columns corresponding to independent
-      variables.
+      A pandas dataframe with rows corresponding to individual samples and columns as covariates.
   outcomes : pd.DataFrame
       A pandas dataframe with columns 'time' and 'event'.
-  random_state : int
-      Controls the reproducibility of called functions
+  random_seed : int
+      Controls the reproducibility of called functions.
   hyperparams : dict
       Optional arguments for the estimator stored in a python dictionary.
       Keys correspond to parameter names as strings and items correspond to parameter values.
@@ -175,7 +188,7 @@ def _fit_dcph(features, outcomes, random_state, **hyperparams):
       - 'layers' : list, default=[100]
           A list consisting of the number of neurons in each hidden layer.
       - 'lr' : float, default=1e-3
-          Learning rate for the 'Adam' optimizer
+          Learning rate for the 'Adam' optimizer.
       - 'bs' : int, default=100
           Learning is performed on mini-batches of input data. 
           This parameter specifies the size of each mini-batch.
@@ -196,8 +209,8 @@ def _fit_dcph(features, outcomes, random_state, **hyperparams):
 
   from pycox.models import CoxPH
 
-  torch.manual_seed(random_state)
-  np.random.seed(random_state)
+  torch.manual_seed(random_seed)
+  np.random.seed(random_seed)
 
   layers = hyperparams.get('layers', [100])
   lr = hyperparams.get('lr', 1e-3)
@@ -226,7 +239,7 @@ def _fit_dcph(features, outcomes, random_state, **hyperparams):
 
   model = CoxPH(net, torch.optim.Adam)
 
-  vidx = _get_valid_idx(x.shape[0], 0.15, random_state)
+  vidx = _get_valid_idx(x.shape[0], 0.15, random_seed)
 
   y_train, y_val = (t[~vidx], e[~vidx]), (t[vidx], e[vidx])
   val_data = x[vidx], y_val
@@ -270,8 +283,7 @@ def _predict_dcph(model, features, times):
   -----------
   model : Trained instance of the Deep Cox Mixtures model.
   features : pd.DataFrame
-      A pandas dataframe with rows corresponding to samples and columns corresponding to independent
-      variables.
+      A pandas dataframe with rows corresponding to individual samples and columns as covariates.
   times: float or list
       A float or list of the times at which to compute the survival probability.
   
@@ -289,17 +301,16 @@ def _predict_dcph(model, features, times):
   return __interpolate_missing_times(survival_predictions, times)
 
 
-def _fit_cph(features, outcomes, random_state, **hyperparams):
+def _fit_cph(features, outcomes, random_seed, **hyperparams):
   """This method is used to train an instance of the Cox Proportional Hazards model.
   
   Parameters
   -----------
   features : pd.DataFrame
-      A pandas dataframe with rows corresponding to samples and columns corresponding to independent
-      variables.
+      A pandas dataframe with rows corresponding to individual samples and columns as covariates.
   outcomes : pd.DataFrame
       A pandas dataframe with columns 'time' and 'event'.
-  random_state : int
+  random_seed : int
       Controls the reproducibility of called functions.
   hyperparams : dict
       Optional arguments for the estimator stored in a python dictionary.
@@ -321,10 +332,10 @@ def _fit_cph(features, outcomes, random_state, **hyperparams):
 
   return CoxPHFitter(penalizer=penalizer).fit(data, duration_col='time', event_col='event')
 
-def _fit_rsf(features, outcomes, random_state, **hyperparams):
-  """This method is used to train an instance of the Random Survival Forests model [1]. 
-  Random Survival Forests [1] is an extension of Random Forests to the survival settings where risk 
-  scores are computed by creating Nelson-Aalen estimators in the splits induced by the Random Forest.
+def _fit_rsf(features, outcomes, random_seed, **hyperparams):
+  """Train an instance of the Random Survival Forests (RSF) model [1]. 
+  RSF is an extension of Random Forests to the survival settings where risk scores are 
+  computed by creating Nelson-Aalen estimators in the splits induced by the Random Forest.
   
   References
   -----------
@@ -334,22 +345,21 @@ def _fit_rsf(features, outcomes, random_state, **hyperparams):
   Parameters
   -----------
   features : pd.DataFrame
-      A pandas dataframe with rows corresponding to samples and columns corresponding to independent
-      variables.
+      A pandas dataframe with rows corresponding to individual samples and columns as covariates.
   outcomes : pd.DataFrame
       A pandas dataframe with columns 'time' and 'event'.
-  random_state : int
+  random_seed : int
       Controls the reproducibility of called functions.
   hyperparams : dict
       Optional arguments for the estimator stored in a python dictionary.
       Keys correspond to parameter names as strings and items correspond to parameter values.
       Options include:
       - 'n_estimaters' : int, default=50
-          Number of trees
+          Number of trees.
       - 'max_depth' : int, default=5
-          Maximum depth of the tree
+          Maximum depth of the tree.
       - 'max_features' : str, default='sqrt'
-          Number of features to consider when looking for the best split
+          Number of features to consider when looking for the best split.
   
   Returns
   -----------
@@ -368,7 +378,7 @@ def _fit_rsf(features, outcomes, random_state, **hyperparams):
   rsf = RandomSurvivalForest(n_estimators=n_estimators,
                              max_depth=max_depth,
                              max_features=max_features,
-                             random_state=random_state, 
+                             random_state=random_seed, 
                              n_jobs=-1)
 
   y =  Surv.from_dataframe('event', 'time', outcomes)
@@ -377,18 +387,25 @@ def _fit_rsf(features, outcomes, random_state, **hyperparams):
   return rsf
 
 
-def _fit_dsm(features, outcomes, random_state, **hyperparams):
-  """This method is used to train an instance of the Deep Survival Machines model.
+def _fit_dsm(features, outcomes, random_seed, **hyperparams):
+  """Train an instance of the Deep Survival Machines (DSM) model [1].
+  DSM is a fully parametric approach and improves on the Accelerated Failure Time model by 
+  modelling the event time distribution as a fixed size mixture over Weibull or Log-Normal 
+  distributions.
+  
+  References
+  -----------
+  [1] Chirag Nagpal, Xinyu Li, and Artur Dubrawski. Deep survival machines: Fully parametric
+  survival regression and representation learning for censored data with competing risks. 2020.
   
   Parameters
   -----------
   features : pd.DataFrame
-      A pandas dataframe with rows corresponding to samples and columns corresponding to independent
-      variables.
+      A pandas dataframe with rows corresponding to individual samples and columns as covariates.
   outcomes : pd.DataFrame
       A pandas dataframe with columns 'time' and 'event'.
-  random_state : int
-      Controls the reproducibility of called functions
+  random_seed : int
+      Controls the reproducibility of called functions.
   hyperparams : dict
       Optional arguments for the estimator stored in a python dictionary.
       Keys correspond to parameter names as strings and items correspond to parameter values.
@@ -435,8 +452,7 @@ def _predict_dsm(model, features, times):
   -----------
   model : Trained instance of the Deep Suvival Machines model.
   features : pd.DataFrame
-      A pandas dataframe with rows corresponding to samples and columns corresponding to independent
-      variables.
+      A pandas dataframe with rows corresponding to individual samples and columns as covariates.
   times: float or list
       A float or list of the times at which to compute the survival probability.
   
@@ -455,8 +471,7 @@ def _predict_cph(model, features, times):
   -----------
   model : Trained instance of the Cox Proportional Hazards model.
   features : pd.DataFrame
-      A pandas dataframe with rows corresponding to samples and columns corresponding to independent
-      variables.
+      A pandas dataframe with rows corresponding to individual samples and columns as covariates.
   times: float or list
       A float or list of the times at which to compute the survival probability.
   
@@ -476,8 +491,7 @@ def _predict_rsf(model, features, times):
   -----------
   model : Trained instance of the Random Survival Forests model.
   features : pd.DataFrame
-      A pandas dataframe with rows corresponding to samples and columns corresponding to independent
-      variables.
+      A pandas dataframe with rows corresponding to individual samples and columns as covariates.
   times: float or list
       A float or list of the times at which to compute the survival probability.
   
@@ -503,8 +517,7 @@ def _predict_dcm(model, features, times):
   -----------
   model : Trained instance of the Deep Cox Mixtures model.
   features : pd.DataFrame
-      A pandas dataframe with rows corresponding to samples and columns corresponding to independent
-      variables.
+      A pandas dataframe with rows corresponding to individual samples and columns as covariates.
   times: float or list
       A float or list of the times at which to compute the survival probability.
   
@@ -533,37 +546,36 @@ class SurvivalModel:
 
   _VALID_MODELS = ['rsf', 'cph', 'dsm', 'dcph', 'dcm']
 
-  def __init__(self, model, random_state=0, **hyperparams):
+  def __init__(self, model, random_seed=0, **hyperparams):
 
     assert model in SurvivalModel._VALID_MODELS
 
     self.model = model
     self.hyperparams = hyperparams
-    self.random_state = random_state
+    self.random_seed = random_seed
     self.fitted = False
 
   def fit(self, features, outcomes):
-  """This method is used to train an instance of the survival model.
+  """Train an instance of the survival model.
   
   Parameter
   -----------
   features : pd.DataFrame
-      A pandas dataframe with rows corresponding to samples and columns corresponding to independent
-      variables.
+      A pandas dataframe with rows corresponding to individual samples and columns as covariates.
   outcomes : pd.DataFrame
       A pandas dataframe with columns 'time' and 'event'.
   
   Returns
   -----------
-  Trained an instance of the survival model.
+  Trained instance of the survival model.
         
   """
 
-    if self.model == 'cph': self._model = _fit_cph(features, outcomes, self.random_state, **self.hyperparams)
-    elif self.model == 'rsf': self._model = _fit_rsf(features, outcomes, self.random_state, **self.hyperparams)
-    elif self.model == 'dsm': self._model = _fit_dsm(features, outcomes, self.random_state, **self.hyperparams)
-    elif self.model == 'dcph': self._model = _fit_dcph(features, outcomes, self.random_state, **self.hyperparams)
-    elif self.model == 'dcm': self._model = _fit_dcm(features, outcomes, self.random_state, **self.hyperparams)
+    if self.model == 'cph': self._model = _fit_cph(features, outcomes, self.random_seed, **self.hyperparams)
+    elif self.model == 'rsf': self._model = _fit_rsf(features, outcomes, self.random_seed, **self.hyperparams)
+    elif self.model == 'dsm': self._model = _fit_dsm(features, outcomes, self.random_seed, **self.hyperparams)
+    elif self.model == 'dcph': self._model = _fit_dcph(features, outcomes, self.random_seed, **self.hyperparams)
+    elif self.model == 'dcm': self._model = _fit_dcm(features, outcomes, self.random_seed, **self.hyperparams)
     else : raise NotImplementedError()
     self.fitted = True
     return self
@@ -574,8 +586,7 @@ class SurvivalModel:
   Parameter
   -----------
   features : pd.DataFrame
-      A pandas dataframe with rows corresponding to samples and columns corresponding to independent
-      variables.
+      A pandas dataframe with rows corresponding to individual samples and columns as covariates.
   times: float or list
       A float or list of the times at which to compute the survival probability.
         
@@ -594,8 +605,7 @@ class SurvivalModel:
   Parameter
   -----------
   features : pd.DataFrame
-      A pandas dataframe with rows corresponding to samples and columns corresponding to independent
-      variables.
+      A pandas dataframe with rows corresponding to individual samples and columns as covariates.
   times: float or list
       A float or list of the times at which to compute the survival probability.
       
@@ -628,8 +638,7 @@ class CounterfactualSurvivalModel:
   Parameter
   -----------
   features : pd.DataFrame
-      A pandas dataframe with rows corresponding to samples and columns corresponding to independent
-      variables.
+      A pandas dataframe with rows corresponding to individual samples and columns as covariates.
   times: float or list
       A float or list of the times at which to compute the survival probability.
   
@@ -647,8 +656,7 @@ class CounterfactualSurvivalModel:
   Parameter
   -----------
   features : pd.DataFrame
-      A pandas dataframe with rows corresponding to samples and columns corresponding to independent
-      variables.
+      A pandas dataframe with rows corresponding to individual samples and columns as covariates.
   times: float or list
       A float or list of the times at which to compute the survival probability.
   
@@ -669,14 +677,13 @@ class DCMSubgroupModel(CounterfactualSurvivalModel):
 
   Parameters
   -----------
-  random_state : int, default=0
-      Controls the reproducibility of called functions
+  random_seed : int, default=0
+      Controls the reproducibility of called functions.
   hyperparams : dict
       Optional arguments for the estimator stored in a python dictionary.
       Keys correspond to parameter names as strings and items correspond to parameter values.
   features : pd.DataFrame
-      A pandas dataframe with rows corresponding to samples and columns corresponding to independent
-      variables.
+      A pandas dataframe with rows corresponding to individual samples and columns as covariates.
   outcomes : pd.DataFrame
       A pandas dataframe with columns 'time' and 'event'.
   intervention_col : str
@@ -686,10 +693,10 @@ class DCMSubgroupModel(CounterfactualSurvivalModel):
   
   """
 
-  def __init__(self, random_state=0, **hyperparams):
+  def __init__(self, random_seed=0, **hyperparams):
 
     self.fitted = False
-    self.random_state = random_state
+    self.random_seed = random_seed
     self.hyperparams = hyperparams
 
   def fit(self, features, outcomes, intervention_col):
@@ -698,7 +705,7 @@ class DCMSubgroupModel(CounterfactualSurvivalModel):
   Parameters
   -----------
   features : pd.DataFrame
-      A pandas dataframe with rows corresponding to samples and columns corresponding to independent variables.
+      A pandas dataframe with rows corresponding to individual samples and columns as covariates.
   outcomes : pd.DataFrame
       A pandas dataframe with columns 'time' and 'event'.
   intervention_col : str
@@ -717,8 +724,8 @@ class DCMSubgroupModel(CounterfactualSurvivalModel):
     from sdcm.dcm_subgroup_utils import train
 
     import torch
-    torch.manual_seed(self.random_state)
-    np.random.seed(self.random_state)
+    torch.manual_seed(self.random_seed)
+    np.random.seed(self.random_seed)
 
     k = self.hyperparams.get("k", 3) 
     g = self.hyperparams.get("g", 2)
@@ -736,7 +743,7 @@ class DCMSubgroupModel(CounterfactualSurvivalModel):
     e = torch.from_numpy(outcomes['event'].values.astype('float32'))
     a = torch.from_numpy(features[intervention_col].values.astype('float32'))
 
-    vidx = _get_valid_idx(x.shape[0], 0.15, self.random_state)
+    vidx = _get_valid_idx(x.shape[0], 0.15, self.random_seed)
 
     train_data = (x[~vidx], t[~vidx], e[~vidx], a[~vidx])
     val_data = (x[vidx], t[vidx], e[vidx], a[vidx])
@@ -754,8 +761,7 @@ class DCMSubgroupModel(CounterfactualSurvivalModel):
   Parameter
   -----------
   features : pd.DataFrame
-      A pandas DataFrame with rows corresponding to samples and columns corresponding to independent
-      variables
+      A pandas dataframe with rows corresponding to individual samples and columns as covariates.
   times: float or list
       A float or list of the times at which to compute the survival probability.
   
@@ -780,8 +786,7 @@ class DCMSubgroupModel(CounterfactualSurvivalModel):
   Parameters
   -----------
   features : pd.DataFrame
-      A pandas DataFrame with rows corresponding to samples and columns corresponding to independent
-      variables.
+      A pandas dataframe with rows corresponding to individual samples and columns as covariates.
   times: float or list
       A float or list of the times at which to compute the survival probability.
   
