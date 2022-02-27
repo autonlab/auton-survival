@@ -21,7 +21,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-"""Functions to train instances of survival regression models and to compute survival predictions."""
+"""Functions to train survival regression models and compute survival predictions."""
 
 import numpy as np
 import pandas as pd
@@ -56,7 +56,7 @@ def _get_valid_idx(n, size, random_seed):
   return vidx
 
 def _fit_dcm(features, outcomes, random_seed, **hyperparams):
-  """Train an instance of the Deep Cox Mixtures (DCM) model [1].
+  """Fit the Deep Cox Mixtures (DCM) [1] model to a given dataset.
    DCM is an extension to the Cox model, modeling an individual’s survival function using a finite 
    mixture of K Cox models, with the assignment of an individual i to each latent group mediated by 
    a gating function.
@@ -163,7 +163,7 @@ def _predict_dcm(model, features, times):
     return survival_predictions
 
 def _fit_dcph(features, outcomes, random_seed, **hyperparams):
-  """Train an instance of the Deep Cox Mixtures (DCM) model [1].
+  """Fit the Deep Cox Mixtures (DCM) [1] model to a given dataset.
    DCM is an extension to the Cox model, modeling an individual’s survival function using a finite 
    mixture of K Cox models, with the assignment of an individual i to each latent group mediated by 
    a gating function.
@@ -302,7 +302,7 @@ def _predict_dcph(model, features, times):
 
 
 def _fit_cph(features, outcomes, random_seed, **hyperparams):
-  """This method is used to train an instance of the Cox Proportional Hazards model.
+  """Fit the Cox Proportional Hazards model to a given dataset.
   
   Parameters
   -----------
@@ -333,7 +333,7 @@ def _fit_cph(features, outcomes, random_seed, **hyperparams):
   return CoxPHFitter(penalizer=penalizer).fit(data, duration_col='time', event_col='event')
 
 def _fit_rsf(features, outcomes, random_seed, **hyperparams):
-  """Train an instance of the Random Survival Forests (RSF) model [1]. 
+  """Fit the Random Survival Forests (RSF) [1] model to a given dataset. 
   RSF is an extension of Random Forests to the survival settings where risk scores are 
   computed by creating Nelson-Aalen estimators in the splits induced by the Random Forest.
   
@@ -388,7 +388,7 @@ def _fit_rsf(features, outcomes, random_seed, **hyperparams):
 
 
 def _fit_dsm(features, outcomes, random_seed, **hyperparams):
-  """Train an instance of the Deep Survival Machines (DSM) model [1].
+  """Fit the Deep Survival Machines (DSM) [1] model to a given dataset.
   DSM is a fully parametric approach and improves on the Accelerated Failure Time model by 
   modelling the event time distribution as a fixed size mixture over Weibull or Log-Normal 
   distributions.
@@ -556,7 +556,7 @@ class SurvivalModel:
     self.fitted = False
 
   def fit(self, features, outcomes):
-  """Train an instance of the survival model.
+  """This method is used to train an instance of the survival model.
   
   Parameter
   -----------
