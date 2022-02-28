@@ -47,21 +47,21 @@ class SurvivalRegressionCV:
     best_model = {}
     best_score = np.inf
 
-    for hyper_param in tqdm(self.hyperparam_grid):    
+    for hyper_param in tqdm(self.hyperparam_grid):
 
       predictions = np.zeros((len(features), len(unique_times)))
 
       fold_models = {}
       for fold in tqdm(range(self.cv_folds)):
         # Fit the model
-        fold_model = SurvivalModel(model=self.model, random_seed=self.random_seed, **hyper_param)      
+        fold_model = SurvivalModel(model=self.model, random_seed=self.random_seed, **hyper_param)    
         fold_model.fit(features.loc[folds!=fold], outcomes.loc[folds!=fold])
-        fold_models[fold] = fold_model 
+        fold_models[fold] = fold_model
 
         # Predict risk scores
         predictions[folds==fold] = fold_model.predict_survival(features.loc[folds==fold], times=unique_times)
         # Evaluate IBS
-      score_per_fold = [] 
+      score_per_fold = []
       for fold in range(self.cv_folds):
         score = survival_regression_metric('ibs', predictions, outcomes, unique_times, folds, fold)
         score_per_fold.append(score)
@@ -70,8 +70,8 @@ class SurvivalRegressionCV:
 
       if current_score < best_score:
         best_score = current_score
-        best_model = fold_models    
-        best_hyper_param = hyper_param 
+        best_model = fold_models
+        best_hyper_param = hyper_param
         best_predictions = predictions
 
     self.best_hyperparameter = best_hyper_param

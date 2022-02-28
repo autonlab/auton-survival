@@ -30,7 +30,7 @@ def survival_diff_metric(metric, outcomes, treatment_indicator,
       assigned treatment.
   weights : pd.Series
       Treatment assignment propensity scores, \( \widehat{\mathbb{P}}(A|X=x) \).
-      If None, all weights are set to 0.5. Default is None.
+      If `None`, all weights are set to \( 0.5 \). Default is `None`.
   horizon : float
       The time horizon at which to compare the survival curves.
       Must be specified for metric 'restricted_mean' and 'survival_at'.
