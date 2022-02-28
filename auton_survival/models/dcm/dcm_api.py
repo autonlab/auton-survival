@@ -1,8 +1,8 @@
 import torch
 import numpy as np
 
-from dsm.contrib.dcm.dcm_torch import DeepCoxMixturesTorch
-from dsm.contrib.dcm.dcm_utilities import train_dcm, predict_survival, predict_latent_z
+from .dcm_torch import DeepCoxMixturesTorch
+from .dcm_utilities import train_dcm, predict_survival, predict_latent_z
 
 
 class DeepCoxMixtures:
