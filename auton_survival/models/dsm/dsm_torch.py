@@ -34,7 +34,6 @@ Note: NOT DESIGNED TO BE CALLED DIRECTLY!!!
 
 import torch
 from torch import nn
-import numpy as np
 
 __pdoc__ = {}
 
@@ -46,7 +45,7 @@ for clsn in ['DeepSurvivalMachinesTorch',
     __pdoc__[clsn+'.'+membr] = False
 
 
-def create_representation(inputdim, layers, activation):
+def create_representation(inputdim, layers, activation, bias=False):
   r"""Helper function to generate the representation function for DSM.
 
   Deep Survival Machines learns a representation (\ Phi(X) \) for the input
@@ -85,7 +84,7 @@ def create_representation(inputdim, layers, activation):
   prevdim = inputdim
 
   for hidden in layers:
-    modules.append(nn.Linear(prevdim, hidden, bias=False))
+    modules.append(nn.Linear(prevdim, hidden, bias=bias))
     modules.append(act)
     prevdim = hidden
 
@@ -257,7 +256,7 @@ class DeepRecurrentSurvivalMachinesTorch(DeepSurvivalMachinesTorch):
                hidden=None, dist='Weibull',
                temp=1000., discount=1.0,
                optimizer='Adam', risks=1):
-               
+           
     super(DeepSurvivalMachinesTorch, self).__init__()
 
     self.k = k
