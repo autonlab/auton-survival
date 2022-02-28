@@ -33,7 +33,7 @@ def partial_ll_loss(lrisks, tb, eb, eps=1e-3):
   return -pll
 
 def fit_breslow(model, x, t, e):
-  return BreslowEstimator().fit(model(x).detach().cpu().numpy(), 
+  return BreslowEstimator().fit(model(x).detach().cpu().numpy(),
                                 e.numpy(), t.numpy())
 
 def train_step(model, x, t, e, optimizer, bs=256, seed=100):
@@ -165,4 +165,4 @@ def __interpolate_missing_times(survival_predictions, times):
 
   for idx in not_in_index:
     survival_predictions.loc[idx] = nans
-  return survival_predictions.sort_index(axis=0).interpolate().interpolate(method='bfill').T[times].values
+  return survival_predictions.sort_index(axis=0).interpolate(method='bfill').T[times].values
