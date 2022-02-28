@@ -259,7 +259,7 @@ def train_step(model, x, t, e, a, breslow_splines, optimizer,
   return breslow_splines
 
 
-def test_step(model, x, t, e, a, breslow_splines, loss='q', typ='soft'):    
+def test_step(model, x, t, e, a, breslow_splines, loss='q', typ='soft'):
 
   if loss == 'q':
     with torch.no_grad():
@@ -330,6 +330,7 @@ def predict_survival(model, x, a, t):
   if isinstance(t, (int, float)): t = [t]
 
   model, breslow_splines = model
+  
   gates, lrisks = model(x, a=a)
 
   lrisks = lrisks.detach().numpy()
