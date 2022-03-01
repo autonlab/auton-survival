@@ -21,7 +21,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-"""Functions to identify subgroups for use in comparing survival probabilities among groups."""
+"""Tools to identify subgroups for use in comparing survival probabilities among groups."""
 
 import numpy as np
 import pandas as pd
@@ -183,7 +183,6 @@ class IntersectionalPhenotyper(Phenotyper):
   """
 
     return self.fit(features).phenotype(features)
-
 
 class ClusteringPhenotyper(Phenotyper):
   """Phenotyper that performs dimensionality reduction followed by clustering. Learned clusters are considered phenotypes 
@@ -367,14 +366,9 @@ class ClusteringPhenotyper(Phenotyper):
     return self.fit(features).phenotype(features)
 
 class CoxMixturePhenotyper(Phenotyper):
-"""TO-DO: ADD DESCRIPTION
-
-"""
+"""Not implemented."""
 
   def __init__(self):
-  """TO-DO: ADD DESCRIPTION
-        
-  """
 
     raise NotImplementedError()
 

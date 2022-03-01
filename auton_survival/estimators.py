@@ -21,7 +21,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-"""Functions to train survival regression models and compute survival predictions."""
+"""Tools to train survival regression models and compute survival predictions."""
 
 import numpy as np
 import pandas as pd
@@ -274,7 +274,6 @@ def __interpolate_missing_times(survival_predictions, times):
   for idx in not_in_index:
     survival_predictions.loc[idx] = nans
   return survival_predictions.sort_index(axis=0).interpolate().interpolate(method='bfill').T[times].values
-
 
 def _predict_dcph(model, features, times):
   """Predict survival probabilities at specified time(s) using the Deep Cox Mixtures model.
@@ -540,9 +539,26 @@ def _predict_dcm(model, features, times):
 
   return __interpolate_missing_times(survival_predictions, times)
 
-
 class SurvivalModel:
-  """Base class for survival models."""
+  """Base class for survival models:
+  - 'rsf' : Random Survival Forests [1] model
+  - 'cph' : Cox Proportional Hazards [2] model
+  - 'dsm' : Deep Survival Machines [3] model
+  - 'dcph' : Deep Cox Mixtures [4] model
+  - 'dcm' : Deep Cox Mixtures [4] model
+
+  References
+  -----------
+  [1] Hemant Ishwaran, Udaya B Kogalur, Eugene H Blackstone, Michael S Lauer, et al. Random
+  survival forests. The annals of applied statistics, 2(3):841–860, 2008.
+  [2] Cox, D. R. (1972). Regression models and life-tables. Journal of the Royal Statistical Society: 
+  Series B (Methodological).
+  [3] Chirag Nagpal, Xinyu Li, and Artur Dubrawski. Deep survival machines: Fully parametric
+  survival regression and representation learning for censored data with competing risks. 2020.
+  [4] Nagpal, C., Yadlowsky, S., Rostamzadeh, N., and Heller, K. (2021c). Deep cox mixtures for survival 
+  regression. In Machine Learning for Healthcare Conference, pages 674–708. PMLR
+  
+  """
 
   _VALID_MODELS = ['rsf', 'cph', 'dsm', 'dcph', 'dcm']
 
@@ -633,39 +649,12 @@ class CounterfactualSurvivalModel:
     self.control_model = control_model
 
   def predict(self, features, times):
-  """Predict outcomes at specified time(s).
-  
-  Parameter
-  -----------
-  features : pd.DataFrame
-      A pandas dataframe with rows corresponding to individual samples and columns as covariates.
-  times: float or list
-      A float or list of the times at which to compute the survival probability.
-  
-  Returns
-  -----------
-  np.array : A numpy array of predicted outcomes.??
-        
-  """
+  """Not implemented."""
 
     raise NotImplementedError()
 
   def predict_counterfactual(self, features, times):
-  """Predict survival outcomes at specified time(s)?
-  
-  Parameter
-  -----------
-  features : pd.DataFrame
-      A pandas dataframe with rows corresponding to individual samples and columns as covariates.
-  times: float or list
-      A float or list of the times at which to compute the survival probability.
-  
-  Returns
-  -----------
-  treated_outcomes : Predict outcomes for the treated group at each time point in times.??
-  control_outcomes : Predict outcomes for the control group at each time point in times.??
-        
-  """
+  """Not implemented."""
     
     control_outcomes = self.control_model.predict(features, times)
     treated_outcomes = self.treated_model.predict(features, times)

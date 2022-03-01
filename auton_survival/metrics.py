@@ -21,8 +21,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-"""Functions to compute metrics used to assess survival outcomes and survival model 
-performance."""
+"""Tools to compute metrics used to assess survival outcomes and survival model performance."""
 
 from sksurv import metrics, util
 from lifelines import KaplanMeierFitter, CoxPHFitter
@@ -135,7 +134,6 @@ def survival_diff_metric(metric, outcomes, treatment_indicator,
                     size_bootstrap=size_bootstrap,
                     random_seed=random_seed*i) for i in range(n_bootstrap)]
 
-
 def survival_regression_metric(metric, predictions, outcomes, times,
                                folds=None, fold=None):
   """Compute metrics to assess survival model performance.
@@ -162,7 +160,7 @@ def survival_regression_metric(metric, predictions, outcomes, times,
   
   Returns
   -----------
-  float or list: The metric value(s) for the specified metric.
+  float: The metric value for the specified metric.
         
   """
 
@@ -211,7 +209,7 @@ def survival_regression_metric(metric, predictions, outcomes, times,
 def phenotype_purity(phenotypes, outcomes,
                      strategy='instantaneous', folds=None, 
                      fold=None, time=None, bootstrap=None):
-  """Compute the brier score to assess survival model performance for specific sample subgroups.
+  """Compute the brier score to assess survival model performance for phenotypes.
   
   Parameters
   -----------
@@ -318,7 +316,6 @@ def phenotype_purity(phenotypes, outcomes,
   else:
     raise NotImplementedError()
 
-
 def __get_restricted_area(km_estimate, horizon):
   """Compute area under the Kaplan Meier curve (mean survival time) restricted by a specified
   time horizion.
@@ -347,12 +344,11 @@ def __get_restricted_area(km_estimate, horizon):
 
   return auc(x, y)
 
-
 def _restricted_mean_diff(treated_outcomes, control_outcomes, horizon,
                           treated_weights, control_weights,
                           size_bootstrap=1.0, random_seed=None, **kwargs):
   """Compute the difference in the area under the Kaplan Meier curve (mean survival time) 
-  between the treatment and control groups.
+  between control and treatment groups.
   
   Parameters
   -----------
@@ -378,7 +374,7 @@ def _restricted_mean_diff(treated_outcomes, control_outcomes, horizon,
   Returns
   -----------
   float : The difference in the area under the Kaplan Meier curve (mean survival time).
-      between the control and treatment groups.
+      between control and treatment groups.
         
   """
 
@@ -445,7 +441,7 @@ def _survival_at_diff(treated_outcomes, control_outcomes, horizon,
   return treatment_survival.predict(horizon, interpolate=interpolate) - control_survival.predict(horizon, interpolate=interpolate)
 
 def _time_to_diff(treated_outcomes, control_outcomes, horizon, interpolate=True):
-  """Compute the time until survival differences are distinguished between the control and treatment groups??
+  """Not implemented.
   
   Parameters
   -----------
@@ -459,10 +455,6 @@ def _time_to_diff(treated_outcomes, control_outcomes, horizon, interpolate=True)
       For 'hazard_ratio' this is ignored.
   interpolate : bool, default=True
       Whether to interpolate the survival curves.
-  
-  Returns
-  -----------
-  float : Amount of time until survival differences are distinguished between the control and treatment groups???
   
   """  
 
@@ -498,7 +490,7 @@ def _hazard_ratio(treated_outcomes, control_outcomes,
   
   Returns
   -----------
-  float : The exp(coefficients) (hazard ratios) of the Cox Proportional Hazards model.
+  pd.Series : The exp(coefficients) (hazard ratios) of the Cox Proportional Hazards model.
   
   """
 
