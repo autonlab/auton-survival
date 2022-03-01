@@ -60,6 +60,9 @@ Example Usage
 Deep Recurrent Survival Machines
 --------------------------------
 
+<img width=100% src=https://ndownloader.figshare.com/files/28329918>
+
+
 **Deep Recurrent Survival Machines (DRSM)** builds on the original **DSM**
 model and allows for learning of representations of the input covariates using
 **Recurrent Neural Networks** like **LSTMs, GRUs**. Deep Recurrent Survival

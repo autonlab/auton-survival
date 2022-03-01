@@ -91,7 +91,6 @@ def create_representation(inputdim, layers, activation, bias=False):
   return nn.Sequential(*modules)
 
 
-
 class DeepSurvivalMachinesTorch(torch.nn.Module):
   """A Torch implementation of Deep Survival Machines model.
 
