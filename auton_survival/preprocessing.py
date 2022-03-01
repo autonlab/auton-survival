@@ -10,24 +10,25 @@ sys.modules['sklearn.neighbors.base'] = sklearn.neighbors._base
 
 class Imputer:
 
-  r"""Imputation is the first key aspect of the preprocessing workflow.
-    It replaces null values, allowing the machine learning process to continue.
-    This class includes separate implementations for categorical and
-    numerical/continuous features.
+  r"""A class to impute missing values in the input features.
 
-    For categorical features, the user can choose between the
-    following strategies:
+    Real world datasets are often subject to missing covariates.
+    Imputation replaces the missing values allowing downstream experiments.
+    This class allows multiple strategies to impute both categorical and
+    numerical/continuous covariates.
 
-    - **replace**: Replace all null values with a constant.
-    - **ignore**: Keep all null values
-    - **mode**: Replace null values with most commonly occurring category.
+    For categorical features, the class allows:
+
+    - **replace**: Replace all null values with a user specificed constant.
+    - **ignore**: Keep all missing values as is.
+    - **mode**: Replace null values with most commonly occurring variable.
 
     For numerical/continuous features,
     the user can choose between the following strategies:
 
-    - **mean**: Replace all null values with the mean in the column.
-    - **median**: Replace all null values with the median in the column.
-    - **knn**: Use the KNN model to predict the null values.
+    - **mean**: Replace all missing values with the mean in the column.
+    - **median**: Replace all missing values with the median in the column.
+    - **knn**: Use a k Nearest Neighbour model to predict the missing value.
     - **missforest**: Use the MissForest model to predict the null values.
 
     Parameters
@@ -67,7 +68,8 @@ class Imputer:
     if cat_feats is None: cat_feats = []
     if num_feats is None: num_feats = []
 
-    assert len(cat_feats + num_feats) != 0, "Please specify categorical and numerical features."
+    assert (len(cat_feats + num_feats) != 0, 
+            "Please specify categorical and numerical features.")
 
     self._cat_feats = cat_feats
     self._num_feats = num_feats
@@ -83,9 +85,11 @@ class Imputer:
     ####### CAT VARIABLES
     if len(cat_feats):
       if self.cat_feat_strat == 'replace':
-        self._cat_base_imputer = SimpleImputer(strategy='constant', fill_value=fill_value).fit(df[cat_feats])
+        self._cat_base_imputer = SimpleImputer(strategy='constant', 
+                                               fill_value=fill_value).fit(df[cat_feats])
       elif self.cat_feat_strat == 'mode':
-        self._cat_base_imputer = SimpleImputer(strategy='most_frequent', fill_value=fill_value).fit(df[cat_feats])
+        self._cat_base_imputer = SimpleImputer(strategy='most_frequent',
+                                               fill_value=fill_value).fit(df[cat_feats])
 
     ####### NUM VARIABLES
     if len(num_feats):
@@ -153,10 +157,6 @@ class Scaler:
 
   """Scaler to rescale numerical features.
 
-  Scaling is the second key aspect of the preprocessing workflow.
-  It transforms continuous values to improve the performance of the
-  machine learning algorithms.
-
   For scaling, the user can choose between the following strategies:
 
   - **standard**: Perform the standard scaling method.
@@ -167,7 +167,8 @@ class Scaler:
   ----------
   scaling_strategy: str
       Strategy to use for scaling numerical/continuous data.
-      One of `'standard'`, `'minmax'`, `'none'`. Default is `standard`.
+      One of `'standard'`, `'minmax'`, `'none'`.
+      Default is `standard`.
   """
 
   _VALID_SCALING_STRAT = ['standard', 'minmax', 'none']
@@ -186,8 +187,8 @@ class Scaler:
     data: pandas.DataFrame
         Dataframe to be scaled.
     feats: list
-        List of numerical/continuous features to be scaled - if left empty,
-        all features are interpreted as numerical features.
+        List of numerical/continuous features to be scaled.
+        **NOTE**: if left empty, all features are interpreted as numerical.
 
     Returns:
         pandas.DataFrame: Scaled dataset.
@@ -204,7 +205,7 @@ class Scaler:
     else:
       scaler = None
 
-    if scaler != None:
+    if scaler is not None:
       if feats: df[feats] = scaler.fit_transform(df[feats])
       else: df[df.columns] = scaler.fit_transform(df)
 
@@ -212,7 +213,7 @@ class Scaler:
 
 class Preprocessor:
 
-  """Class to perform full preprocessing pipeline.
+  """ A composite transform involving both scaling and preprocessing.
 
   Parameters
   ----------
@@ -237,7 +238,8 @@ class Preprocessor:
 
     self.scaler = Scaler(scaling_strategy=scaling_strategy)
 
-  def fit_transform(self, data, cat_feats, num_feats, one_hot=True, fill_value=-1, n_neighbors=5, **kwargs):
+  def fit_transform(self, data, cat_feats, num_feats,
+                    one_hot=True, fill_value=-1, n_neighbors=5, **kwargs):
     """Imputes and scales dataset.
 
     Parameters

@@ -36,40 +36,161 @@ ga('create', 'G-TTD30SJCTB', 'auto'); ga('send', 'pageview');
 <a href="https://opensource.org/licenses/MIT"><img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-yellow.svg"></a>
 &nbsp;&nbsp;&nbsp;
 <a href="https://github.com/autonlab/auton-survival"><img alt="GitHub Repo stars" src="https://img.shields.io/github/stars/autonlab/auton-survival?style=social"></a></p>
-<p><strong>Cox Mixture with Heterogenous Effects (CMHE)</strong> is a fully parametric approach
-to counterfactual phenotypes of individuals that demonstrate heterogneous
-effects to an intervention in terms of Time-to-Event outcomes in the presence
-of Censoring.</p>
 <p><img
 src="https://ndownloader.figshare.com/files/34056269"></p>
 <p><img align="right" width=35% src="https://figshare.com/ndownloader/files/34056284"></p>
-<p>In the context of Healthcare ML and Biostatistics, this is known as 'Survival
-Analysis'. The key idea behind Deep Survival Machines is to model the
-underlying event outcome distribution as a mixure of some fixed <span><span class="MathJax_Preview"> k </span><script type="math/tex"> k </script></span>
-parametric distributions. The parameters of these mixture distributions as
-well as the mixing weights are modelled using Neural Networks.</p>
-<p><br><br><br><br></p>
+<p><strong>Cox Mixture with Heterogenous Effects (CMHE)</strong> is a flexible approach to
+recover counterfactual phenotypes of individuals that demonstrate heterogneous
+effects to an intervention in terms of censored Time-to-Event outcomes.
+CMHE is <strong>not</strong> restricted by the strong Cox Proportional Hazards assumption
+or any parametric assumption on the time to event distributions. CMHE achieves
+this by describing each individual as belonging to two different latent groups,
+<span><span class="MathJax_Preview"> \mathcal{Z} </span><script type="math/tex"> \mathcal{Z} </script></span> that mediate the base survival rate and <span><span class="MathJax_Preview"> \phi </span><script type="math/tex"> \phi </script></span> the effect
+of the treatment. CMHE can also be employed to model individual level
+counterfactuals or for standard factual survival regression.</p>
+<p>For full details on Cox Mixtures with Heterogenous Effects, please refer to
+our preprint:</p>
+<p><a href="https://arxiv.org/abs/2202.11089">Counterfactual Phenotyping with Censored Time-to-Events, arXiv preprint,
+C. Nagpal, M. Goswami, K. Dufendach, A. Dubrawski</a></p>
+<p><br></p>
 <h2 id="example-usage">Example Usage</h2>
-<pre><code class="language-python-repl">&gt;&gt;&gt; from auton_survival import CoxMixtureHeterogenousEffects
+<pre><code class="language-python-repl">&gt;&gt;&gt; from auton_survival import DeepCoxMixturesHeterogenousEffects
 &gt;&gt;&gt; from auton_survival import datasets
 &gt;&gt;&gt; # load the SYNTHETIC dataset.
 &gt;&gt;&gt; x, t, e, a = datasets.load_dataset('SYNTHETIC')
-&gt;&gt;&gt; # instantiate a DeepSurvivalMachines model.
-&gt;&gt;&gt; model = CoxMixtureHeterogenousEffects()
+&gt;&gt;&gt; # instantiate a Cox Mixtures with Heterogenous Effects model.
+&gt;&gt;&gt; model = DeepCoxMixturesHeterogenousEffects()
 &gt;&gt;&gt; # fit the model to the dataset.
 &gt;&gt;&gt; model.fit(x, t, e, a)
 &gt;&gt;&gt; # estimate the predicted risks at the time
 &gt;&gt;&gt; model.predict_risk(x, 10)
+&gt;&gt;&gt; # estimate the treatment effect phenogroups
+&gt;&gt;&gt; model.predict_latent_phi(x)
 </code></pre>
 <div class="git-link-div"><a href="https://github.com/autonlab/auton-survival" class="git-link">Browse git</a></div>
 </section>
 <section>
-<h2 class="section-title" id="header-submodules">Sub-modules</h2>
+<h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
-<dt><code class="name"><a title="auton_survival.models.cmhe.cmhe_api" href="cmhe_api.html">auton_survival.models.cmhe.cmhe_api</a></code></dt>
+<dt id="auton_survival.models.cmhe.DeepCoxMixturesHeterogenousEffects"><code class="flex name class">
+<span>class <span class="ident">DeepCoxMixturesHeterogenousEffects</span></span>
+<span>(</span><span>k, g, layers=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>A Deep Cox Mixtures with Heterogenous Effects model.</p>
+<p>This is the main interface to a Deep Cox Mixture with Heterogenous Effects.
+A model is instantiated with approporiate set of hyperparameters and
+fit on numpy arrays consisting of the features, event/censoring times
+and the event/censoring indicators.</p>
+<p>For full details on Deep Cox Mixture, refer to the paper [1].</p>
+<h2 id="references">References</h2>
+<p>[1] Nagpal, C., Goswami M., Dufendach K., and Artur Dubrawski.
+"Counterfactual phenotyping for censored Time-to-Events" (2022).</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>k</code></strong> :&ensp;<code>int</code></dt>
+<dd>The number of underlying base survival phenotypes.</dd>
+<dt><strong><code>g</code></strong> :&ensp;<code>int</code></dt>
+<dd>The number of underlying treatment effect phenotypes.</dd>
+<dt><strong><code>layers</code></strong> :&ensp;<code>list</code></dt>
+<dd>A list of integers consisting of the number of neurons in each
+hidden layer.</dd>
+</dl>
+<h2 id="example">Example</h2>
+<pre><code class="language-python-repl">&gt;&gt;&gt; from auton_survival import DeepCoxMixturesHeterogenousEffects
+&gt;&gt;&gt; model = DeepCoxMixturesHeterogenousEffects(k=2, g=3)
+&gt;&gt;&gt; model.fit(x, t, e, a)
+</code></pre></div>
+<div class="git-link-div"><a href="https://github.com/autonlab/auton-survival" class="git-link">Browse git</a></div>
+<h3>Methods</h3>
+<dl>
+<dt id="auton_survival.models.cmhe.DeepCoxMixturesHeterogenousEffects.fit"><code class="name flex">
+<span>def <span class="ident">fit</span></span>(<span>self, x, t, e, a, vsize=0.15, val_data=None, iters=1, learning_rate=0.001, batch_size=100, optimizer='Adam', random_state=100)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>This method is used to train an instance of the DSM model.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>x</code></strong> :&ensp;<code>np.ndarray</code></dt>
+<dd>A numpy array of the input features, <span><span class="MathJax_Preview"> x </span><script type="math/tex"> x </script></span>.</dd>
+<dt><strong><code>t</code></strong> :&ensp;<code>np.ndarray</code></dt>
+<dd>A numpy array of the event/censoring times, <span><span class="MathJax_Preview"> t </span><script type="math/tex"> t </script></span>.</dd>
+<dt><strong><code>e</code></strong> :&ensp;<code>np.ndarray</code></dt>
+<dd>A numpy array of the event/censoring indicators, <span><span class="MathJax_Preview"> \delta </span><script type="math/tex"> \delta </script></span>.
+<span><span class="MathJax_Preview"> \delta = 1 </span><script type="math/tex"> \delta = 1 </script></span> means the event took place.</dd>
+<dt><strong><code>a</code></strong> :&ensp;<code>np.ndarray</code></dt>
+<dd>A numpy array of the treatment assignment indicators, <span><span class="MathJax_Preview"> a </span><script type="math/tex"> a </script></span>.
+<span><span class="MathJax_Preview"> a = 1 </span><script type="math/tex"> a = 1 </script></span> means the individual was treated.</dd>
+<dt><strong><code>vsize</code></strong> :&ensp;<code>float</code></dt>
+<dd>Amount of data to set aside as the validation set.</dd>
+<dt><strong><code>val_data</code></strong> :&ensp;<code>tuple</code></dt>
+<dd>A tuple of the validation dataset. If passed vsize is ignored.</dd>
+<dt><strong><code>iters</code></strong> :&ensp;<code>int</code></dt>
+<dd>The maximum number of training iterations on the training dataset.</dd>
+<dt><strong><code>learning_rate</code></strong> :&ensp;<code>float</code></dt>
+<dd>The learning rate for the <code>Adam</code> optimizer.</dd>
+<dt><strong><code>batch_size</code></strong> :&ensp;<code>int</code></dt>
+<dd>learning is performed on mini-batches of input data. this parameter
+specifies the size of each mini-batch.</dd>
+<dt><strong><code>optimizer</code></strong> :&ensp;<code>str</code></dt>
+<dd>The choice of the gradient based optimization method. One of
+'Adam', 'RMSProp' or 'SGD'.</dd>
+<dt><strong><code>random_state</code></strong> :&ensp;<code>float</code></dt>
+<dd>random seed that determines how the validation set is chosen.</dd>
+</dl></div>
+<div class="git-link-div"><a href="https://github.com/autonlab/auton-survival" class="git-link">Browse git</a></div>
+</dd>
+<dt id="auton_survival.models.cmhe.DeepCoxMixturesHeterogenousEffects.predict_risk"><code class="name flex">
+<span>def <span class="ident">predict_risk</span></span>(<span>self, x, a, t=None)</span>
+</code></dt>
 <dd>
 <div class="desc"></div>
+<div class="git-link-div"><a href="https://github.com/autonlab/auton-survival" class="git-link">Browse git</a></div>
 </dd>
+<dt id="auton_survival.models.cmhe.DeepCoxMixturesHeterogenousEffects.predict_survival"><code class="name flex">
+<span>def <span class="ident">predict_survival</span></span>(<span>self, x, a, t=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Returns the estimated survival probability at time <span><span class="MathJax_Preview"> t </span><script type="math/tex"> t </script></span>,
+<span><span class="MathJax_Preview"> \widehat{\mathbb{P}}(T &gt; t|X) </span><script type="math/tex"> \widehat{\mathbb{P}}(T > t|X) </script></span> for some input data <span><span class="MathJax_Preview"> x </span><script type="math/tex"> x </script></span>.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>x</code></strong> :&ensp;<code>np.ndarray</code></dt>
+<dd>A numpy array of the input features, <span><span class="MathJax_Preview"> x </span><script type="math/tex"> x </script></span>.</dd>
+<dt><strong><code>a</code></strong> :&ensp;<code>np.ndarray</code></dt>
+<dd>A numpy array of the treatmeant assignment, <span><span class="MathJax_Preview"> a </span><script type="math/tex"> a </script></span>.</dd>
+<dt><strong><code>t</code></strong> :&ensp;<code>list</code> or <code>float</code></dt>
+<dd>a list or float of the times at which survival probability is
+to be computed</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>np.array</code></dt>
+<dd>numpy array of the survival probabilites at each time in t.</dd>
+</dl></div>
+<div class="git-link-div"><a href="https://github.com/autonlab/auton-survival" class="git-link">Browse git</a></div>
+</dd>
+<dt id="auton_survival.models.cmhe.DeepCoxMixturesHeterogenousEffects.predict_latent_z"><code class="name flex">
+<span>def <span class="ident">predict_latent_z</span></span>(<span>self, x)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Returns the estimated latent base survival group <span><span class="MathJax_Preview"> z </span><script type="math/tex"> z </script></span> given the confounders <span><span class="MathJax_Preview"> x </span><script type="math/tex"> x </script></span>.</p></div>
+<div class="git-link-div"><a href="https://github.com/autonlab/auton-survival" class="git-link">Browse git</a></div>
+</dd>
+<dt id="auton_survival.models.cmhe.DeepCoxMixturesHeterogenousEffects.predict_latent_phi"><code class="name flex">
+<span>def <span class="ident">predict_latent_phi</span></span>(<span>self, x)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Returns the estimated latent treatment effect group <span><span class="MathJax_Preview"> \phi </span><script type="math/tex"> \phi </script></span> given the confounders <span><span class="MathJax_Preview"> x </span><script type="math/tex"> x </script></span>.</p></div>
+<div class="git-link-div"><a href="https://github.com/autonlab/auton-survival" class="git-link">Browse git</a></div>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+<section>
+<h2 class="section-title" id="header-submodules">Sub-modules</h2>
+<dl>
 <dt><code class="name"><a title="auton_survival.models.cmhe.cmhe_torch" href="cmhe_torch.html">auton_survival.models.cmhe.cmhe_torch</a></code></dt>
 <dd>
 <div class="desc"></div>
@@ -79,8 +200,6 @@ well as the mixing weights are modelled using Neural Networks.</p>
 <div class="desc"></div>
 </dd>
 </dl>
-</section>
-<section>
 </section>
 <section>
 </section>
@@ -104,9 +223,22 @@ well as the mixing weights are modelled using Neural Networks.</p>
 </li>
 <li><h3><a href="#header-submodules">Sub-modules</a></h3>
 <ul>
-<li><code><a title="auton_survival.models.cmhe.cmhe_api" href="cmhe_api.html">auton_survival.models.cmhe.cmhe_api</a></code></li>
 <li><code><a title="auton_survival.models.cmhe.cmhe_torch" href="cmhe_torch.html">auton_survival.models.cmhe.cmhe_torch</a></code></li>
 <li><code><a title="auton_survival.models.cmhe.cmhe_utilities" href="cmhe_utilities.html">auton_survival.models.cmhe.cmhe_utilities</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="auton_survival.models.cmhe.DeepCoxMixturesHeterogenousEffects" href="#auton_survival.models.cmhe.DeepCoxMixturesHeterogenousEffects">DeepCoxMixturesHeterogenousEffects</a></code></h4>
+<ul class="">
+<li><code><a title="auton_survival.models.cmhe.DeepCoxMixturesHeterogenousEffects.fit" href="#auton_survival.models.cmhe.DeepCoxMixturesHeterogenousEffects.fit">fit</a></code></li>
+<li><code><a title="auton_survival.models.cmhe.DeepCoxMixturesHeterogenousEffects.predict_risk" href="#auton_survival.models.cmhe.DeepCoxMixturesHeterogenousEffects.predict_risk">predict_risk</a></code></li>
+<li><code><a title="auton_survival.models.cmhe.DeepCoxMixturesHeterogenousEffects.predict_survival" href="#auton_survival.models.cmhe.DeepCoxMixturesHeterogenousEffects.predict_survival">predict_survival</a></code></li>
+<li><code><a title="auton_survival.models.cmhe.DeepCoxMixturesHeterogenousEffects.predict_latent_z" href="#auton_survival.models.cmhe.DeepCoxMixturesHeterogenousEffects.predict_latent_z">predict_latent_z</a></code></li>
+<li><code><a title="auton_survival.models.cmhe.DeepCoxMixturesHeterogenousEffects.predict_latent_phi" href="#auton_survival.models.cmhe.DeepCoxMixturesHeterogenousEffects.predict_latent_phi">predict_latent_phi</a></code></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

@@ -35,40 +35,48 @@ Cox Mixtures with Heterogenous Effects
 [![GitHub Repo stars](https://img.shields.io/github/stars/autonlab/auton-survival?style=social)](https://github.com/autonlab/auton-survival)
 
 
-**Cox Mixture with Heterogenous Effects (CMHE)** is a fully parametric approach
-to counterfactual phenotypes of individuals that demonstrate heterogneous
-effects to an intervention in terms of Time-to-Event outcomes in the presence
-of Censoring.
-
 <img  src="https://ndownloader.figshare.com/files/34056269">
 
 <img align="right" width=35% src="https://figshare.com/ndownloader/files/34056284">
 
-In the context of Healthcare ML and Biostatistics, this is known as 'Survival
-Analysis'. The key idea behind Deep Survival Machines is to model the
-underlying event outcome distribution as a mixure of some fixed \( k \)
-parametric distributions. The parameters of these mixture distributions as
-well as the mixing weights are modelled using Neural Networks.
+**Cox Mixture with Heterogenous Effects (CMHE)** is a flexible approach to
+recover counterfactual phenotypes of individuals that demonstrate heterogneous
+effects to an intervention in terms of censored Time-to-Event outcomes.
+CMHE is **not** restricted by the strong Cox Proportional Hazards assumption
+or any parametric assumption on the time to event distributions. CMHE achieves
+this by describing each individual as belonging to two different latent groups,
+\( \mathcal{Z} \) that mediate the base survival rate and \( \phi \) the effect
+of the treatment. CMHE can also be employed to model individual level
+counterfactuals or for standard factual survival regression.
 
+For full details on Cox Mixtures with Heterogenous Effects, please refer to
+our preprint:
 
-<br><br><br><br>
+[Counterfactual Phenotyping with Censored Time-to-Events, arXiv preprint,
+C. Nagpal, M. Goswami, K. Dufendach, A. Dubrawski](https://arxiv.org/abs/2202.11089)
+
+<br>
 
 Example Usage
 -------------
 
->>> from auton_survival import CoxMixtureHeterogenousEffects
+>>> from auton_survival import DeepCoxMixturesHeterogenousEffects
 >>> from auton_survival import datasets
 >>> # load the SYNTHETIC dataset.
 >>> x, t, e, a = datasets.load_dataset('SYNTHETIC')
->>> # instantiate a DeepSurvivalMachines model.
->>> model = CoxMixtureHeterogenousEffects()
+>>> # instantiate a Cox Mixtures with Heterogenous Effects model.
+>>> model = DeepCoxMixturesHeterogenousEffects()
 >>> # fit the model to the dataset.
 >>> model.fit(x, t, e, a)
 >>> # estimate the predicted risks at the time
 >>> model.predict_risk(x, 10)
-
+>>> # estimate the treatment effect phenogroups
+>>> model.predict_latent_phi(x)
 
 """
+
+import numpy as np
+import torch
 
 from .cmhe_torch import DeepCMHETorch
 from .cmhe_utilities import train_cmhe, predict_survival
@@ -174,7 +182,7 @@ class DeepCoxMixturesHeterogenousEffects:
 
   def fit(self, x, t, e, a, vsize=0.15, val_data=None,
           iters=1, learning_rate=1e-3, batch_size=100,
-          optimizer="Adam", random_state=100):
+          patience=2, optimizer="Adam", random_state=100):
 
     r"""This method is used to train an instance of the DSM model.
 
@@ -226,6 +234,7 @@ class DeepCoxMixturesHeterogenousEffects:
                           epochs=iters,
                           lr=learning_rate,
                           bs=batch_size,
+                          patience=patience,
                           return_losses=True)
 
     self.torch_model = (model[0].eval(), model[1])
@@ -264,7 +273,7 @@ class DeepCoxMixturesHeterogenousEffects:
                       "model using the `fit` method on some training data " +
                       "before calling `predict_survival`.")
 
-    x = self._preprocess_test_data(x, a)
+    x, a = self._preprocess_test_data(x, a)
 
     if t is not None:
       if not isinstance(t, list):

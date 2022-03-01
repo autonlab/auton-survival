@@ -22,7 +22,7 @@
 # SOFTWARE.
 
 import torch
-from dsm.dsm_torch import create_representation
+from auton_survival.models.dsm.dsm_torch import create_representation
 
 class DeepCMHETorch(torch.nn.Module):
   """PyTorch model definition of the Cox Mixture with Hereogenous Effects Model.
