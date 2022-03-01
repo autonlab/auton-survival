@@ -1,3 +1,28 @@
+# coding=utf-8
+# MIT License
+
+# Copyright (c) 2022 Carnegie Mellon University, Auton Lab
+
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+"""Tools to identify subgroups for use in comparing survival probabilities among groups."""
+
 import numpy as np
 import pandas as pd
 
@@ -5,6 +30,7 @@ from lifelines import KaplanMeierFitter, NelsonAalenFitter
 from copy import deepcopy
 
 from sklearn import cluster, decomposition, mixture
+
 from auton_survival.utils import _get_method_kwargs
 
 
@@ -17,13 +43,28 @@ class Phenotyper:
     self.fitted = False
 
 class IntersectionalPhenotyper(Phenotyper):
-
-  """A phenotyper using all possible combinations of specified variables.
+  """A phenotyper that phenotypes by performing an exhaustive cartesian product on specified categorical 
+  and numerical variables.
+  
+  Parameters
+  -----------
+  cat_vars : list of python str(s), default=None
+      List of column names of categorical variables to phenotype on.
+  num_vars : list of python str(s), default=None
+     List of column names of continuous variables to phenotype on.
+  num_vars_quantiles : tuple of floats, default=(0, .5, 1.0)
+      A tuple of quantiles as floats (inclusive of 0 and 1) used to discretize continuous variables.
+      into equal-sized bins.
+  features : pd.DataFrame
+      A pandas dataframe with rows corresponding to individual samples and columns as covariates.
+  phenotypes : list
+      List of lists containing all possible combinations of specified categorical and numerical variable values.
+      
   """
 
   def __init__(self, cat_vars=None, num_vars=None,
                num_vars_quantiles=(0, .5, 1.0)):
-
+    
     if isinstance(cat_vars, str): cat_vars = [cat_vars]
     if isinstance(num_vars, str): num_vars = [num_vars]
 
@@ -39,6 +80,18 @@ class IntersectionalPhenotyper(Phenotyper):
     self.fitted = False
 
   def fit(self, features):
+  """Fit the phenotyper by finding all possible intersectional groups on the passed dataset.
+    
+  Parameters
+  -----------
+  features : pd.DataFrame
+      A pandas dataframe with rows corresponding to individual samples and columns as covariates.
+        
+  Returns
+  -----------
+  Trained instance of intersectional phenotyper.
+        
+  """
 
     self.cut_bins = {}
     self.min_max = {}
@@ -56,18 +109,20 @@ class IntersectionalPhenotyper(Phenotyper):
     self.fitted = True
     return self
 
-  def _rename(self, demographics):
-
-    ft_names = self.cat_vars + self.num_vars
-    renamed = []
-    for i in range(len(demographics)):
-      row = []
-      for j in range(len(ft_names)):
-        row.append(ft_names[j]+":"+str(demographics[i][j]))
-      renamed.append(" & ".join(row))
-    return renamed
-
   def phenotype(self, features):
+  """Generate phenotypes on a dataset based on groups learnt when fitting.
+    
+  Parameters
+  -----------
+  features : pd.DataFrame
+      A pandas dataframe with rows corresponding to individual samples and columns as covariates.
+        
+  Returns
+  -----------
+  np.array : A numpy array containing a list of strings that define subgroups from all possible combinations 
+      of specified categorical and numerical variables.
+        
+  """
 
     assert self.fitted, "Phenotyper must be `fitted` before calling `phenotype`."
     features = deepcopy(features)
@@ -82,21 +137,86 @@ class IntersectionalPhenotyper(Phenotyper):
       features[num_var] = pd.cut(features[num_var], self.cut_bins[num_var],
                                  include_lowest=True)
 
-    demographics = [group.tolist() for group in features[self.cat_vars+self.num_vars].values]
-    demographics = self._rename(demographics)
+    phenotypes = [group.tolist() for group in features[self.cat_vars+self.num_vars].values]
+    phenotypes = self._rename(phenotypes)
 
-    demographics = np.array(demographics)
+    phenotypes = np.array(phenotypes)
 
-    return demographics
+    return phenotypes
+
+  def _rename(self, phenotypes):
+  """Helper function to rename the phenotype names.
+    
+  Parameters
+  -----------
+  phenotypes : list
+      List of lists containing all possible combinations of specified categorical and numerical variable values.
+        
+  Returns
+  -----------
+  list : python list of a list of strings that define subgroups.
+        
+  """
+
+    ft_names = self.cat_vars + self.num_vars
+    renamed = []
+    for i in range(len(demographics)):
+        row = []
+        for j in range(len(ft_names)):
+            row.append(ft_names[j]+":"+str(demographics[i][j]))
+        renamed.append(" & ".join(row))
+    return renamed
 
   def fit_phenotype(self, features):
+  """Fit and perform phenotyping on a given dataset.
+    
+  Parameters
+  -----------
+  features : pd.DataFrame
+      A pandas dataframe with rows corresponding to individual samples and columns as covariates.
+        
+  Returns
+  -----------
+  np.array : A numpy array containing a list of strings that define subgroups from all possible combinations of specified 
+      categorical and numerical variables.
+        
+  """
+
     return self.fit(features).phenotype(features)
 
-
 class ClusteringPhenotyper(Phenotyper):
+  """Phenotyper that performs dimensionality reduction followed by clustering. Learned clusters are considered phenotypes 
+  and used to group samples based on similarity in the covariate space.
 
-  """Phenotyper that performs dimensionality reduction followed by clustering.
-
+  Parameters
+  -----------
+  features : pd.DataFrame
+      A pandas dataframe with rows corresponding to individual samples and columns as covariates.
+  clustering_method : str, default='kmeans'
+      The clustering method applied for phenotyping. Options include:
+      - 'kmeans' : K-Means Clustering
+      - 'dbscan' : Density-Based Spatial Clustering of Applications with Noise (DBSCAN)
+      - 'gmm' : Gaussian Mixture
+      - 'hierarchical' : Agglomerative Clustering  
+  dim_red_method : str, default=None
+      The dimensionality reductions method applied. Options include:
+      - 'pca' : Principal Component Analysis
+      - 'kpca' : Kernel Principal Component Analysis
+      - 'nnmf' : Non-Negative Matrix Factorization 
+      - None : dimensionality reduction is not applied. 
+  random_seed : int, default=0
+      Controls the randomness and reproducibility of called functions  
+  kwargs : dict
+      Additional arguments for dimensionality reduction and clustering
+      Please include dictionary key and item pairs specified by the following sci-kit learn modules:
+      'pca' : sklearn.decomposition.PCA
+      'nnmf' : sklearn.decomposition.NMF
+      'kpca' : sklearn.decomposition.KernelPCA  
+      'kmeans' : sklearn.cluster.KMeans
+      'dbscan' : sklearn.cluster.DBSCAN
+      'gmm' : sklearn.mixture.GaussianMixture
+      'hierarchical' : sklearn.cluster.AgglomerativeClustering
+        
   """
 
   _VALID_DIMRED_METHODS = ['pca', 'kpca', 'nnmf', None]
@@ -107,11 +227,11 @@ class ClusteringPhenotyper(Phenotyper):
     assert clustering_method in ClusteringPhenotyper._VALID_CLUSTERING_METHODS, "Please specify a valid Clustering method"
     assert dim_red_method in ClusteringPhenotyper._VALID_DIMRED_METHODS, "Please specify a valid Dimensionality Reduction method"
 
-     # Raise warning if "hierarchical" is used with dim_redcution
+    # Raise warning if "hierarchical" is used with dim_redcution
     if (clustering_method in ['hierarchical']) and (dim_red_method is not None):
       print("WARNING: Are you sure you want to run hierarchical clustering on decomposed features?. Such behaviour is atypical.") 
 
-    # Dimensionality Reduction Step:
+      # Dimensionality Reduction Step:
     if dim_red_method is not None:
       if dim_red_method == 'pca':
         dim_red_model = decomposition.PCA
@@ -154,6 +274,18 @@ class ClusteringPhenotyper(Phenotyper):
       self.dim_red_model = dim_red_model(**d_kwargs)
 
   def fit(self, features):
+  """Perform dimensionality reduction and train an instance of the clustering algorithm.
+    
+  Parameters
+  -----------
+  features : pd.DataFrame
+      A pandas dataframe with rows corresponding to individual samples and columns as covariates.
+        
+  Returns
+  -----------
+  Trained instance of clustering phenotyper.
+        
+  """
     
     if self.dim_red_method is not None: 
       print("Fitting the following Dimensionality Reduction Model:\n", self.dim_red_model)
@@ -170,6 +302,19 @@ class ClusteringPhenotyper(Phenotyper):
     return self
 
   def _predict_proba_kmeans(self, features):
+  """Estimate the probability of belonging to a cluster by computing the distance to cluster center normalized
+  by the sum of distances to other clusters.
+    
+  Parameters
+  -----------
+  features : pd.DataFrame
+      A pandas dataframe with rows corresponding to individual samples and columns as covariates.
+        
+  Returns
+  -----------
+  np.array : A numpy array of probability estimates of sample association to learned subgroups. 
+        
+  """
 
     #TODO:MAYBE DO THIS IN LOG SPACE?
 
@@ -181,6 +326,19 @@ class ClusteringPhenotyper(Phenotyper):
     return probs
 
   def phenotype(self, features):
+  """Peform dimensionality reduction, clustering, and create phenotypes based on the probability estimates
+  of sample association to learned clusters, or subgroups.
+    
+  Parameters
+  -----------
+  features : pd.DataFrame
+      A pandas dataframe with rows corresponding to individual samples and columns as covariates.
+        
+  Returns
+  -----------
+  np.array : A numpy array of the probability estimates of sample association to learned subgroups.
+        
+  """
  
     assert self.fitted, "Phenotyper must be `fitted` before calling `phenotype`."
  
@@ -192,12 +350,25 @@ class ClusteringPhenotyper(Phenotyper):
       return self._predict_proba_kmeans(features)
  
   def fit_phenotype(self, features):
+  """Fit and perform phenotyping on a given dataset.
+    
+  Parameters
+  -----------
+  features : pd.DataFrame
+      A pandas dataframe with rows corresponding to individual samples and columns as covariates.
+        
+  Returns
+  -----------
+  np.array : A numpy array of the probability estimates of sample association to learned clusters.
+        
+  """
+
     return self.fit(features).phenotype(features)
 
-
-
 class CoxMixturePhenotyper(Phenotyper):
+"""Not implemented."""
 
   def __init__(self):
+
     raise NotImplementedError()
 
