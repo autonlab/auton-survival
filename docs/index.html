@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
-<meta name="generator" content="pdoc 0.9.1" />
-<title>dsm API documentation</title>
+<meta name="generator" content="pdoc 0.9.2" />
+<title>auton_survival API documentation</title>
 <meta name="description" content="[![Build Status](https://travis-ci.org/autonlab/DeepSurvivalMachines.svg?branch=master)](https://travis-ci.org/autonlab/DeepSurvivalMachines)
 …" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
@@ -25,7 +25,7 @@ ga('create', 'G-TTD30SJCTB', 'auto'); ga('send', 'pageview');
 <main>
 <article id="content">
 <header>
-<h1 class="title">Package <code>dsm</code></h1>
+<h1 class="title">Package <code>auton_survival</code></h1>
 </header>
 <section id="section-intro">
 <p><a href="https://travis-ci.org/autonlab/DeepSurvivalMachines"><img alt="Build Status" src="https://travis-ci.org/autonlab/DeepSurvivalMachines.svg?branch=master"></a>
@@ -35,9 +35,9 @@ ga('create', 'G-TTD30SJCTB', 'auto'); ga('send', 'pageview');
 <a href="https://opensource.org/licenses/MIT"><img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-yellow.svg"></a>
 &nbsp;&nbsp;&nbsp;
 <a href="https://github.com/autonlab/auton-survival"><img alt="GitHub Repo stars" src="https://img.shields.io/github/stars/autonlab/auton-survival?style=social"></a></p>
-<p>Python package <code><a title="dsm" href="#dsm">dsm</a></code> provides an API to train the Deep Survival Machines
-and associated models for problems in survival analysis. The underlying model
-is implemented in <code>pytorch</code>.</p>
+<p>Python package <code><a title="auton_survival" href="#auton_survival">auton_survival</a></code> provides a flexible API for various problems
+in survival analysis, including regression, counterfactual estimation,
+and phenotyping.</p>
 <h2 id="what-is-survival-analysis">What is Survival Analysis?</h2>
 <p><strong>Survival Analysis</strong> involves estimating when an event of interest, <span><span class="MathJax_Preview"> T </span><script type="math/tex"> T </script></span>
 would take places given some features or covariates <span><span class="MathJax_Preview"> X </span><script type="math/tex"> X </script></span>. In statistics
@@ -50,75 +50,124 @@ regression problems, Survival Analysis differs in two major ways:</p>
 <li>There is presence of censoring ie. a large number of instances of data are
 lost to follow up.</li>
 </ul>
-<h2 id="deep-survival-machines">Deep Survival Machines</h2>
-<p><img alt=":figwidth: 20 %
-:alt: map to buried treasure
-This is the caption of the figure (a simple paragraph)." src="https://ndownloader.figshare.com/files/25259852"></p>
-<p><strong>Deep Survival Machines (DSM)</strong> is a fully parametric approach to model
-Time-to-Event outcomes in the presence of Censoring first introduced in
-<a href="https://arxiv.org/abs/2003.01176">[1]</a>.
-In the context of Healthcare ML and Biostatistics, this is known as 'Survival
-Analysis'. The key idea behind Deep Survival Machines is to model the
-underlying event outcome distribution as a mixure of some fixed <span><span class="MathJax_Preview"> k </span><script type="math/tex"> k </script></span>
-parametric distributions. The parameters of these mixture distributions as
-well as the mixing weights are modelled using Neural Networks.</p>
-<h2 id="example-usage">Example Usage</h2>
-<pre><code class="language-python-repl">&gt;&gt;&gt; from dsm import DeepSurvivalMachines
-&gt;&gt;&gt; from dsm import datasets
-&gt;&gt;&gt; # load the SUPPORT dataset.
-&gt;&gt;&gt; x, t, e = datasets.load_dataset('SUPPORT')
-&gt;&gt;&gt; # instantiate a DeepSurvivalMachines model.
-&gt;&gt;&gt; model = DeepSurvivalMachines()
-&gt;&gt;&gt; # fit the model to the dataset.
-&gt;&gt;&gt; model.fit(x, t, e)
-&gt;&gt;&gt; # estimate the predicted risks at the time
-&gt;&gt;&gt; model.predict_risk(x, 10)
+<h2 id="the-auton-survival-package">The Auton Survival Package</h2>
+<p>The package <code>auton_survival</code> is repository of reusable utilities for projects
+involving censored Time-to-Event Data. <code><a title="auton_survival" href="#auton_survival">auton_survival</a></code> allows rapid
+experimentation including dataset preprocessing, regression, counterfactual
+estimation, clustering and phenotyping and propnsity adjusted evaluation.</p>
+<h2 id="survival-regression">Survival Regression</h2>
+<p>Currently supported Survival Models are:</p>
+<h3 id="deepsurvivalmachines"><code><a title="auton_survival.models.dsm.DeepSurvivalMachines" href="models/dsm/index.html#auton_survival.models.dsm.DeepSurvivalMachines">DeepSurvivalMachines</a></code></h3>
+<h3 id="deepcoxmixtures"><code><a title="auton_survival.models.dcm.DeepCoxMixtures" href="models/dcm/index.html#auton_survival.models.dcm.DeepCoxMixtures">DeepCoxMixtures</a></code></h3>
+<h3 id="deepcoxph"><code><a title="auton_survival.models.cph.DeepCoxPH" href="models/cph/index.html#auton_survival.models.cph.DeepCoxPH">DeepCoxPH</a></code></h3>
+<h3 id="auton_survivalestimators"><code><a title="auton_survival.estimators" href="estimators.html">auton_survival.estimators</a></code></h3>
+<p>This module provids a wrapper to model survival datasets with standard
+survival (time-to-event) analysis methods. The use of the wrapper allows
+a simple standard interface for multiple different survival regression methods.</p>
+<p><code><a title="auton_survival.estimators" href="estimators.html">auton_survival.estimators</a></code> also provides convenient wrappers around other popular
+python survival analysis packages to experiment with the following
+survival regression estimators</p>
+<ul>
+<li>Random Survival Forests (<code>pysurvival</code>):</li>
+<li>Weibull Accelerated Failure Time (<code>lifelines</code>) :</li>
+</ul>
+<h3 id="auton_survivalexperiments"><code><a title="auton_survival.experiments" href="experiments.html">auton_survival.experiments</a></code></h3>
+<p>Modules to perform standard survival analysis experiments. This module
+provides a top-level interface to run <code><a title="auton_survival" href="#auton_survival">auton_survival</a></code> style experiments
+of survival analysis, involving cross-validation style experiments with
+multiple different survival analysis models at different horizons of
+event times.</p>
+<p>The module further eases evaluation by automatically computing the
+<em>censoring adjusted</em> estimates of the Metrics of interest, like
+<strong>Time Dependent Concordance Index</strong> and <strong>Brier Score</strong> with <strong>IPCW</strong>
+adjustment.</p>
+<pre><code class="language-python"># auton_survival Style Cross Validation Experiment.
+from auton_survival import datasets
+features, outcomes = datasets.load_topcat()
+
+from auton_survival.experiments import SurvivalCVRegressionExperiment
+
+# instantiate an auton_survival Experiment by
+# specifying the features and outcomes to use.
+experiment = SurvivalCVRegressionExperiment(features, outcomes)
+
+# Fit the `experiment` object with a Cox Model
+experiment.fit(model='cph')
+
+# Evaluate the performance at time=1 year horizon.
+scores = experiment.evaluate(time=1.)
+
+print(scores)
 </code></pre>
-<h2 id="deep-recurrent-survival-machines">Deep Recurrent Survival Machines</h2>
-<p><strong>Deep Recurrent Survival Machines (DRSM)</strong> builds on the original <strong>DSM</strong>
-model and allows for learning of representations of the input covariates using
-<strong>Recurrent Neural Networks</strong> like <strong>LSTMs, GRUs</strong>. Deep Recurrent Survival
-Machines is a natural fit to model problems where there are time dependendent
-covariates. Examples include situations where we are working with streaming
-data like vital signs, degradation monitoring signals in predictive
-maintainance. <strong>DRSM</strong> allows the learnt representations at each time step to
-involve historical context from previous time steps. <strong>DRSM</strong> implementation in
-<code><a title="dsm" href="#dsm">dsm</a></code> is carried out through an easy to use API,
-<code>DeepRecurrentSurvivalMachines</code> that accepts lists of data streams and
-corresponding failure times. The module automatically takes care of appropriate
-batching and padding of variable length sequences.</p>
-<h2 id="deep-convolutional-survival-machines">Deep Convolutional Survival Machines</h2>
-<p>Predictive maintenance and medical imaging sometimes requires to work with
-image streams. Deep Convolutional Survival Machines extends <strong>DSM</strong> and
-<strong>DRSM</strong> to learn representations of the input image data using
-convolutional layers. If working with streaming data, the learnt
-representations are then passed through an LSTM to model temporal dependencies
-before determining the underlying survival distributions.</p>
-<div class="admonition warning">
-<p class="admonition-title">Warning:&ensp;Not Implemented Yet!</p>
-</div>
-<h2 id="deep-cox-mixtures">Deep Cox Mixtures</h2>
-<p><code><a title="dsm" href="#dsm">dsm</a></code> includes pytorch implementation of the Deep Cox Mixture model proposed in
-<a href="https://arxiv.org/abs/2101.06536">Deep Cox Mixtures
-for Survival Regression. Machine Learning in Health Conference (2021)</a></p>
-<p>The Deep Cox Mixture involves the assumption that the survival function
-of the individual to be a mixture of <span><span class="MathJax_Preview"> K </span><script type="math/tex"> K </script></span>
-Cox Models. Conditioned on each
-subgroup <span><span class="MathJax_Preview"> Z=k </span><script type="math/tex"> Z=k </script></span> ; the PH assumptions are assumed to hold and the baseline
-hazard rates is determined non-parametrically using an spline-interpolated
-Breslow's estimator.</p>
-<h2 id="references">References</h2>
-<p>Please cite the following papers if you are using the <code><a title="dsm" href="#dsm">dsm</a></code> package.</p>
+<h2 id="phenotyping-and-knowledge-discovery">Phenotyping And Knowledge Discovery</h2>
+<h3 id="auton_survivalphenotyping"><code><a title="auton_survival.phenotyping" href="phenotyping.html">auton_survival.phenotyping</a></code></h3>
+<p><code><a title="auton_survival.phenotyping" href="phenotyping.html">auton_survival.phenotyping</a></code> allows extraction of latent clusters or subgroups
+of patients that demonstrate similar outcomes. In the context of this package,
+we refer to this task as <strong>phenotyping</strong>. <code><a title="auton_survival.phenotyping" href="phenotyping.html">auton_survival.phenotyping</a></code> allows:</p>
+<ul>
+<li>
+<p><strong>Unsupervised Phenotyping</strong>: Involves first performing dimensionality
+reduction on the inpute covariates <span><span class="MathJax_Preview"> x </span><script type="math/tex"> x </script></span> followed by the use of a clustering
+algorithm on this representation.</p>
+</li>
+<li>
+<p><strong>Factual Phenotyping</strong>: Involves the use of structured latent variable
+models, <code><a title="auton_survival.models.dcm.DeepCoxMixtures" href="models/dcm/index.html#auton_survival.models.dcm.DeepCoxMixtures">DeepCoxMixtures</a></code> or
+<code><a title="auton_survival.models.dsm.DeepSurvivalMachines" href="models/dsm/index.html#auton_survival.models.dsm.DeepSurvivalMachines">DeepSurvivalMachines</a></code> to recover phenogroups that
+demonstrate differential observed survival rates.</p>
+</li>
+<li>
+<p><strong>Counterfactual Phenotyping</strong>: Involves learning phenotypes that demonstrate
+heterogenous treatment effects. That is, the learnt phenogroups have differential
+response to a specific intervention. Relies on the specially designed
+<code><a title="auton_survival.models.cmhe.DeepCoxMixturesHeterogenousEffects" href="models/cmhe/index.html#auton_survival.models.cmhe.DeepCoxMixturesHeterogenousEffects">DeepCoxMixturesHeterogenousEffects</a></code> latent variable model.</p>
+</li>
+</ul>
+<h2 id="dataset-loading-and-preprocessing">Dataset Loading And Preprocessing</h2>
+<p>Helper functions to load and prerocsss various time-to-event data like the
+popular <code>SUPPORT</code>, <code>FRAMINGHAM</code> and <code>PBC</code> dataset for survival analysis.</p>
+<h3 id="auton_survivaldatasets"><code><a title="auton_survival.datasets" href="datasets.html">auton_survival.datasets</a></code></h3>
+<pre><code class="language-python"># Load the SUPPORT Dataset
+from auton_survival import dataset
+features, outcomes = datasets.load_dataset('SUPPORT')
+</code></pre>
+<h3 id="auton_survivalpreprocessing"><code><a title="auton_survival.preprocessing" href="preprocessing.html">auton_survival.preprocessing</a></code></h3>
+<p>This module provides a flexible API to perform imputation and data
+normalization for downstream machine learning models. The module has
+3 distinct classes, <code>Scaler</code>, <code>Imputer</code> and <code>Preprocessor</code>. The <code>Preprocessor</code>
+class is a composite transform that does both Imputing <strong><em>and</em></strong> Scaling with
+a single function call.</p>
+<pre><code class="language-python"># Preprocessing loaded Datasets
+from auton_survival import datasets
+features, outcomes = datasets.load_topcat()
+
+from auton_survival.preprocessing import Preprocessing
+features = Preprocessor().fit_transform(features,
+                                        cat_feats=['GENDER', 'ETHNICITY', 'SMOKE'],
+                                        num_feats=['height', 'weight'])
+
+# The `cat_feats` and `num_feats` lists would contain all the categorical and
+# numerical features in the dataset.
+
+</code></pre>
+<h2 id="evaluation-and-reporting">Evaluation And Reporting</h2>
+<h3 id="auton_survivalmetrics"><code><a title="auton_survival.metrics" href="metrics.html">auton_survival.metrics</a></code></h3>
+<p>Helper functions to generate standard reports for common Survival Analysis tasks.</p>
+<h2 id="citing-and-references">Citing And References</h2>
+<p>Please cite the following papers if you are using the <code><a title="auton_survival" href="#auton_survival">auton_survival</a></code> package.</p>
 <p>[1] <a href="https://arxiv.org/abs/2003.01176">Deep Survival Machines:
 Fully Parametric Survival Regression and
 Representation Learning for Censored Data with Competing Risks."
-arXiv preprint arXiv:2003.01176 (2020)</a></a></p>
-<pre><code>  @article{nagpal2020deep,
-  title={Deep Survival Machines: Fully Parametric Survival Regression and\
-  Representation Learning for Censored Data with Competing Risks},
+IEEE Journal of Biomedical and Health Informatics (2021)</a></a></p>
+<pre><code>  @article{nagpal2021dsm,
+  title={Deep survival machines: Fully parametric survival regression and representation learning for censored data with competing risks},
   author={Nagpal, Chirag and Li, Xinyu and Dubrawski, Artur},
-  journal={arXiv preprint arXiv:2003.01176},
-  year={2020}
+  journal={IEEE Journal of Biomedical and Health Informatics},
+  volume={25},
+  number={8},
+  pages={3163--3175},
+  year={2021},
+  publisher={IEEE}
   }
 </code></pre>
 <p>[2] <a href="http://proceedings.mlr.press/v146/nagpal21a.html">Deep Parametric Time-to-Event Regression with Time-Varying Covariates. AAAI
@@ -133,22 +182,36 @@ Spring Symposium (2021)</a></a></p>
 </code></pre>
 <p>[3] <a href="https://arxiv.org/abs/2101.06536">Deep Cox Mixtures for Survival Regression. Conference on Machine Learning for
 Healthcare (2021)</a></a></p>
-<pre><code>  @article{nagpal2021dcm,
+<pre><code>  @inproceedings{nagpal2021dcm,
   title={Deep Cox mixtures for survival regression},
   author={Nagpal, Chirag and Yadlowsky, Steve and Rostamzadeh, Negar and Heller, Katherine},
-  journal={arXiv preprint arXiv:2101.06536},
-  year={2021}
+  booktitle={Machine Learning for Healthcare Conference},
+  pages={674--708},
+  year={2021},
+  organization={PMLR}
   }
 </code></pre>
+<p>[4] <a href="https://arxiv.org/abs/2202.11089">Counterfactual Phenotyping with Censored Time-to-Events (2022)</a></a></p>
+<pre><code>  @article{nagpal2022counterfactual,
+  title={Counterfactual Phenotyping with Censored Time-to-Events},
+  author={Nagpal, Chirag and Goswami, Mononito and Dufendach, Keith and Dubrawski, Artur},
+  journal={arXiv preprint arXiv:2202.11089},
+  year={2022}
+  }
+</code></pre>
+<h2 id="installation">Installation</h2>
+<pre><code class="language-console">foo@bar:~$ git clone https://github.com/autonlab/auton_survival
+foo@bar:~$ pip install -r requirements.txt
+</code></pre>
 <h2 id="compatibility">Compatibility</h2>
-<p><code><a title="dsm" href="#dsm">dsm</a></code> requires <code>python</code> 3.5+ and <code>pytorch</code> 1.1+.</p>
+<p><code><a title="auton_survival" href="#auton_survival">auton_survival</a></code> requires <code>python</code> 3.5+ and <code>pytorch</code> 1.1+.</p>
 <p>To evaluate performance using standard metrics
-<code><a title="dsm" href="#dsm">dsm</a></code> requires <code>scikit-survival</code>.</p>
+<code><a title="auton_survival" href="#auton_survival">auton_survival</a></code> requires <code>scikit-survival</code>.</p>
 <h2 id="contributing">Contributing</h2>
-<p><code><a title="dsm" href="#dsm">dsm</a></code> is <a href="https://github.com/chiragnagpal/deepsurvivalmachines">on GitHub</a>. Bug reports and pull requests are welcome.</p>
+<p><code><a title="auton_survival" href="#auton_survival">auton_survival</a></code> is <a href="https://github.com/autonlab/auton-survival">on GitHub</a>. Bug reports and pull requests are welcome.</p>
 <h2 id="license">License</h2>
 <p>MIT License</p>
-<p>Copyright (c) 2020 Carnegie Mellon University, <a href="http://autonlab.org">Auton Lab</a></p>
+<p>Copyright (c) 2022 Carnegie Mellon University, <a href="http://autonlab.org">Auton Lab</a></p>
 <p>Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
@@ -164,77 +227,64 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.</p>
-<p><img style="float: right;" width ="200px" src="https://www.cmu.edu/brand/\
+<p><img style="float: right;" height="150px" src="https://www.cmu.edu/brand/\
 downloads/assets/images/wordmarks-600x600-min.jpg">
-<img style="float: right;padding-top:50px" src="https://www.autonlab.org/\
-user/themes/auton/images/AutonLogo.png"></p>
+<img style="float: right;padding-top:30px" height="110px"
+src="https://www.cs.cmu.edu/~chiragn/auton_logo.png"></p>
 <p><br><br><br><br><br>
 <br><br><br><br><br></p>
-<div class="git-link-div"><a href="https://github.com/autonlab/DeepSurvivalMachines" class="git-link">Browse git</a></div>
+<div class="git-link-div"><a href="https://github.com/autonlab/auton-survival" class="git-link">Browse git</a></div>
+</section>
+<section>
 </section>
 <section>
 <h2 class="section-title" id="header-submodules">Sub-modules</h2>
 <dl>
-<dt><code class="name"><a title="dsm.contrib" href="contrib/index.html">dsm.contrib</a></code></dt>
-<dd>
-<div class="desc"><p><code><a title="dsm" href="#dsm">dsm</a></code> includes extended functionality for survival analysis as part
-of <code><a title="dsm.contrib" href="contrib/index.html">dsm.contrib</a></code>.</p>
-<h2 id="contributed-modules">Contributed Modules</h2>
-<p>This submodule incorporates contributed survival analysis methods.</p>
-<h2 id="deep-cox-mixtures">Deep Cox Mixtures</h2>
-<p>The Cox Mixture involves the assumption that the survival function
-of the individual to be a mixture of K Cox Models. Conditioned on each
-subgroup Z=k; the PH assumptions are assumed to hold and the baseline
-hazard rates is determined non-parametrically using an spline-interpolated
-Breslow's estimator.</p>
-<p>For full details on Deep Cox Mixture, refer to the paper [1].</p>
-<h2 id="references">References</h2>
-<p>[1] <a href="https://arxiv.org/abs/2101.06536">Deep Cox Mixtures
-for Survival Regression. Machine Learning in Health Conference (2021)</a></p>
-<pre><code>  @article{nagpal2021dcm,
-  title={Deep Cox mixtures for survival regression},
-  author={Nagpal, Chirag and Yadlowsky, Steve and Rostamzadeh, Negar and Heller, Katherine},
-  journal={arXiv preprint arXiv:2101.06536},
-  year={2021}
-  }
-</code></pre></div>
-</dd>
-<dt><code class="name"><a title="dsm.datasets" href="datasets.html">dsm.datasets</a></code></dt>
+<dt><code class="name"><a title="auton_survival.datasets" href="datasets.html">auton_survival.datasets</a></code></dt>
 <dd>
 <div class="desc"><p>Utility functions to load standard datasets to train and evaluate the
 Deep Survival Machines models.</p></div>
 </dd>
-<dt><code class="name"><a title="dsm.dsm_api" href="dsm_api.html">dsm.dsm_api</a></code></dt>
+<dt><code class="name"><a title="auton_survival.datasets_biolincc" href="datasets_biolincc.html">auton_survival.datasets_biolincc</a></code></dt>
 <dd>
-<div class="desc"><p>This module is a wrapper around torch implementations and
-provides a convenient API to train Deep Survival Machines.</p></div>
+<div class="desc"></div>
 </dd>
-<dt><code class="name"><a title="dsm.dsm_torch" href="dsm_torch.html">dsm.dsm_torch</a></code></dt>
+<dt><code class="name"><a title="auton_survival.estimators" href="estimators.html">auton_survival.estimators</a></code></dt>
 <dd>
-<div class="desc"><p>Torch model definitons for the Deep Survival Machines model</p>
-<p>This includes definitons for the Torch Deep Survival Machines module.
-The main interface is the DeepSurvivalMachines class which inherits
-from torch.nn.Module.</p>
-<p>Note: NOT DESIGNED TO BE CALLED DIRECTLY!!!</p></div>
+<div class="desc"><p>Utilities to train survival regression models and estimate survival.</p></div>
 </dd>
-<dt><code class="name"><a title="dsm.losses" href="losses.html">dsm.losses</a></code></dt>
+<dt><code class="name"><a title="auton_survival.experiments" href="experiments.html">auton_survival.experiments</a></code></dt>
 <dd>
-<div class="desc"><p>Loss function definitions for the Deep Survival Machines model</p>
-<p>In this module we define the various losses for the censored and uncensored
-instances of data corresponding to Weibull and LogNormal distributions.
-These losses are optimized when training DSM.</p>
-<div class="admonition todo">
-<p class="admonition-title">TODO</p>
-<p>Use torch.distributions</p>
-</div>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>NOT DESIGNED TO BE CALLED DIRECTLY!!!</p>
-</div></div>
+<div class="desc"></div>
 </dd>
-<dt><code class="name"><a title="dsm.utilities" href="utilities.html">dsm.utilities</a></code></dt>
+<dt><code class="name"><a title="auton_survival.explainers" href="explainers.html">auton_survival.explainers</a></code></dt>
 <dd>
-<div class="desc"><p>Utility functions to train the Deep Survival Machines models</p></div>
+<div class="desc"></div>
+</dd>
+<dt><code class="name"><a title="auton_survival.metrics" href="metrics.html">auton_survival.metrics</a></code></dt>
+<dd>
+<div class="desc"><p>Tools to compute metrics used to assess survival outcomes and survival model performance.</p></div>
+</dd>
+<dt><code class="name"><a title="auton_survival.models" href="models/index.html">auton_survival.models</a></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt><code class="name"><a title="auton_survival.phenotyping" href="phenotyping.html">auton_survival.phenotyping</a></code></dt>
+<dd>
+<div class="desc"><p>Utilities to phenotype individuals based on similar survival
+characteristics.</p></div>
+</dd>
+<dt><code class="name"><a title="auton_survival.preprocessing" href="preprocessing.html">auton_survival.preprocessing</a></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt><code class="name"><a title="auton_survival.reporting" href="reporting.html">auton_survival.reporting</a></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt><code class="name"><a title="auton_survival.utils" href="utils.html">auton_survival.utils</a></code></dt>
+<dd>
+<div class="desc"></div>
 </dd>
 </dl>
 </section>
@@ -242,21 +292,37 @@ These losses are optimized when training DSM.</p>
 </section>
 <section>
 </section>
-<section>
-</section>
 </article>
 <nav id="sidebar">
-<img src="https://ndownloader.figshare.com/files/26367844">
+<img src="https://ndownloader.figshare.com/files/34052981">
 <h1>Index</h1>
 <div class="toc">
 <ul>
 <li><a href="#what-is-survival-analysis">What is Survival Analysis?</a></li>
-<li><a href="#deep-survival-machines">Deep Survival Machines</a></li>
-<li><a href="#example-usage">Example Usage</a></li>
-<li><a href="#deep-recurrent-survival-machines">Deep Recurrent Survival Machines</a></li>
-<li><a href="#deep-convolutional-survival-machines">Deep Convolutional Survival Machines</a></li>
-<li><a href="#deep-cox-mixtures">Deep Cox Mixtures</a></li>
-<li><a href="#references">References</a></li>
+<li><a href="#the-auton-survival-package">The Auton Survival Package</a></li>
+<li><a href="#survival-regression">Survival Regression</a><ul>
+<li><a href="#auton_survivalmodelsdsmdeepsurvivalmachines">auton_survival.models.dsm.DeepSurvivalMachines</a></li>
+<li><a href="#auton_survivalmodelsdcmdeepcoxmixtures">auton_survival.models.dcm.DeepCoxMixtures</a></li>
+<li><a href="#auton_survivalmodelscphdeepcoxph">auton_survival.models.cph.DeepCoxPH</a></li>
+<li><a href="#auton_survivalestimators">auton_survival.estimators</a></li>
+<li><a href="#auton_survivalexperiments">auton_survival.experiments</a></li>
+</ul>
+</li>
+<li><a href="#phenotyping-and-knowledge-discovery">Phenotyping and Knowledge Discovery</a><ul>
+<li><a href="#auton_survivalphenotyping">auton_survival.phenotyping</a></li>
+</ul>
+</li>
+<li><a href="#dataset-loading-and-preprocessing">Dataset Loading and Preprocessing</a><ul>
+<li><a href="#auton_survivaldatasets">auton_survival.datasets</a></li>
+<li><a href="#auton_survivalpreprocessing">auton_survival.preprocessing</a></li>
+</ul>
+</li>
+<li><a href="#evaluation-and-reporting">Evaluation and Reporting</a><ul>
+<li><a href="#auton_survivalmetrics">auton_survival.metrics</a></li>
+</ul>
+</li>
+<li><a href="#citing-and-references">Citing and References</a></li>
+<li><a href="#installation">Installation</a></li>
 <li><a href="#compatibility">Compatibility</a></li>
 <li><a href="#contributing">Contributing</a></li>
 <li><a href="#license">License</a></li>
@@ -265,19 +331,24 @@ These losses are optimized when training DSM.</p>
 <ul id="index">
 <li><h3><a href="#header-submodules">Sub-modules</a></h3>
 <ul>
-<li><code><a title="dsm.contrib" href="contrib/index.html">dsm.contrib</a></code></li>
-<li><code><a title="dsm.datasets" href="datasets.html">dsm.datasets</a></code></li>
-<li><code><a title="dsm.dsm_api" href="dsm_api.html">dsm.dsm_api</a></code></li>
-<li><code><a title="dsm.dsm_torch" href="dsm_torch.html">dsm.dsm_torch</a></code></li>
-<li><code><a title="dsm.losses" href="losses.html">dsm.losses</a></code></li>
-<li><code><a title="dsm.utilities" href="utilities.html">dsm.utilities</a></code></li>
+<li><code><a title="auton_survival.datasets" href="datasets.html">auton_survival.datasets</a></code></li>
+<li><code><a title="auton_survival.datasets_biolincc" href="datasets_biolincc.html">auton_survival.datasets_biolincc</a></code></li>
+<li><code><a title="auton_survival.estimators" href="estimators.html">auton_survival.estimators</a></code></li>
+<li><code><a title="auton_survival.experiments" href="experiments.html">auton_survival.experiments</a></code></li>
+<li><code><a title="auton_survival.explainers" href="explainers.html">auton_survival.explainers</a></code></li>
+<li><code><a title="auton_survival.metrics" href="metrics.html">auton_survival.metrics</a></code></li>
+<li><code><a title="auton_survival.models" href="models/index.html">auton_survival.models</a></code></li>
+<li><code><a title="auton_survival.phenotyping" href="phenotyping.html">auton_survival.phenotyping</a></code></li>
+<li><code><a title="auton_survival.preprocessing" href="preprocessing.html">auton_survival.preprocessing</a></code></li>
+<li><code><a title="auton_survival.reporting" href="reporting.html">auton_survival.reporting</a></code></li>
+<li><code><a title="auton_survival.utils" href="utils.html">auton_survival.utils</a></code></li>
 </ul>
 </li>
 </ul>
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.9.1</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.9.2</a>.</p>
 </footer>
 </body>
 </html>

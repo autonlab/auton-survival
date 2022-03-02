@@ -397,3 +397,7 @@ class ClusteringPhenotyper(Phenotyper):
 
     return self.fit(features).phenotype(features)
 
+class CoxMixturePhenotyper:
+
+  def __init__(self):
+    raise NotImplementedError()
