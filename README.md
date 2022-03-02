@@ -8,6 +8,10 @@
 [![GitHub Repo stars](https://img.shields.io/github/stars/autonlab/auton-survival?style=social)](https://github.com/autonlab/auton-survival)
 
 
+<img align=right style="align:right;" src="https://ndownloader.figshare.com/files/34052981" width=25%>
+
+<br><br><br>
+
 Python package `auton_survival` provides a flexible API for various problems
 in survival analysis, including regression, counterfactual estimation,
 and phenotyping.
@@ -264,8 +268,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
-<img style="float: right;" height="150px" src="https://www.cmu.edu/brand/\
-downloads/assets/images/wordmarks-600x600-min.jpg">
+<img style="float: right;" height="150px" src="https://www.cmu.edu/brand/downloads/assets/images/wordmarks-600x600-min.jpg">
 <img style="float: right;padding-top:30px" height="110px"
 src="https://www.cs.cmu.edu/~chiragn/auton_logo.png">
 
