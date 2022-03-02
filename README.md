@@ -268,9 +268,8 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
-<img style="float: right;" height="150px" src="https://www.cmu.edu/brand/downloads/assets/images/wordmarks-600x600-min.jpg">
-<img style="float: right;padding-top:30px" height="110px"
-src="https://www.cs.cmu.edu/~chiragn/auton_logo.png">
+<img align="right" height ="120px" src="https://www.cs.cmu.edu/~chiragn/cmu_logo.jpeg">
+<img align="right" height ="110px" src="https://www.cs.cmu.edu/~chiragn/auton_logo.png"> 
 
 <br><br><br><br><br>
 <br><br><br><br><br>
