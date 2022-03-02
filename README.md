@@ -8,9 +8,9 @@
 [![GitHub Repo stars](https://img.shields.io/github/stars/autonlab/auton-survival?style=social)](https://github.com/autonlab/auton-survival)
 
 
-<img align=right style="align:right;" src="https://ndownloader.figshare.com/files/34052981" width=25%>
+<img align=right style="align:right;" src="https://ndownloader.figshare.com/files/34052981" width=30%>
 
-<br><br><br>
+<br>
 
 Python package `auton_survival` provides a flexible API for various problems
 in survival analysis, including regression, counterfactual estimation,
