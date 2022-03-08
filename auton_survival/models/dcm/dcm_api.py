@@ -35,8 +35,8 @@ class DeepCoxMixtures:
 
   """
 
-  def __init__(self, k=3, layers=None, gamma=1,
-               smoothing_factor=1e-2, use_activation=False):
+  def __init__(self, k=3, layers=None, gamma=10,
+               smoothing_factor=1e-4, use_activation=False):
 
     self.k = k
     self.layers = layers
