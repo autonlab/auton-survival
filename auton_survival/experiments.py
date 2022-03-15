@@ -4,11 +4,55 @@ from sklearn.utils import shuffle
 from auton_survival.estimators import SurvivalModel, CounterfactualSurvivalModel
 from auton_survival.metrics import survival_regression_metric
 
-from sklearn.model_selection import ParameterGrid 
+from sklearn.model_selection import ParameterGrid
 
 from tqdm import tqdm
 
 class SurvivalRegressionCV:
+  """Universal interface to train Survival Analysis models in a Cross Validation fashion.
+  
+  Each of the model is trained in a CV fashion over the user specified
+  hyperparameter grid. The best model (in terms of integrated brier score)
+  is then selected.
+  
+  Parameters
+  -----------
+  model : str
+      A string that determines the choice of the surival analysis model.
+      Survival model choices include:
+
+      - 'dsm' : Deep Survival Machines [3] model
+      - 'dcph' : Deep Cox Proportional Hazards [2] model
+      - 'dcm' : Deep Cox Mixtures [4] model
+      - 'rsf' : Random Survival Forests [1] model
+      - 'cph' : Cox Proportional Hazards [2] model
+  cv_folds : int
+      Number of folds in the cross validation.
+  random_seed : int
+      Random seed for reproducibility.
+  hyperparam_grid : dict
+      A dictionary that contains the hyperparameters for grid search.
+      The keys of the dictionary are the hyperparameter names and the
+      values are lists of hyperparameter values.
+
+  References
+  -----------
+
+  [1] Hemant Ishwaran et al. Random survival forests.
+  The annals of applied statistics, 2(3):841–860, 2008.
+
+  [2] Cox, D. R. (1972). Regression models and life-tables.
+  Journal of the Royal Statistical Society: Series B (Methodological).
+
+  [3] Chirag Nagpal, Xinyu Li, and Artur Dubrawski.
+  Deep survival machines: Fully parametric survival regression and
+  representation learning for censored data with competing risks. 2020.
+
+  [4] Nagpal, C., Yadlowsky, S., Rostamzadeh, N., and Heller, K. (2021c).
+  Deep cox mixtures for survival regression.
+  In Machine Learning for Healthcare Conference, pages 674–708. PMLR
+
+  """
 
   def __init__(self, model, cv_folds=5, random_seed=0, hyperparam_grid={}):
 
@@ -18,6 +62,29 @@ class SurvivalRegressionCV:
     self.cv_folds = cv_folds
 
   def fit(self, features, outcomes, ret_trained_model=True):
+
+    r"""Fits the Survival Regression Model to the data in a Cross Validation fashion.
+
+    Parameters
+    -----------
+    features : pandas.DataFrame
+        a pandas dataframe containing the features to use as covariates.
+    outcomes : pandas.DataFrame
+        a pandas dataframe containing the survival outcomes. The index of the
+        dataframe should be the same as the index of the features dataframe.
+        Should contain a column named 'time' that contains the survival time and
+        a column named 'event' that contains the censoring status.
+        \( \delta_i = 1 \) if the event is observed.
+    ret_trained_model : bool
+        If True, the trained model is returned. If False, the fit function returns
+        self.
+
+    Returns
+    -----------
+    auton_survival.estimators.SurvivalModel:
+        The selected survival model based on lowest integrated brier score.
+    
+    """
 
     n = len(features)
 
@@ -90,6 +157,8 @@ class SurvivalRegressionCV:
 
   def evaluate(self, features, outcomes, metrics=['auc', 'ctd'], horizons=[]):
 
+    """"Not implemented yet."""
+
     raise NotImplementedError()
 
     results = {}
@@ -110,8 +179,54 @@ class SurvivalRegressionCV:
         for metric in metrics:
           raise NotImplementedError()
 
-        
+ 
 class CounterfactualSurvivalRegressionCV:
+
+  r"""Universal interface to train Counterfactual Survival Analysis models in a
+  Cross Validation fashion.
+
+  Each of the model is trained in a CV fashion over the user specified
+  hyperparameter grid. The best model (in terms of integrated brier score)
+  is then selected.
+
+  Parameters
+  -----------
+  model : str
+      A string that determines the choice of the surival analysis model.
+      Survival model choices include:
+
+      - 'dsm' : Deep Survival Machines [3] model
+      - 'dcph' : Deep Cox Proportional Hazards [2] model
+      - 'dcm' : Deep Cox Mixtures [4] model
+      - 'rsf' : Random Survival Forests [1] model
+      - 'cph' : Cox Proportional Hazards [2] model
+  cv_folds : int
+      Number of folds in the cross validation.
+  random_seed : int
+      Random seed for reproducibility.
+  hyperparam_grid : dict
+      A dictionary that contains the hyperparameters for grid search.
+      The keys of the dictionary are the hyperparameter names and the
+      values are lists of hyperparameter values.
+
+  References
+  -----------
+
+  [1] Hemant Ishwaran et al. Random survival forests.
+  The annals of applied statistics, 2(3):841–860, 2008.
+
+  [2] Cox, D. R. (1972). Regression models and life-tables.
+  Journal of the Royal Statistical Society: Series B (Methodological).
+
+  [3] Chirag Nagpal, Xinyu Li, and Artur Dubrawski.
+  Deep survival machines: Fully parametric survival regression and
+  representation learning for censored data with competing risks. 2020.
+
+  [4] Nagpal, C., Yadlowsky, S., Rostamzadeh, N., and Heller, K. (2021c).
+  Deep cox mixtures for survival regression.
+  In Machine Learning for Healthcare Conference, pages 674–708. PMLR
+
+  """
   
   def __init__(self, model, cv_folds=5, random_seed=0, hyperparam_grid={}):
 
@@ -131,6 +246,30 @@ class CounterfactualSurvivalRegressionCV:
                                                    hyperparam_grid=hyperparam_grid)
 
   def fit(self, features, outcomes, interventions):
+
+    r"""Fits the Survival Regression Model to the data in a Cross Validation fashion.
+
+    Parameters
+    -----------
+    features : pandas.DataFrame
+        a pandas dataframe containing the features to use as covariates.
+    outcomes : pandas.DataFrame
+        a pandas dataframe containing the survival outcomes. The index of the
+        dataframe should be the same as the index of the features dataframe.
+        Should contain a column named 'time' that contains the survival time and
+        a column named 'event' that contains the censoring status.
+        \( \delta_i = 1 \) if the event is observed.
+    interventions: pandas.Series
+        A pandas series containing the treatment status of each subject.
+        \( a_i = 1 \) if the subject is `treated`, else is considered control.
+
+    Returns
+    -----------
+    auton_survival.estimators.CounterfactualSurvivalModel:
+        The trained counterfactual survival model.
+
+    """
+
 
     treated, control = interventions==1, interventions!=1
     treated_model = self.treated_experiment.fit(features.loc[treated],

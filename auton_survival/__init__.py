@@ -1,5 +1,6 @@
 r'''
 
+
 [![Build Status](https://travis-ci.org/autonlab/DeepSurvivalMachines.svg?branch=master)](https://travis-ci.org/autonlab/DeepSurvivalMachines)
 &nbsp;&nbsp;&nbsp;
 [![codecov](https://codecov.io/gh/autonlab/DeepSurvivalMachines/branch/master/graph/badge.svg?token=FU1HB5O92D)](https://codecov.io/gh/autonlab/DeepSurvivalMachines)
@@ -39,27 +40,25 @@ estimation, clustering and phenotyping and propnsity adjusted evaluation.
 Survival Regression
 -------------------
 
-### `auton_survival.estimators`
-
-This module provids a wrapper to model BioLINNC datasets with standard
-survival (time-to-event) analysis methods.
-The use of the wrapper allows a simple standard interface for multiple
-different survival models, and also helps standardize experiments across
-various differents research areas.
-
 Currently supported Survival Models are:
 
-- `auton_survival.models.dsm.DeepSurvivalMachines`
-- `auton_survival.models.dcm.DeepCoxMixtures`
-- `auton_survival.models.cph.DeepCoxPH`
+### `auton_survival.models.dsm.DeepSurvivalMachines`
+### `auton_survival.models.dcm.DeepCoxMixtures`
+### `auton_survival.models.cph.DeepCoxPH`
 
-`auton_survival` also provides convenient wrappers around other popular
+
+### `auton_survival.estimators`
+
+This module provids a wrapper to model survival datasets with standard
+survival (time-to-event) analysis methods. The use of the wrapper allows
+a simple standard interface for multiple different survival regression methods.
+
+`auton_survival.estimators` also provides convenient wrappers around other popular
 python survival analysis packages to experiment with the following
 survival regression estimators
 
 - Random Survival Forests (`pysurvival`):
 - Weibull Accelerated Failure Time (`lifelines`) :
-
 
 ### `auton_survival.experiments`
 
@@ -155,13 +154,73 @@ features = Preprocessor().fit_transform(features,
 
 ```
 
+Evaluation and Reporting
+-------------------------
 
-Reporting
-----------
-
-### `auton_survival.reporting`
+### `auton_survival.metrics`
 
 Helper functions to generate standard reports for common Survival Analysis tasks.
+
+Citing and References
+----------------------
+
+Please cite the following papers if you are using the `auton_survival` package.
+
+[1] [Deep Survival Machines:
+Fully Parametric Survival Regression and
+Representation Learning for Censored Data with Competing Risks."
+IEEE Journal of Biomedical and Health Informatics (2021)](https://arxiv.org/abs/2003.01176)</a>
+
+```
+  @article{nagpal2021dsm,
+  title={Deep survival machines: Fully parametric survival regression and representation learning for censored data with competing risks},
+  author={Nagpal, Chirag and Li, Xinyu and Dubrawski, Artur},
+  journal={IEEE Journal of Biomedical and Health Informatics},
+  volume={25},
+  number={8},
+  pages={3163--3175},
+  year={2021},
+  publisher={IEEE}
+  }
+```
+
+[2] [Deep Parametric Time-to-Event Regression with Time-Varying Covariates. AAAI
+Spring Symposium (2021)](http://proceedings.mlr.press/v146/nagpal21a.html)</a>
+
+```
+  @InProceedings{pmlr-v146-nagpal21a,
+  title={Deep Parametric Time-to-Event Regression with Time-Varying Covariates},
+  author={Nagpal, Chirag and Jeanselme, Vincent and Dubrawski, Artur},
+  booktitle={Proceedings of AAAI Spring Symposium on Survival Prediction - Algorithms, Challenges, and Applications 2021},
+  series={Proceedings of Machine Learning Research},
+  publisher={PMLR},
+  }
+```
+
+[3] [Deep Cox Mixtures for Survival Regression. Conference on Machine Learning for
+Healthcare (2021)](https://arxiv.org/abs/2101.06536)</a>
+
+```
+  @inproceedings{nagpal2021dcm,
+  title={Deep Cox mixtures for survival regression},
+  author={Nagpal, Chirag and Yadlowsky, Steve and Rostamzadeh, Negar and Heller, Katherine},
+  booktitle={Machine Learning for Healthcare Conference},
+  pages={674--708},
+  year={2021},
+  organization={PMLR}
+  }
+```
+
+[4] [Counterfactual Phenotyping with Censored Time-to-Events (2022)](https://arxiv.org/abs/2202.11089)</a>
+
+```
+  @article{nagpal2022counterfactual,
+  title={Counterfactual Phenotyping with Censored Time-to-Events},
+  author={Nagpal, Chirag and Goswami, Mononito and Dufendach, Keith and Dubrawski, Artur},
+  journal={arXiv preprint arXiv:2202.11089},
+  year={2022}
+  }
+```
 
 ## Installation
 
@@ -207,16 +266,17 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
-
 <img style="float: right;" height="150px" src="https://www.cmu.edu/brand/\
 downloads/assets/images/wordmarks-600x600-min.jpg">
 <img style="float: right;padding-top:30px" height="110px"
 src="https://www.cs.cmu.edu/~chiragn/auton_logo.png">
 
 <br><br><br><br><br>
-<br><br><br><br><br>
 
 '''
+
+__version__ = "0.1.0"
+
 
 from .models.dsm import DeepSurvivalMachines
 from .models.dcm import DeepCoxMixtures

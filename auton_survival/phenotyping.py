@@ -27,7 +27,6 @@ characteristics."""
 import numpy as np
 import pandas as pd
 
-from lifelines import KaplanMeierFitter, NelsonAalenFitter
 from copy import deepcopy
 
 from sklearn import cluster, decomposition, mixture
@@ -53,7 +52,7 @@ class IntersectionalPhenotyper(Phenotyper):
   cat_vars : list of python str(s), default=None
       List of column names of categorical variables to phenotype on.
   num_vars : list of python str(s), default=None
-     List of column names of continuous variables to phenotype on.
+      List of column names of continuous variables to phenotype on.
   num_vars_quantiles : tuple of floats, default=(0, .5, 1.0)
       A tuple of quantiles as floats (inclusive of 0 and 1) used to
       discretize continuous variables into equal-sized bins.
@@ -67,7 +66,9 @@ class IntersectionalPhenotyper(Phenotyper):
   """
 
   def __init__(self, cat_vars=None, num_vars=None,
-               num_vars_quantiles=(0, .5, 1.0)):
+               num_vars_quantiles=(0, .5, 1.0), random_seed=0):
+
+    super().__init__(random_seed=random_seed)
 
     if isinstance(cat_vars, str): cat_vars = [cat_vars]
     if isinstance(num_vars, str): num_vars = [num_vars]
@@ -122,15 +123,16 @@ class IntersectionalPhenotyper(Phenotyper):
 
     Parameters
     -----------
-    features : pd.DataFrame
-        A pandas dataframe with rows corresponding to individual samples
+    features: pd.DataFrame
+        a pandas dataframe with rows corresponding to individual samples
         and columns as covariates.
 
     Returns
     --------
-    np.array : A numpy array containing a list of strings that define
-    subgroups from all possible combinations of specified categorical
-    and numerical variables.
+    np.array:
+        a numpy array containing a list of strings that define
+        subgroups from all possible combinations of specified categorical
+        and numerical variables.
 
     """
 
@@ -163,9 +165,11 @@ class IntersectionalPhenotyper(Phenotyper):
     phenotypes : list
         List of lists containing all possible combinations of specified
         categorical and numerical variable values.
+  
     Returns
     --------
-    list : python list of a list of strings that define subgroups.
+    list:
+        python list of a list of strings that define subgroups.
 
     """
 
@@ -190,9 +194,10 @@ class IntersectionalPhenotyper(Phenotyper):
 
     Returns
     -----------
-    np.array : A numpy array containing a list of strings that define
-    subgroups from all possible combinations of specified categorical
-    and numerical variables.
+    np.array:
+        A numpy array containing a list of strings that define
+        subgroups from all possible combinations of specified categorical
+        and numerical variables.
 
     """
 
@@ -206,33 +211,38 @@ class ClusteringPhenotyper(Phenotyper):
 
   Parameters
   -----------
-  features : pd.DataFrame
+  features: pd.DataFrame
       A pandas dataframe with rows corresponding to individual samples
       and columns as covariates.
   clustering_method : str, default='kmeans'
-      The clustering method applied for phenotyping. Options include:
-      - 'kmeans' : K-Means Clustering
-      - 'dbscan' : Density-Based Spatial Clustering of Applications with Noise (DBSCAN)
-      - 'gmm' : Gaussian Mixture
-      - 'hierarchical' : Agglomerative Clustering
-  dim_red_method : str, default=None
-      The dimensionality reductions method applied. Options include:
+      The clustering method applied for phenotyping.
+      Options include:
+
+      - 'kmeans': K-Means Clustering
+      - 'dbscan': Density-Based Spatial Clustering of Applications with Noise (DBSCAN)
+      - 'gmm': Gaussian Mixture
+      - 'hierarchical': Agglomerative Clustering
+  dim_red_method: str, default=None
+      The dimensionality reductions method applied.
+      Options include:
+
       - 'pca' : Principal Component Analysis
       - 'kpca' : Kernel Principal Component Analysis
       - 'nnmf' : Non-Negative Matrix Factorization
       - None : dimensionality reduction is not applied.
   random_seed : int, default=0
       Controls the randomness and reproducibility of called functions
-  kwargs : dict
+  kwargs: dict
       Additional arguments for dimensionality reduction and clustering
-      Please include dictionary key and item pairs specified by the following sci-kit learn modules:
-      'pca' : sklearn.decomposition.PCA
-      'nnmf' : sklearn.decomposition.NMF
-      'kpca' : sklearn.decomposition.KernelPCA
-      'kmeans' : sklearn.cluster.KMeans
-      'dbscan' : sklearn.cluster.DBSCAN
-      'gmm' : sklearn.mixture.GaussianMixture
-      'hierarchical' : sklearn.cluster.AgglomerativeClustering
+      Please include dictionary key and item pairs specified by the following scikit-learn modules:
+
+      - 'pca' : sklearn.decomposition.PCA
+      - 'nnmf' : sklearn.decomposition.NMF
+      - 'kpca' : sklearn.decomposition.KernelPCA
+      - 'kmeans' : sklearn.cluster.KMeans
+      - 'dbscan' : sklearn.cluster.DBSCAN
+      - 'gmm' : sklearn.mixture.GaussianMixture
+      - 'hierarchical' : sklearn.cluster.AgglomerativeClustering
 
   """
 
@@ -298,12 +308,12 @@ class ClusteringPhenotyper(Phenotyper):
 
     Parameters
     -----------
-    features : pd.DataFrame
-        A pandas dataframe with rows corresponding to individual
+    features: pd.DataFrame
+        a pandas dataframe with rows corresponding to individual
         samples and columns as covariates.
 
     Returns
-    -----------
+    --------
     Trained instance of clustering phenotyper.
 
     """
@@ -330,14 +340,15 @@ class ClusteringPhenotyper(Phenotyper):
 
     Parameters
     -----------
-    features : pd.DataFrame
+    features: pd.DataFrame
         A pandas dataframe with rows corresponding to individual samples
         and columns as covariates.
 
     Returns
     -----------
-    np.array : A numpy array of probability estimates of sample association
-    to learned subgroups.
+    np.array:
+        A numpy array of probability estimates of sample association to
+        learned subgroups.
 
     """
 
@@ -358,17 +369,17 @@ class ClusteringPhenotyper(Phenotyper):
 
     Parameters
     -----------
-    features : pd.DataFrame
-        A pandas dataframe with rows corresponding to individual samples
+    features: pd.DataFrame
+        a pandas dataframe with rows corresponding to individual samples
         and columns as covariates.
 
     Returns
     -----------
-    np.array : A numpy array of the probability estimates of sample
-    association to learned subgroups.
+    np.array:
+        a numpy array of the probability estimates of sample association to learned subgroups.
 
     """
- 
+
     assert self.fitted, "Phenotyper must be `fitted` before calling `phenotype`."
  
     if self.dim_red_method is not None:
@@ -377,27 +388,29 @@ class ClusteringPhenotyper(Phenotyper):
       return self.clustering_model.predict_proba(features) 
     elif self.clustering_method == 'kmeans':
       return self._predict_proba_kmeans(features)
- 
+
   def fit_phenotype(self, features):
-  
+
     """Fit and perform phenotyping on a given dataset.
 
     Parameters
     -----------
-    features : pd.DataFrame
-        A pandas dataframe with rows corresponding to individual samples
+    features: pd.DataFrame
+        a pandas dataframe with rows corresponding to individual samples
         and columns as covariates.
-  
+
     Returns
     -----------
-    np.array : A numpy array of the probability estimates of sample
-    association to learned clusters.
+    np.array
+        a numpy array of the probability estimates of sample association to learned clusters.
 
     """
 
     return self.fit(features).phenotype(features)
 
 class CoxMixturePhenotyper:
+
+  """"Not Yet Implemented"""
 
   def __init__(self):
     raise NotImplementedError()

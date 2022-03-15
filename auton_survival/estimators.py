@@ -27,6 +27,7 @@ import numpy as np
 import pandas as pd
 
 def _get_valid_idx(n, size, random_seed):
+
   """Randomly select sample indices to split into train and test data.
 
   Parameters:
@@ -44,7 +45,6 @@ def _get_valid_idx(n, size, random_seed):
 
   """
 
-  import numpy as np
   np.random.seed(random_seed)
 
 
@@ -213,10 +213,10 @@ def _fit_dcph(features, outcomes, random_seed, **hyperparams):
       - 'activation' : str, default='relu'
           Activation function
           Options include: 'relu', 'relu6', 'tanh'
-  
+ 
   Return:
   -----------
-  Trained instance of the Deep Cox Mixtures model.
+  Trained instance of the Deep Cox Proportional Hazards model.
 
   """
 
@@ -460,7 +460,7 @@ def _fit_dsm(features, outcomes, random_seed, **hyperparams):
 
   from .models.dsm import DeepSurvivalMachines
 
-  k = hyperparams.get("k", 3) 
+  k = hyperparams.get("k", 3)
   layers = hyperparams.get("layers", [100])
   iters = hyperparams.get("iters", 10)
   distribution = hyperparams.get("distribution", "Weibull")
@@ -470,7 +470,7 @@ def _fit_dsm(features, outcomes, random_seed, **hyperparams):
                                distribution=distribution,
                                temp=temperature)
 
-  model.fit(features.values, 
+  model.fit(features.values,
             outcomes['time'].values,
             outcomes['event'].values,
             iters=iters)
@@ -589,25 +589,37 @@ class SurvivalModel:
 
   """Universal interface to train multiple different survival models.
 
-  Choices include:
+  Parameters
+  -----------
+  model : str
+      A string that determines the choice of the surival analysis model.
+      Survival model choices include:
 
-  - 'rsf' : Random Survival Forests [1] model
-  - 'cph' : Cox Proportional Hazards [2] model
-  - 'dsm' : Deep Survival Machines [3] model
-  - 'dcph' : Deep Cox Mixtures [4] model
-  - 'dcm' : Deep Cox Mixtures [4] model
+      - 'dsm' : Deep Survival Machines [3] model
+      - 'dcph' : Deep Cox Proportional Hazards [2] model
+      - 'dcm' : Deep Cox Mixtures [4] model
+      - 'rsf' : Random Survival Forests [1] model
+      - 'cph' : Cox Proportional Hazards [2] model
+
+  random_seed: int
+      Controls the reproducibility of called functions.
+
 
   References
   -----------
+
   [1] Hemant Ishwaran et al. Random survival forests.
   The annals of applied statistics, 2(3):841–860, 2008.
+
   [2] Cox, D. R. (1972). Regression models and life-tables.
   Journal of the Royal Statistical Society: Series B (Methodological).
+
   [3] Chirag Nagpal, Xinyu Li, and Artur Dubrawski.
   Deep survival machines: Fully parametric survival regression and
   representation learning for censored data with competing risks. 2020.
+
   [4] Nagpal, C., Yadlowsky, S., Rostamzadeh, N., and Heller, K. (2021c).
-  Deep cox mixtures for survival regression. 
+  Deep cox mixtures for survival regression.
   In Machine Learning for Healthcare Conference, pages 674–708. PMLR
 
   """
@@ -627,17 +639,18 @@ class SurvivalModel:
 
     """This method is used to train an instance of the survival model.
 
-    Parameter
+    Parameters
     -----------
-    features : pd.DataFrame
-        A pandas dataframe with rows corresponding to individual samples and
+    features: pd.DataFrame
+        a pandas dataframe with rows corresponding to individual samples and
         columns as covariates.
     outcomes : pd.DataFrame
-        A pandas dataframe with columns 'time' and 'event'.
+        a pandas dataframe with columns 'time' and 'event'.
 
     Returns
-    -----------
-    Trained instance of the survival model.
+    --------
+    self
+        Trained instance of a survival model.
 
     """
 
@@ -655,14 +668,14 @@ class SurvivalModel:
 
     """Predict survival probabilities at specified time(s).
 
-    Parameter
+    Parameters
     -----------
-    features : pd.DataFrame
-        A pandas dataframe with rows corresponding to individual samples
+    features: pd.DataFrame
+        a pandas dataframe with rows corresponding to individual samples
         and columns as covariates.
     times: float or list
-        A float or list of the times at which to compute the survival probability.
-  
+        a float or list of the times at which to compute the survival probability.
+
     """
 
     if self.model == 'cph': return _predict_cph(self._model, features, times)
@@ -676,17 +689,18 @@ class SurvivalModel:
 
     """Predict risk of an outcome occurring within the specified time(s).
 
-    Parameter
+    Parameters
     -----------
     features : pd.DataFrame
-        A pandas dataframe with rows corresponding to individual samples and
+        a pandas dataframe with rows corresponding to individual samples and
         columns as covariates.
     times: float or list
-        A float or list of the times at which to compute the risk.
+        a float or list of the times at which to compute the risk.
 
     Returns
-    -----------
-    np.array : numpy array of the outcome risks at each time point in times.
+    ---------
+    np.array
+        numpy array of the outcome risks at each time point in times.
 
     """
 
