@@ -81,7 +81,7 @@ class DeepCoxMixtures:
       hidden layer.
   Example
   -------
-  >>> from dsm.contrib import DeepCoxMixtures
+  >>> from auton_survival.models.dcm import DeepCoxMixtures
   >>> model = DeepCoxMixtures()
   >>> model.fit(x, t, e)
 

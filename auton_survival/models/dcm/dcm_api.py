@@ -6,7 +6,7 @@ from .dcm_utilities import train_dcm, predict_survival, predict_latent_z
 
 
 class DeepCoxMixtures:
-  """A Deep Cox Mixture model.
+  """A Deep Cox Mixtures model.
 
   This is the main interface to a Deep Cox Mixture model.
   A model is instantiated with approporiate set of hyperparameters and
@@ -195,4 +195,4 @@ class DeepCoxMixtures:
                       "model using the `fit` method on some training data " +
                       "before calling `predict_latent_z`.")
 
- 
+

@@ -3,7 +3,7 @@ import torch.nn as nn
 
 import numpy as np
 
-from dsm.dsm_torch import create_representation
+from auton_survival.models.dsm.dsm_torch import create_representation
 
 class DeepCoxMixturesTorch(nn.Module):
   """PyTorch model definition of the Deep Cox Mixture Survival Model.
