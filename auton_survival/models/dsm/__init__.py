@@ -29,9 +29,9 @@ Deep Survival Machines
 
 .. figure:: https://ndownloader.figshare.com/files/25259852
    :figwidth: 20 %
-   :alt: map to buried treasure
+   :alt: Schematic Description of Deep Survival Machines
 
-   This is the caption of the figure (a simple paragraph).
+   Schematic Description of Deep Survival Machines.
 
 **Deep Survival Machines (DSM)** is a fully parametric approach to model
 Time-to-Event outcomes in the presence of Censoring first introduced in
@@ -60,8 +60,11 @@ Example Usage
 Deep Recurrent Survival Machines
 --------------------------------
 
-<img width=100% src=https://ndownloader.figshare.com/files/28329918>
+.. figure:: https://ndownloader.figshare.com/files/28329918
+   :figwidth: 20 %
+   :alt: Schematic Description of Deep Survival Machines
 
+   Schematic Description of Deep Survival Machines.
 
 **Deep Recurrent Survival Machines (DRSM)** builds on the original **DSM**
 model and allows for learning of representations of the input covariates using
@@ -92,20 +95,23 @@ before determining the underlying survival distributions.
 References
 ----------
 
-Please cite the following papers if you are using the `dsm` package.
+Please cite the following papers if you are using the `auton_survival` package.
 
 [1] [Deep Survival Machines:
 Fully Parametric Survival Regression and
 Representation Learning for Censored Data with Competing Risks."
-arXiv preprint arXiv:2003.01176 (2020)](https://arxiv.org/abs/2003.01176)</a>
+IEEE Journal of Biomedical and Health Informatics (2021)](https://arxiv.org/abs/2003.01176)</a>
 
 ```
-  @article{nagpal2020deep,
-  title={Deep Survival Machines: Fully Parametric Survival Regression and\
-  Representation Learning for Censored Data with Competing Risks},
+  @article{nagpal2021dsm,
+  title={Deep survival machines: Fully parametric survival regression and representation learning for censored data with competing risks},
   author={Nagpal, Chirag and Li, Xinyu and Dubrawski, Artur},
-  journal={arXiv preprint arXiv:2003.01176},
-  year={2020}
+  journal={IEEE Journal of Biomedical and Health Informatics},
+  volume={25},
+  number={8},
+  pages={3163--3175},
+  year={2021},
+  publisher={IEEE}
   }
 ```
 
@@ -126,13 +132,27 @@ Spring Symposium (2021)](http://proceedings.mlr.press/v146/nagpal21a.html)</a>
 Healthcare (2021)](https://arxiv.org/abs/2101.06536)</a>
 
 ```
-  @article{nagpal2021dcm,
+  @inproceedings{nagpal2021dcm,
   title={Deep Cox mixtures for survival regression},
   author={Nagpal, Chirag and Yadlowsky, Steve and Rostamzadeh, Negar and Heller, Katherine},
-  journal={arXiv preprint arXiv:2101.06536},
-  year={2021}
+  booktitle={Machine Learning for Healthcare Conference},
+  pages={674--708},
+  year={2021},
+  organization={PMLR}
   }
 ```
+
+[4] [Counterfactual Phenotyping with Censored Time-to-Events (2022)](https://arxiv.org/abs/2202.11089)</a>
+
+```
+  @article{nagpal2022counterfactual,
+  title={Counterfactual Phenotyping with Censored Time-to-Events},
+  author={Nagpal, Chirag and Goswami, Mononito and Dufendach, Keith and Dubrawski, Artur},
+  journal={arXiv preprint arXiv:2202.11089},
+  year={2022}
+  }
+```
+
 
 """
 
