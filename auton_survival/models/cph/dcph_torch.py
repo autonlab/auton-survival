@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 
-from dsm.dsm_torch import create_representation
+from auton_survival.models.dsm.dsm_torch import create_representation
 
 
 class DeepCoxPHTorch(nn.Module):

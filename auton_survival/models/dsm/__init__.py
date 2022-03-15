@@ -262,7 +262,7 @@ class DSMBase():
     self.torch_model = model.eval()
     self.fitted = True
 
-    return self 
+    return self
 
 
   def compute_nll(self, x, t, e):
@@ -491,11 +491,11 @@ class DeepRecurrentSurvivalMachines(DSMBase):
   time-dependent covariates.
 
   For full details on Deep Recurrent Survival Machines, refer to our paper [1].
-  
+
   References
   ----------
   [1] <a href="http://proceedings.mlr.press/v146/nagpal21a.html">
-  Deep Parametric Time-to-Event Regression with Time-Varying Covariates 
+  Deep Parametric Time-to-Event Regression with Time-Varying Covariates
   AAAI Spring Symposium on Survival Prediction</a>
 
   """

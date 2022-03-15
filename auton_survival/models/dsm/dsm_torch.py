@@ -103,7 +103,7 @@ class DeepSurvivalMachinesTorch(torch.nn.Module):
 
   .. warning::
     Not designed to be used directly.
-    Please use the API inferface `dsm.dsm_api.DeepSurvivalMachines` !!!
+    Please use the API inferface `dsm.DeepSurvivalMachines` !!!
 
   Parameters
   ----------
@@ -222,7 +222,7 @@ class DeepRecurrentSurvivalMachinesTorch(DeepSurvivalMachinesTorch):
 
   .. warning::
     Not designed to be used directly.
-    Please use the API inferface `dsm.dsm_api.DeepRecurrentSurvivalMachines`!!
+    Please use the API inferface `dsm.DeepRecurrentSurvivalMachines`!!
 
   Parameters
   ----------
@@ -379,7 +379,7 @@ class DeepConvolutionalSurvivalMachinesTorch(DeepSurvivalMachinesTorch):
   .. warning::
     Not designed to be used directly.
     Please use the API inferface
-    `dsm.dsm_api.DeepConvolutionalSurvivalMachines`!!
+    `dsm.DeepConvolutionalSurvivalMachines`!!
 
   Parameters
   ----------
@@ -460,7 +460,7 @@ class DeepCNNRNNSurvivalMachinesTorch(DeepRecurrentSurvivalMachinesTorch):
 
   .. warning::
     Not designed to be used directly.
-    Please use the API inferface `dsm.dsm_api.DeepCNNRNNSurvivalMachines`!!
+    Please use the API inferface `dsm.DeepCNNRNNSurvivalMachines`!!
 
   Parameters
   ----------
