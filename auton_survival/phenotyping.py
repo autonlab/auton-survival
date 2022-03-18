@@ -135,6 +135,8 @@ class IntersectionalPhenotyper(Phenotyper):
         and numerical variables.
 
     """
+    
+    features = features.copy()
 
     assert self.fitted, "Phenotyper must be `fitted` before calling `phenotype`."
     features = deepcopy(features)
@@ -142,9 +144,9 @@ class IntersectionalPhenotyper(Phenotyper):
     for num_var in self.num_vars:
 
       var_min, var_max = self.min_max[num_var]
-
-      features[num_var][features[num_var]>=var_max] = var_max
-      features[num_var][features[num_var]<=var_min] = var_min
+    
+      features.loc[features[num_var]>=var_max, [num_var]] = var_max
+      features.loc[features[num_var]<=var_min, [num_var]] = var_min
 
       features[num_var] = pd.cut(features[num_var], self.cut_bins[num_var],
                                  include_lowest=True)
