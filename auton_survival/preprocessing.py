@@ -178,9 +178,61 @@ class Scaler:
     assert scaling_strategy in Scaler._VALID_SCALING_STRAT
 
     self.scaling_strategy = scaling_strategy
+    
+  def fit(self, data, feats=[]):
+    """Fits scaler to dataset using scaling strategy.
+
+    Parameters
+    ----------
+    data: pandas.DataFrame
+        Dataframe to be scaled.
+    feats: list
+        List of numerical/continuous features to be scaled.
+        **NOTE**: if left empty, all features are interpreted as numerical.
+
+    Returns:
+        Fitted instance of scaler.
+    """
+    
+    df = data.copy()
+
+    if self.scaling_strategy == 'standard':
+      scaler = StandardScaler()
+    elif self.scaling_strategy == 'minmax':
+      scaler = MinMaxScaler()
+    else:
+      scaler = None
+
+    if scaler is not None:
+      if feats: self.scaler = scaler.fit(df[feats])
+      else: self.scaler = scaler.fit_(df)
+        
+    self.fitted = True
+    return self
+
+  def transform(self, data, feats=[]):
+    """Scales data using scaling strategy.
+
+    Parameters
+    ----------
+    data: pandas.DataFrame
+        Dataframe to be scaled.
+    feats: list
+        List of numerical/continuous features to be scaled.
+        **NOTE**: if left empty, all features are interpreted as numerical.
+
+    Returns:
+        Fitted instance of scaler.
+    """
+    df = data.copy()
+    
+    if feats: df[feats] = self.scaler.transform(df[feats])
+    else: df[df.columns] = self.scaler.transform(df)
+
+    return df
 
   def fit_transform(self, data, feats=[]):
-    """Scales dataset using the scaling strategy.
+    """Fits scaler and scales dataset using the scaling strategy.
 
     Parameters
     ----------

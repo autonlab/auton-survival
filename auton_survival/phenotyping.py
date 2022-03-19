@@ -182,6 +182,7 @@ class IntersectionalPhenotyper(Phenotyper):
         for j in range(len(ft_names)):
             row.append(ft_names[j]+":"+str(phenotypes[i][j]))
         renamed.append(" & ".join(row))
+        
     return renamed
 
   def fit_phenotype(self, features):
