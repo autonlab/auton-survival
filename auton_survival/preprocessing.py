@@ -179,7 +179,7 @@ class Scaler:
 
     self.scaling_strategy = scaling_strategy
     
-  def fit(self, data, feats=[]):
+  def fit(self, data, num_feats=[]):
     """Fits scaler to dataset using scaling strategy.
 
     Parameters
@@ -194,6 +194,8 @@ class Scaler:
         Fitted instance of scaler.
     """
     
+    self._num_feats = num_feats
+    
     df = data.copy()
 
     if self.scaling_strategy == 'standard':
@@ -204,13 +206,15 @@ class Scaler:
       scaler = None
 
     if scaler is not None:
-      if feats: self.scaler = scaler.fit(df[feats])
-      else: self.scaler = scaler.fit_(df)
+      if len(self._num_feats): 
+        self.scaler = scaler.fit(df[self._num_feats])
+      else: 
+        self.scaler = scaler.fit(df)
         
     self.fitted = True
     return self
 
-  def transform(self, data, feats=[]):
+  def transform(self, data):
     """Scales data using scaling strategy.
 
     Parameters
@@ -226,13 +230,15 @@ class Scaler:
     """
     df = data.copy()
     
-    if feats: df[feats] = self.scaler.transform(df[feats])
-    else: df[df.columns] = self.scaler.transform(df)
+    if len(self._num_feats): 
+        df[self._num_feats] = self.scaler.transform(df[self._num_feats])
+    else: 
+        df[df.columns] = self.scaler.transform(df)
 
     return df
 
   def fit_transform(self, data, feats=[]):
-    """Fits scaler and scales dataset using the scaling strategy.
+    """Fits a scaler and rescales a dataset using a standard rescaling strategy.
 
     Parameters
     ----------

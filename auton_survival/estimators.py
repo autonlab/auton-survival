@@ -103,7 +103,7 @@ def _fit_dcm(features, outcomes, random_seed, **hyperparams):
 
   """
 
-  from .models.dcm import DeepCoxMixture
+  from .models.dcm import DeepCoxMixtures
   from sdcm.dcm_utils import train
 
   import torch
@@ -338,8 +338,8 @@ def _fit_cph(features, outcomes, random_seed, **hyperparams):
       Keys correspond to parameter names as strings and items correspond 
       to parameter values.
       Options include:
-      - 'lr' : float, default=1e-3
-          Learning rate
+      - 'l2' : float, default=1e-3
+          Penalty to the size of the coefficients during regression.
 
   Returns
   -----------
@@ -596,7 +596,7 @@ class SurvivalModel:
       Survival model choices include:
 
       - 'dsm' : Deep Survival Machines [3] model
-      - 'dcph' : Deep Cox Proportional Hazards [2] model
+      - 'dcph' : Deep Cox Proportional Hazards [5,6] model
       - 'dcm' : Deep Cox Mixtures [4] model
       - 'rsf' : Random Survival Forests [1] model
       - 'cph' : Cox Proportional Hazards [2] model
@@ -604,23 +604,24 @@ class SurvivalModel:
   random_seed: int
       Controls the reproducibility of called functions.
 
-
   References
   -----------
 
   [1] Hemant Ishwaran et al. Random survival forests.
   The annals of applied statistics, 2(3):841–860, 2008.
-
   [2] Cox, D. R. (1972). Regression models and life-tables.
   Journal of the Royal Statistical Society: Series B (Methodological).
-
   [3] Chirag Nagpal, Xinyu Li, and Artur Dubrawski.
   Deep survival machines: Fully parametric survival regression and
   representation learning for censored data with competing risks. 2020.
-
   [4] Nagpal, C., Yadlowsky, S., Rostamzadeh, N., and Heller, K. (2021c).
-  Deep cox mixtures for survival regression.
-  In Machine Learning for Healthcare Conference, pages 674–708. PMLR
+  Deep cox mixtures for survival regression. In Machine Learning for 
+  Healthcare Conference, pages 674–708. PMLR
+  [5] Faraggi, David, and Richard Simon. "A neural network model for survival
+  data." Statistics in medicine 14.1 (1995): 73-82.
+  [6] Katzman, Jared L., et al. "DeepSurv: personalized treatment recommender
+  system using a Cox proportional hazards deep neural network."
+  BMC medical research methodology 18.1 (2018): 1-12.
 
   """
 
