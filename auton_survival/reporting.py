@@ -14,8 +14,6 @@ from lifelines.plotting import add_at_risk_counts
 
 from sklearn.metrics import roc_curve, auc
 
-import os
-
 
 def plot_kaplanmeier(outcomes, groups=None, plot_counts=False, **kwargs):
 

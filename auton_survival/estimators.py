@@ -102,9 +102,9 @@ def _fit_dcm(features, outcomes, random_seed, **hyperparams):
   np.array : A float or list of the times at which to compute the survival probability.
 
   """
+  raise NotImplementedError()
 
-  from .models.dcm import DeepCoxMixture
-  from sdcm.dcm_utils import train
+  from .models.dcm import DeepCoxMixtures
 
   import torch
   torch.manual_seed(random_seed)
@@ -161,6 +161,8 @@ def _predict_dcm(model, features, times):
   np.array : A numpy array of the survival probabilites at each time point in times.
 
   """
+
+  raise NotImplementedError()
 
   from sdcm.dcm_utils import predict_scores
 
@@ -352,7 +354,9 @@ def _fit_cph(features, outcomes, random_seed, **hyperparams):
   data = outcomes.join(features)
   penalizer = hyperparams.get('l2', 1e-3)
 
-  return CoxPHFitter(penalizer=penalizer).fit(data, duration_col='time', event_col='event')
+  return CoxPHFitter(penalizer=penalizer).fit(data, 
+                                              duration_col='time', 
+                                              event_col='event')
 
 def _fit_rsf(features, outcomes, random_seed, **hyperparams):
 
@@ -708,9 +712,8 @@ class SurvivalModel:
 
 class CounterfactualSurvivalModel:
 
-  """Universal interface to train multiple differenct counterfactual survival models."""
-
-  _VALID_MODELS = ['rsf', 'cph', 'dsm']
+  """Universal interface to train multiple different counterfactual 
+     survival models."""
 
   def __init__(self, treated_model, control_model):
 
@@ -728,3 +731,4 @@ class CounterfactualSurvivalModel:
     treated_outcomes = self.treated_model.predict(features, times)
 
     return treated_outcomes, control_outcomes
+  

@@ -179,7 +179,6 @@ class SurvivalRegressionCV:
         for metric in metrics:
           raise NotImplementedError()
 
- 
 class CounterfactualSurvivalRegressionCV:
 
   r"""Universal interface to train Counterfactual Survival Analysis models in a
@@ -227,7 +226,7 @@ class CounterfactualSurvivalRegressionCV:
   In Machine Learning for Healthcare Conference, pages 674–708. PMLR
 
   """
-  
+
   def __init__(self, model, cv_folds=5, random_seed=0, hyperparam_grid={}):
 
     self.model = model
