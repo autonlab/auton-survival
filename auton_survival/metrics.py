@@ -33,6 +33,8 @@ import numpy as np
 
 from tqdm import tqdm
 
+import warnings
+
 def survival_diff_metric(metric, outcomes, treatment_indicator,
                          weights=None, horizon=None, interpolate=True,
                          weights_clip=1e-2, n_bootstrap=None, 
@@ -86,10 +88,10 @@ def survival_diff_metric(metric, outcomes, treatment_indicator,
     assert horizon is not None, "Please specify Event Horizon"
 
   if metric == 'hazard_ratio':
-    raise Warning("WARNING: You are computing Hazard Ratios.\n Make sure you have tested the PH Assumptions.")
+    Warning("WARNING: You are computing Hazard Ratios.\n Make sure you have tested the PH Assumptions.")
   if (n_bootstrap is None) and (weights is not None): 
-    raise Warning("Treatment Propensity weights would be ignored, Since no boostrapping is performed."+
-                  "In order to incorporate IPTW weights please specify number of bootstrap iterations n_bootstrap>=1")
+    Warning("Treatment Propensity weights would be ignored, Since no boostrapping is performed."+
+            "In order to incorporate IPTW weights please specify number of bootstrap iterations n_bootstrap>=1")
   # Bootstrapping ...
   if n_bootstrap is not None:
     assert isinstance(n_bootstrap, int), '`bootstrap` must be None or int'
@@ -102,7 +104,7 @@ def survival_diff_metric(metric, outcomes, treatment_indicator,
   if weights is None:
     weights = 0.5*np.ones(len(outcomes))
 
-  weights[weights>weights_clip] = 1-weights_clip
+  weights[weights>(1.-weights_clip)] = 1-weights_clip
   weights[weights<weights_clip] = weights_clip
 
   iptw_weights = 1./((is_treated*weights)+((1-is_treated)*(1-weights)))
@@ -132,7 +134,7 @@ def survival_diff_metric(metric, outcomes, treatment_indicator,
                     treated_weights=iptw_weights[treatment_indicator],
                     control_weights=iptw_weights[~treatment_indicator],
                     size_bootstrap=size_bootstrap,
-                    random_seed=random_seed*i) for i in range(n_bootstrap)]
+                    random_seed=i) for i in range(n_bootstrap)]
 
 def survival_regression_metric(metric, predictions, outcomes, times,
                                folds=None, fold=None):
