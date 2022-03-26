@@ -2,17 +2,11 @@ import numpy as np
 import pandas as pd
 
 from lifelines import KaplanMeierFitter, NelsonAalenFitter
-from zmq import CURVE_SECRETKEY
-
-from auton_survival.phenotyping import ClusteringPhenotyper, CoxMixturePhenotyper
-from auton_survival.preprocessing import Preprocessor
 
 from collections import Counter
 
 from lifelines import KaplanMeierFitter, CoxPHFitter
 from lifelines.plotting import add_at_risk_counts
-
-from sklearn.metrics import roc_curve, auc
 
 
 def plot_kaplanmeier(outcomes, groups=None, plot_counts=False, **kwargs):
