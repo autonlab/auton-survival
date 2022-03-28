@@ -33,10 +33,12 @@ import numpy as np
 
 from tqdm import tqdm
 
+import warnings
+
 def survival_diff_metric(metric, outcomes, treatment_indicator,
                          weights=None, horizon=None, interpolate=True,
                          weights_clip=1e-2, n_bootstrap=None, 
-                         size_bootstrap=1.0, random_seed=0):
+                         size_bootstrap=1.0, random_seed=1):
 
   """Compute metrics for comparing population level survival outcomes across treatment arms.
 
@@ -86,7 +88,7 @@ def survival_diff_metric(metric, outcomes, treatment_indicator,
     assert horizon is not None, "Please specify Event Horizon"
 
   if metric == 'hazard_ratio':
-    raise Warning("WARNING: You are computing Hazard Ratios.\n Make sure you have tested the PH Assumptions.")
+    warning.warn("WARNING: You are computing Hazard Ratios.\n Make sure you have tested the PH Assumptions.")
   if (n_bootstrap is None) and (weights is not None): 
     raise Warning("Treatment Propensity weights would be ignored, Since no boostrapping is performed."+
                   "In order to incorporate IPTW weights please specify number of bootstrap iterations n_bootstrap>=1")
@@ -125,6 +127,7 @@ def survival_diff_metric(metric, outcomes, treatment_indicator,
                    treated_weights=iptw_weights[treatment_indicator],
                    control_weights=iptw_weights[~treatment_indicator])
   else:
+    if random_seed == 0: random_seed+=1
     return [_metric(treated_outcomes,
                     control_outcomes,
                     horizon=horizon,
@@ -134,8 +137,9 @@ def survival_diff_metric(metric, outcomes, treatment_indicator,
                     size_bootstrap=size_bootstrap,
                     random_seed=random_seed*i) for i in range(n_bootstrap)]
 
-def survival_regression_metric(metric, predictions, outcomes, times,
-                               folds=None, fold=None):
+from sksurv import metrics, util
+def survival_regression_metric(metric, outcomes_train, outcomes_test, 
+                               predictions, times):
   """Compute metrics to assess survival model performance.
     
   Parameters
@@ -147,16 +151,16 @@ def survival_regression_metric(metric, predictions, outcomes, times,
       - 'ibs' : integrated brier score
       - 'auc': cumulative dynamic area under the curve
       - 'ctd' : concordance index inverse probability of censoring weights (ipcw)
+  outcomes_train : pd.DataFrame
+      A pandas dataframe with rows corresponding to individual samples and columns 'time' and 'event'
+      for test data.    
+  outcomes_test : pd.DataFrame
+      A pandas dataframe with rows corresponding to individual samples and columns 'time' and 'event'
+      for training data.
   predictions: np.array
       A numpy array of survival time predictions for the samples.
-  outcomes : pd.DataFrame
-      A pandas dataframe with rows corresponding to individual samples and columns 'time' and 'event'.
   times: np.array
       The time points at which to compute metric value(s).
-  folds: pd.DataFrame, default=None
-      A pandas dataframe of train and test folds.
-  fold: int, default=None
-      A specific fold number in the folds input.
   
   Returns
   -----------
@@ -164,32 +168,9 @@ def survival_regression_metric(metric, predictions, outcomes, times,
         
   """
 
-  if folds is None:
-
-    survival_train = util.Surv.from_dataframe('event', 'time', outcomes)
-    survival_test  = survival_train
-    predictions_test = predictions
-
-  else:
-
-    outcomes_train = outcomes.iloc[folds!=fold]
-    outcomes_test = outcomes.iloc[folds==fold]
-    predictions_test = predictions[folds==fold]
-
-    te_valid_idx = outcomes_test['time']<= outcomes_train['time'].max()
-
-    outcomes_test = outcomes_test[te_valid_idx]
-    predictions_test = predictions_test[te_valid_idx.values]
-
-    te_min, te_max = outcomes_test['time'].min(), outcomes_test['time'].max()
-
-    survival_train = util.Surv.from_dataframe('event', 'time', outcomes_train)
-    survival_test  = util.Surv.from_dataframe('event', 'time', outcomes_test)
- 
-    unique_time_mask = (times>te_min)&(times<te_max)
-
-    times = times[unique_time_mask]
-    predictions_test = predictions_test[:, unique_time_mask]
+  survival_train = util.Surv.from_dataframe('event', 'time', outcomes_train)
+  survival_test = util.Surv.from_dataframe('event', 'time', outcomes_test)
+  predictions_test = predictions    
 
   if metric == 'brs':
     return metrics.brier_score(survival_train, survival_test, 
@@ -198,13 +179,18 @@ def survival_regression_metric(metric, predictions, outcomes, times,
     return metrics.integrated_brier_score(survival_train, survival_test,
                                           predictions_test, times)
   elif metric == 'auc':
-    return float(metrics.cumulative_dynamic_auc(survival_train, survival_test,
-                                                1-predictions_test, times)[0])
+    return metrics.cumulative_dynamic_auc(survival_train, survival_test,
+                                            1-predictions_test, times)[0]
   elif metric == 'ctd':
-    return metrics.concordance_index_ipcw(survival_train, survival_test,
-                                          1-predictions_test, tau=times)[0]
+    vals = []
+    for i in range(len(times)):
+        vals.append(metrics.concordance_index_ipcw(survival_train, survival_test,
+                                              1-predictions_test[:,i], tau=times[i])[0])
+    return vals
+
   else:
     raise NotImplementedError()
+
 
 def phenotype_purity(phenotypes, outcomes,
                      strategy='instantaneous', folds=None, 

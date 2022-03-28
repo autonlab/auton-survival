@@ -54,7 +54,7 @@ def _get_valid_idx(n, size, random_seed):
 
   return vidx
 
-def _fit_dcm(features, outcomes, random_seed, **hyperparams):
+def _fit_dcm(features, outcomes, random_seed, hyperparams):
 
   r"""Fit the Deep Cox Mixtures (DCM) [1] model to a given dataset.
 
@@ -94,21 +94,21 @@ def _fit_dcm(features, outcomes, random_seed, **hyperparams):
       - 'epochs' : int, default=50
           Number of complete passes through the training data.
       -'smoothing_factor' : int, default=0
+      -'gamma' : int, default=10
+      -'vsize': float
+        Amount of data to set aside as the validation set.
+      -'val_data': tuple
+        A tuple of the validation dataset. If passed vsize is ignored.
 
   Returns
   -----------
   Trained instance of the Deep Cox Mixtures model.
-  np.array : breslow splines used to interpolate baseline survival rates.
-  np.array : A float or list of the times at which to compute the survival probability.
 
   """
 
-  from .models.dcm import DeepCoxMixtures
-  from sdcm.dcm_utils import train
-
-  import torch
-  torch.manual_seed(random_seed)
-  np.random.seed(random_seed)
+  from .models.dcm.dcm_api import DeepCoxMixtures
+  from .models.dcm.dcm_torch import DeepCoxMixturesTorch
+  from .models.dcm.dcm_utilities import train_dcm
 
   k = hyperparams.get("k", 3) 
   layers = hyperparams.get("layers", [100])
@@ -116,65 +116,43 @@ def _fit_dcm(features, outcomes, random_seed, **hyperparams):
   lr = hyperparams.get("lr", 1e-3)
   epochs = hyperparams.get("epochs", 50)
   smoothing_factor = hyperparams.get("smoothing_factor", 0)
+  gamma = hyperparams.get("gamma", 10)
+  vsize = hyperparams.get("vsize", 0.15)
+  val_data = hyperparams.get("val_data", None)
+    
+  t = outcomes['time'].values
+  e = outcomes['event'].values
+  x = features.values
 
-  if len(layers): model = DeepCoxMixture(k=k, inputdim=features.shape[1], hidden=layers[0])
-  else: model = CoxMixture(k=k, inputdim=features.shape[1])
+  dcm = DeepCoxMixtures()
+    
+  processed_data = dcm._preprocess_training_data(x, t, e,
+                                                vsize=vsize, 
+                                                val_data=val_data,
+                                                random_seed=0)
+    
+  x_train, t_train, e_train, x_val, t_val, e_val = processed_data
+  inputdim = x_train.shape[-1]
+  model = DeepCoxMixturesTorch(inputdim,
+                                k=k,
+                                gamma=gamma,
+                                use_activation=False,
+                                layers=layers,
+                                optimizer='Adam')
 
-  x = torch.from_numpy(features.values.astype('float32'))
-  t = torch.from_numpy(outcomes['time'].values.astype('float32'))
-  e = torch.from_numpy(outcomes['event'].values.astype('float32'))
+  model, _ = train_dcm(model,
+                        (x_train, t_train, e_train),
+                        (x_val, t_val, e_val),
+                        epochs=epochs,
+                        lr=lr,
+                        bs=bs,
+                        return_losses=True,
+                        smoothing_factor=smoothing_factor,
+                        use_posteriors=True)
+ 
+  return model
 
-  vidx = _get_valid_idx(x.shape[0], 0.15, random_seed)
-
-  train_data = (x[~vidx], t[~vidx], e[~vidx])
-  val_data = (x[vidx], t[vidx], e[vidx])
-
-  (model, breslow_splines, unique_times) = train(model,
-                                                 train_data,
-                                                 val_data, 
-                                                 epochs=epochs,
-                                                 lr=lr, bs=bs,
-                                                 use_posteriors=True,
-                                                 patience=5,
-                                                 return_losses=False,
-                                                 smoothing_factor=smoothing_factor)
-
-  return (model, breslow_splines, unique_times)
-
-def _predict_dcm(model, features, times):
-
-  """Predict survival probabilities at specified time(s) using the
-  Deep Cox Mixtures model.
-
-  Parameters
-  -----------
-  model : Trained instance of the Deep Cox Mixtures model.
-  features : pd.DataFrame
-      A pandas dataframe with rows corresponding to individual
-      samples and columns as covariates.
-  times: float or list
-      A float or list of the times at which to compute
-      the survival probability.
-
-  Returns
-  -----------
-  np.array : A numpy array of the survival probabilites at each time point in times.
-
-  """
-
-  from sdcm.dcm_utils import predict_scores
-
-  import torch
-  x = torch.from_numpy(features.values.astype('float32'))
-
-  survival_predictions = predict_scores(model, x, None, model[-1])
-  if len(times)>1:
-    survival_predictions = pd.DataFrame(survival_predictions, columns=times).T
-    return __interpolate_missing_times(survival_predictions, times)
-  else:
-    return survival_predictions
-
-def _fit_dcph(features, outcomes, random_seed, **hyperparams):
+def _fit_dcph(features, outcomes, random_seed, hyperparams):
 
   """Fit a Deep Cox Proportional Hazards Model/Farragi Simon Network [1,2]
    model to a given dataset.
@@ -282,7 +260,7 @@ def __interpolate_missing_times(survival_predictions, times):
 
   Returns
   -----------
-  pd.DataFrame : Survival probabilities interpolated using 'backfill'
+  np.array : Survival probabilities interpolated using 'backfill'
   method at missing time points.
 
   """
@@ -309,7 +287,7 @@ def _predict_dcph(model, features, times):
 
   Returns
   -----------
-  pd.DataFrame : A pandas dataframe of the survival probabilites at each
+  np.array : A numpy array of the survival probabilites at each
   time point in times.
 
   """
@@ -321,7 +299,7 @@ def _predict_dcph(model, features, times):
   return __interpolate_missing_times(survival_predictions, times)
 
 
-def _fit_cph(features, outcomes, random_seed, **hyperparams):
+def _fit_cph(features, outcomes, random_seed, hyperparams):
   """Fit a linear Cox Proportional Hazards model to a given dataset.
 
   Parameters
@@ -354,7 +332,7 @@ def _fit_cph(features, outcomes, random_seed, **hyperparams):
 
   return CoxPHFitter(penalizer=penalizer).fit(data, duration_col='time', event_col='event')
 
-def _fit_rsf(features, outcomes, random_seed, **hyperparams):
+def _fit_rsf(features, outcomes, random_seed, hyperparams):
 
   """Fit the Random Survival Forests (RSF) [1] model to a given dataset.
   RSF is an extension of Random Forests to the survival settings where
@@ -413,7 +391,7 @@ def _fit_rsf(features, outcomes, random_seed, **hyperparams):
   return rsf
 
 
-def _fit_dsm(features, outcomes, random_seed, **hyperparams):
+def _fit_dsm(features, outcomes, random_seed, hyperparams):
 
   """Fit the Deep Survival Machines (DSM) [1] model to a given dataset.
 
@@ -492,7 +470,8 @@ def _predict_dsm(model, features, times):
 
   Returns
   -----------
-  np.array : numpy array of the survival probabilites at each point in times.
+  np.array : A numpy array of the survival probabilites at each
+  time point in times.
 
   """
 
@@ -514,7 +493,8 @@ def _predict_cph(model, features, times):
 
   Returns
   -----------
-  np.array : numpy array of the survival probabilites at each time point in times.
+  np.array : A numpy array of the survival probabilites at each
+  time point in times.
 
   """
 
@@ -537,8 +517,8 @@ def _predict_rsf(model, features, times):
 
   Returns
   -----------
-  pd.DataFrame : A pandas dataframe of the survival probabilites at each time point in times.
-      Probabilities are interpolated using 'backfill' method at missing time points.
+  np.array : A numpy array of the survival probabilites at each
+  time point in times.
   
   """
 
@@ -567,7 +547,7 @@ def _predict_dcm(model, features, times):
 
   Returns
   -----------
-  pd.DataFrame : A pandas dataframe of the survival probabilites at each
+  np.array : A numpy array of the survival probabilites at each
   time point in times.
 
   """
@@ -575,12 +555,12 @@ def _predict_dcm(model, features, times):
   if isinstance(times, float) or isinstance(times, int):
     times = [float(times)]
 
-  from .models.dcm.dcm_utilities import predict_scores
+  from .models.dcm.dcm_utilities import predict_survival
 
   import torch
   x = torch.from_numpy(features.values.astype('float32'))
 
-  survival_predictions = predict_scores(model, x, times)
+  survival_predictions = predict_survival(model, x, times)
   survival_predictions = pd.DataFrame(survival_predictions, columns=times).T
 
   return __interpolate_missing_times(survival_predictions, times)
@@ -630,11 +610,13 @@ class SurvivalModel:
   def __init__(self, model, random_seed=0, **hyperparams):
 
     assert model in SurvivalModel._VALID_MODELS
-
     self.model = model
-    self.hyperparams = hyperparams
     self.random_seed = random_seed
     self.fitted = False
+    if hyperparams:
+        self.hyperparams = hyperparams['hyperparams']
+    else:
+        self.hyperparams = {}
 
   def fit(self, features, outcomes):
 
@@ -655,11 +637,11 @@ class SurvivalModel:
 
     """
 
-    if self.model == 'cph': self._model = _fit_cph(features, outcomes, self.random_seed, **self.hyperparams)
-    elif self.model == 'rsf': self._model = _fit_rsf(features, outcomes, self.random_seed, **self.hyperparams)
-    elif self.model == 'dsm': self._model = _fit_dsm(features, outcomes, self.random_seed, **self.hyperparams)
-    elif self.model == 'dcph': self._model = _fit_dcph(features, outcomes, self.random_seed, **self.hyperparams)
-    elif self.model == 'dcm': self._model = _fit_dcm(features, outcomes, self.random_seed, **self.hyperparams)
+    if self.model == 'cph': self._model = _fit_cph(features, outcomes, self.random_seed, self.hyperparams)
+    elif self.model == 'rsf': self._model = _fit_rsf(features, outcomes, self.random_seed, self.hyperparams)
+    elif self.model == 'dsm': self._model = _fit_dsm(features, outcomes, self.random_seed, self.hyperparams)
+    elif self.model == 'dcph': self._model = _fit_dcph(features, outcomes, self.random_seed, self.hyperparams)
+    elif self.model == 'dcm': self._model = _fit_dcm(features, outcomes, self.random_seed, self.hyperparams)
     else : raise NotImplementedError()
 
     self.fitted = True
@@ -676,6 +658,11 @@ class SurvivalModel:
         and columns as covariates.
     times: float or list
         a float or list of the times at which to compute the survival probability.
+        
+    Returns
+    -----------
+    np.array : A numpy array of the survival probabilites at each
+    time point in times.
 
     """
 

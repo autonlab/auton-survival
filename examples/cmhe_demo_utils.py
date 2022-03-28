@@ -14,8 +14,6 @@ from matplotlib import cm
 from matplotlib.colors import ListedColormap, LinearSegmentedColormap
 
 def plot_synthetic_data(outcomes, features, interventions):
-    plt.rcParams['text.usetex'] = True
-    plt.rcParams['text.latex.preamble'] = r"\usepackage{bm} \usepackage{amsmath}"
     fs = 48 # Font size
     s = 65 # Size of the marker
     lim = 2.25
@@ -39,8 +37,8 @@ def plot_synthetic_data(outcomes, features, interventions):
                     cmap=color_maps[z])
 
     ax1.tick_params(axis="both", labelsize=21)
-    ax1.set_xlabel( r'$\mathcal{X}_1 \longrightarrow$', fontsize=fs)
-    ax1.set_ylabel( r'$\mathcal{X}_2 \longrightarrow$', fontsize=fs)
+    ax1.set_xlabel(r'$\mathcal{X}_1 \longrightarrow$', fontsize=fs)
+    ax1.set_ylabel(r'$\mathcal{X}_2 \longrightarrow$', fontsize=fs)
     ax1.text(-2,0.5, s=r'$\mathcal{Z}_1$', color='C0', fontsize=fs, 
              bbox=dict(lw=2, boxstyle="round", ec='C0', fc=(.95, .95, .95)))
     ax1.text(1,1.75, s=r'$\mathcal{Z}_2$', color='C2', fontsize=fs, 
@@ -60,9 +58,9 @@ def plot_synthetic_data(outcomes, features, interventions):
 
     ax2.set_xlabel(r'$\mathcal{X}_3 \longrightarrow$', fontsize=fs)
     ax2.set_ylabel(r'$\mathcal{X}_4 \longrightarrow$', fontsize=fs)
-    ax2.text(-1.25,.25, s=r'$\bm{\phi}_1$', color='C0', fontsize=fs, 
+    ax2.text(-1.25,.25, s=r'$\mathcal{ϕ}_1$', color='C0', fontsize=fs, 
              bbox=dict( lw=2, boxstyle="round", ec='C0', fc=(.95, .95, .95)))
-    ax2.text(1,-1.75, s=r'$\bm{\phi}_2$', color='C3', fontsize=fs, 
+    ax2.text(1,-1.75, s=r'$\mathcal{ϕ}_2$', color='C3', fontsize=fs, 
              bbox=dict( lw=2, boxstyle="round", ec='C3', fc=(.95, .95, .95)))
     ax2.tick_params(axis="both", labelsize=21)
     ax2.set_xlim(-lim, lim)
@@ -132,10 +130,7 @@ def find_mean_differential_survival(outcomes, interventions):
 
     return mean_differential_survival
 
-def plot_phenotypes_roc(outcomes, zeta_probs):
-    plt.rcParams['text.usetex'] = True
-    plt.rcParams['text.latex.preamble'] = r"\usepackage{bm} \usepackage{amsmath}"
-    
+def plot_phenotypes_roc(outcomes, zeta_probs):    
     zeta = outcomes['Zeta']
 
     y_true = zeta == 0
@@ -143,16 +138,14 @@ def plot_phenotypes_roc(outcomes, zeta_probs):
     fpr, tpr, thresholds = roc_curve(y_true, zeta_probs)
     auc = roc_auc_score(y_true, zeta_probs) 
 
-    plt.figure(figsize=(5,5))
+    plt.figure(figsize=(2,2))
 
     plt.plot(fpr, tpr, label="AUC: "+str(round(auc, 3)), c='darkblue')
     plt.plot(np.linspace(0,1,100), np.linspace(0,1,100), ls='--', color='k')
+    
+    plt.legend(loc='upper left') 
 
-    plt.xticks(fontsize=24)
-    plt.yticks(fontsize=24)
-    plt.legend(fontsize=24, loc='upper left') 
-
-    plt.xlabel('FPR', fontsize=36)
-    plt.ylabel('TPR', fontsize=36)
+    plt.xlabel('FPR')
+    plt.ylabel('TPR')
     plt.xscale('log')
     plt.show()

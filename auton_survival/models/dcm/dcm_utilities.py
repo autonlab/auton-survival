@@ -242,12 +242,12 @@ def test_step(model, x, t, e, breslow_splines, loss='q', typ='soft'):
 
 def train_dcm(model, train_data, val_data, epochs=50,
               patience=3, vloss='q', bs=256, typ='soft', lr=1e-3,
-              use_posteriors=True, debug=False, random_state=0,
+              use_posteriors=True, debug=False, random_seed=0,
               return_losses=False, update_splines_after=10,
               smoothing_factor=1e-2):
 
-  torch.manual_seed(random_state)
-  np.random.seed(random_state)
+  torch.manual_seed(random_seed)
+  np.random.seed(random_seed)
 
   if val_data is None:
     val_data = train_data

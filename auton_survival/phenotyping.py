@@ -292,7 +292,7 @@ class ClusteringPhenotyper(Phenotyper):
         c_kwargs['covariance_type'] = 'diag'
       c_kwargs['n_components'] = c_kwargs.get('n_clusters', 3)
 
-    self.clustering_model = clustering_model(**c_kwargs)
+    self.clustering_model = clustering_model(random_state=random_seed, **c_kwargs)
     if dim_red_method is not None:
       d_kwargs = _get_method_kwargs(dim_red_model, kwargs)
       if dim_red_method == 'kpca':
@@ -301,7 +301,7 @@ class ClusteringPhenotyper(Phenotyper):
           d_kwargs['n_jobs'] = -1
           d_kwargs['max_iter'] = 500
 
-      self.dim_red_model = dim_red_model(**d_kwargs)
+      self.dim_red_model = dim_red_model(random_state=random_seed, **d_kwargs)
 
   def fit(self, features):
 
