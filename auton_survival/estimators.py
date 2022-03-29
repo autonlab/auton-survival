@@ -641,7 +641,8 @@ class SurvivalModel:
     self.random_seed = random_seed
     self.fitted = False
 
-  def fit(self, features, outcomes):
+  def fit(self, features, outcomes,
+          weights=None, resample_size=1.0, weights_clip=1e-2):
 
     """This method is used to train an instance of the survival model.
 
@@ -659,6 +660,22 @@ class SurvivalModel:
         Trained instance of a survival model.
 
     """
+
+    if weights is not None:
+      assert len(weights) == features.shape[0], "Size of passed weights must match size of training data."
+      assert ((weights>0.0)&(weights<=1.0)).all(), "Weights must be in the range (0,1]."
+
+      weights[weights>(1-weights_clip)] = 1-weights_clip
+      weights[weights<(weights_clip)] = weights_clip
+
+      data = features.join(outcomes)
+      data_resampled = data.sample(weights = weights, 
+                                   frac = resample_size,
+                                   replace = True,
+                                   random_state = self.random_seed)
+      features = data_resampled[features.columns]
+      outcomes = data_resampled[outcomes.columns]
+
 
     if self.model == 'cph': self._model = _fit_cph(features, outcomes, self.random_seed, **self.hyperparams)
     elif self.model == 'rsf': self._model = _fit_rsf(features, outcomes, self.random_seed, **self.hyperparams)
