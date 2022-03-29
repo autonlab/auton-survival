@@ -653,6 +653,13 @@ class SurvivalModel:
         columns as covariates.
     outcomes : pd.DataFrame
         a pandas dataframe with columns 'time' and 'event'.
+    weights: list or np.array
+        a list or numpy array of importance weights for each sample.
+    resample_size: float
+        a float between 0 and 1 that controls the size of the resampled dataset.
+    weights_clip: float
+        a float that controls the minimum and maximum importance weight.
+        (To reduce estimator variance.)
 
     Returns
     --------
@@ -756,4 +763,4 @@ class CounterfactualSurvivalModel:
     control_outcomes = self.control_model.predict_risk(features, times)
     treated_outcomes = self.treated_model.predict_risk(features, times)
 
-    return treated_outcomes, control_outcomes  
+    return treated_outcomes, control_outcomes
