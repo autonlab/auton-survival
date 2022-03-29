@@ -115,11 +115,11 @@ def _fit_dcm(features, outcomes, random_seed, **hyperparams):
   model = DeepCoxMixtures(k=k,
                           layers=layers,
                           gamma=gamma,
-                          smoothing_factor=smoothing_factor)
+                          smoothing_factor=smoothing_factor,
+                          random_seed=random_seed)
   
   model.fit(features.values, outcomes.time.values, outcomes.event.values,
-            iters=epochs, batch_size=batch_size, learning_rate=learning_rate,
-            random_seed=random_seed)
+            iters=epochs, batch_size=batch_size, learning_rate=learning_rate)
   
   return model
 
@@ -641,7 +641,7 @@ class SurvivalModel:
     self.fitted = False
 
   def fit(self, features, outcomes,
-          weights=None, resample_size=1.0, weights_clip=1e-2):
+          weights=None, resample_size=1.0):
 
     """This method is used to train an instance of the survival model.
 
@@ -671,8 +671,8 @@ class SurvivalModel:
       assert len(weights) == features.shape[0], "Size of passed weights must match size of training data."
       assert ((weights>0.0)&(weights<=1.0)).all(), "Weights must be in the range (0,1]."
 
-      weights[weights>(1-weights_clip)] = 1-weights_clip
-      weights[weights<(weights_clip)] = weights_clip
+      # weights[weights>(1-weights_clip)] = 1-weights_clip
+      # weights[weights<(weights_clip)] = weights_clip
 
       data = features.join(outcomes)
       data_resampled = data.sample(weights = weights, 
