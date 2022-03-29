@@ -417,12 +417,15 @@ class SurvivalVirtualTwinsPhenotyper(object):
 
    
   _VALID_PHENO_METHODS = ['rsf']
+  _DEFAULT_PHENO_HYPERPARAMS = {}
+  _DEFAULT_PHENO_HYPERPARAMS['rsf'] = {'n_estimators': 50,
+                                       'max_depth': 5}
 
   def __init__(self,
                cf_method='dcph',
                phenotyping_method='rsf', 
-               cf_method_hyperparams=None,
-               phenotyping_method_hyperparams=None,
+               cf_hyperparams=None,
+               phenotyper_hyperparams=None,
                random_seed=0):
 
     raise NotImplementedError()
@@ -430,13 +433,20 @@ class SurvivalVirtualTwinsPhenotyper(object):
     assert cf_method in CounterfactualSurvivalRegressionCV._VALID_CF_METHODS, "Invalid Counterfactual Method: "+cf_method
     assert phenotyping_method in self._VALID_PHENO_METHODS, "Invalid Phenotyping Method: "+phenotyping_method
 
-    if cf_method_hyperparams is None:
-      cf_method_hyperparams = {}
-    if phenotyping_method_hyperparams is None:
-      phenotyping_method_hyperparams = {}
-
     self.cf_method = cf_method
     self.phenotyping_method = phenotyping_method
+    
+    if cf_method_hyperparams is None:
+      cf_method_hyperparams = {}
+    if phenotyper_hyperparams is None:
+      phenotyper_hyperparams = {}
+
+    phenotyper_hyperparams = deepcopy(SurvivalVirtualTwinsPhenotyper._DEFAULT_PHENO_HYPERPARAMS[phenotyping_method]).update(phenotyper_hyperparams)
+    self.phenotyper_hyperparams = phenotyper_hyperparams 
+
+    cf_hyperparams =  deepcopy(SurvivalVirtualTwinsPhenotyper._DEFAULT_PHENO_HYPERPARAMS[cf_method]).update(cf_hyperparams)
+    self.cf_hyperparams = cf_hyperparams
+
     self.random_seed = random_seed
 
   def fit(self, features, outcomes, interventions, horizon):
