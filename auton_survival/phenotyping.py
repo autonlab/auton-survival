@@ -221,17 +221,17 @@ class ClusteringPhenotyper(Phenotyper):
       The clustering method applied for phenotyping.
       Options include:
 
-      - 'kmeans': K-Means Clustering
-      - 'dbscan': Density-Based Spatial Clustering of Applications with Noise (DBSCAN)
-      - 'gmm': Gaussian Mixture
-      - 'hierarchical': Agglomerative Clustering
+      - `kmeans`: K-Means Clustering
+      - `dbscan`: Density-Based Spatial Clustering of Applications with Noise (DBSCAN)
+      - `gmm`: Gaussian Mixture
+      - `hierarchical`: Agglomerative Clustering
   dim_red_method: str, default=None
       The dimensionality reductions method applied.
       Options include:
 
-      - 'pca' : Principal Component Analysis
-      - 'kpca' : Kernel Principal Component Analysis
-      - 'nnmf' : Non-Negative Matrix Factorization
+      - `pca` : Principal Component Analysis
+      - `kpca` : Kernel Principal Component Analysis
+      - `nnmf` : Non-Negative Matrix Factorization
       - None : dimensionality reduction is not applied.
   random_seed : int, default=0
       Controls the randomness and reproducibility of called functions
@@ -435,7 +435,7 @@ class SurvivalVirtualTwinsPhenotyper(object):
 
     self.cf_method = cf_method
     self.phenotyping_method = phenotyping_method
-    
+
     if cf_method_hyperparams is None:
       cf_method_hyperparams = {}
     if phenotyper_hyperparams is None:

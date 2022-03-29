@@ -600,11 +600,11 @@ class SurvivalModel:
       A string that determines the choice of the surival analysis model.
       Survival model choices include:
 
-      - 'dsm' : Deep Survival Machines [3] model
-      - 'dcph' : Deep Cox Proportional Hazards [2] model
-      - 'dcm' : Deep Cox Mixtures [4] model
-      - 'rsf' : Random Survival Forests [1] model
-      - 'cph' : Cox Proportional Hazards [2] model
+      - `dsm` : Deep Survival Machines [3] model
+      - `dcph` : Deep Cox Proportional Hazards [2] model
+      - `dcm` : Deep Cox Mixtures [4] model
+      - `rsf` : Random Survival Forests [1] model
+      - `cph` : Cox Proportional Hazards [2] model
 
   random_seed: int
       Controls the reproducibility of called functions.
