@@ -38,7 +38,9 @@ from sklearn.preprocessing import StandardScaler
 
 import torchvision
 
-def increase_censoring(e, t, p):
+def increase_censoring(e, t, p, random_seed=0):
+
+  np.random.seed(random_seed)
 
   uncens = np.where(e == 1)[0]
   mask = np.random.choice([False, True], len(uncens), p=[1-p, p])
