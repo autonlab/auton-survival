@@ -25,7 +25,6 @@
 characteristics."""
 
 from random import random
-from re import I
 import numpy as np
 import pandas as pd
 
@@ -239,13 +238,13 @@ class ClusteringPhenotyper(Phenotyper):
       Additional arguments for dimensionality reduction and clustering
       Please include dictionary key and item pairs specified by the following scikit-learn modules:
 
-      - 'pca' : sklearn.decomposition.PCA
-      - 'nnmf' : sklearn.decomposition.NMF
-      - 'kpca' : sklearn.decomposition.KernelPCA
-      - 'kmeans' : sklearn.cluster.KMeans
-      - 'dbscan' : sklearn.cluster.DBSCAN
-      - 'gmm' : sklearn.mixture.GaussianMixture
-      - 'hierarchical' : sklearn.cluster.AgglomerativeClustering
+      - `pca` : sklearn.decomposition.PCA
+      - `nnmf` : sklearn.decomposition.NMF
+      - `kpca` : sklearn.decomposition.KernelPCA
+      - `kmeans` : sklearn.cluster.KMeans
+      - `dbscan` : sklearn.cluster.DBSCAN
+      - `gmm` : sklearn.mixture.GaussianMixture
+      - `hierarchical` : sklearn.cluster.AgglomerativeClustering
 
   """
 

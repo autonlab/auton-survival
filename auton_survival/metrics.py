@@ -47,11 +47,11 @@ def survival_diff_metric(metric, outcomes, treatment_indicator,
   metric : str
     The metric to evalute for comparing survival outcomes. 
     Options include:
-      - 'median'
-      - 'time_to'
-      - 'hazard_ratio'
-      - 'restricted_mean'
-      - 'survival_at'
+      - `median`
+      - `time_to`
+      - `hazard_ratio`
+      - `restricted_mean`
+      - `survival_at`
   outcomes : pd.DataFrame
       A pandas dataframe with rows corresponding to individual samples and columns 'time' and 'event'.
   treatment_indicator : np.array
@@ -145,10 +145,10 @@ def survival_regression_metric(metric, predictions, outcomes, times,
   metric: string
       Measure used to assess the survival regression model performance.
       Options include: 
-      - 'brs' : brier score
-      - 'ibs' : integrated brier score
-      - 'auc': cumulative dynamic area under the curve
-      - 'ctd' : concordance index inverse probability of censoring weights (ipcw)
+      - `brs` : brier score
+      - `ibs` : integrated brier score
+      - `auc`: cumulative dynamic area under the curve
+      - `ctd` : concordance index inverse probability of censoring weights (ipcw)
   predictions: np.array
       A numpy array of survival time predictions for the samples.
   outcomes : pd.DataFrame
@@ -221,9 +221,9 @@ def phenotype_purity(phenotypes, outcomes,
       A pandas dataframe with rows corresponding to individual samples and columns 'time' and 'event'.
   strategy: string, default='instantaneous'
       Options include: 
-      - 'instantaneous': Predict the Kaplan Meier survival estimate at a certain point in time and compute
+      - `instantaneous` : Predict the Kaplan Meier survival estimate at a certain point in time and compute
           the brier score.
-      - 'integrated' : Predict the Kaplan Meier survival estimate at all unique times points and compute 
+      - `integrated` : Predict the Kaplan Meier survival estimate at all unique times points and compute 
           the integrated brier score.
   folds: pd.DataFrame, default=None
       A pandas dataframe of train and test folds.
