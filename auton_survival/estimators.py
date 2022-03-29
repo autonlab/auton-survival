@@ -669,7 +669,7 @@ class SurvivalModel:
 
     if weights is not None:
       assert len(weights) == features.shape[0], "Size of passed weights must match size of training data."
-      assert ((weights>0.0)&(weights<=1.0)).all(), "Weights must be in the range (0,1]."
+      # assert ((weights>0.0)&(weights<=1.0)).all(), "Weights must be in the range (0,1]."
 
       # weights[weights>(1-weights_clip)] = 1-weights_clip
       # weights[weights<(weights_clip)] = weights_clip
