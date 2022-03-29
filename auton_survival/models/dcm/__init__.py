@@ -88,7 +88,8 @@ class DeepCoxMixtures:
   """
 
   def __init__(self, k=3, layers=None, gamma=10,
-               smoothing_factor=1e-4, use_activation=False):
+               smoothing_factor=1e-4, use_activation=False,
+               random_seed=0):
 
     self.k = k
     self.layers = layers
@@ -96,6 +97,7 @@ class DeepCoxMixtures:
     self.gamma = gamma
     self.smoothing_factor = smoothing_factor
     self.use_activation = use_activation
+    self.random_seed = random_seed
 
   def __call__(self):
     if self.fitted:
@@ -109,10 +111,10 @@ class DeepCoxMixtures:
   def _preprocess_test_data(self, x):
     return torch.from_numpy(x).float()
 
-  def _preprocess_training_data(self, x, t, e, vsize, val_data, random_state):
+  def _preprocess_training_data(self, x, t, e, vsize, val_data, random_seed):
 
     idx = list(range(x.shape[0]))
-    np.random.seed(random_state)
+    np.random.seed(random_seed)
     np.random.shuffle(idx)
     x_train, t_train, e_train = x[idx], t[idx], e[idx]
 
@@ -141,6 +143,10 @@ class DeepCoxMixtures:
 
   def _gen_torch_model(self, inputdim, optimizer):
     """Helper function to return a torch model."""
+
+    np.random.seed(self.random_seed)
+    torch.manual_seed(self.random_seed)
+
     return DeepCoxMixturesTorch(inputdim,
                                 k=self.k,
                                 gamma=self.gamma,
@@ -150,7 +156,7 @@ class DeepCoxMixtures:
 
   def fit(self, x, t, e, vsize=0.15, val_data=None,
           iters=1, learning_rate=1e-3, batch_size=100,
-          optimizer="Adam", random_state=100):
+          optimizer="Adam"):
 
     r"""This method is used to train an instance of the DSM model.
 
@@ -177,14 +183,14 @@ class DeepCoxMixtures:
     optimizer: str
         The choice of the gradient based optimization method. One of
         'Adam', 'RMSProp' or 'SGD'.
-    random_state: float
+    random_seed: float
         random seed that determines how the validation set is chosen.
 
     """
 
     processed_data = self._preprocess_training_data(x, t, e,
                                                    vsize, val_data,
-                                                   random_state)
+                                                   self.random_seed)
     x_train, t_train, e_train, x_val, t_val, e_val = processed_data
 
     #Todo: Change this somehow. The base design shouldn't depend on child
@@ -201,7 +207,8 @@ class DeepCoxMixtures:
                          bs=batch_size,
                          return_losses=True,
                          smoothing_factor=self.smoothing_factor,
-                         use_posteriors=True)
+                         use_posteriors=True,
+                         random_seed=self.random_seed)
 
     self.torch_model = (model[0].eval(), model[1])
     self.fitted = True
