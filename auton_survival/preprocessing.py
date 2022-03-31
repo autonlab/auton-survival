@@ -310,9 +310,12 @@ class Preprocessor:
     self._cat_feats = cat_feats
     self._num_feats = num_feats
 
-    self.imputer.fit(data, cat_feats=self._cat_feats,
-                        num_feats=self._num_feats, fill_value=-1,
-                        n_neighbors=5, **kwargs)
+    self.imputer.fit(data, 
+                     cat_feats=self._cat_feats,
+                     num_feats=self._num_feats, 
+                     fill_value=fill_value,
+                     n_neighbors=n_neighbors,
+                     **kwargs)
 
     data_imputed = self.imputer.transform(data)
 
@@ -329,9 +332,9 @@ class Preprocessor:
 
     if self.one_hot:
       data_transformed[self._cat_feats] = data_transformed[self._cat_feats].astype('category')
-      data_transformed = pd.get_dummies(data_transformed, dummy_na=False, 
+      data_transformed = pd.get_dummies(data_transformed,
+                                        dummy_na=False,
                                         drop_first=True)
-
     return data_transformed
 
   def fit_transform(self, data, cat_feats, num_feats, 
@@ -360,7 +363,8 @@ class Preprocessor:
         pandas.DataFrame: Imputed and scaled dataset.
     """
 
-    imputer_output = self.imputer.fit_transform(data, cat_feats=cat_feats,
+    imputer_output = self.imputer.fit_transform(data,
+                                                cat_feats=cat_feats,
                                                 num_feats=num_feats,
                                                 fill_value=fill_value,
                                                 n_neighbors=n_neighbors,

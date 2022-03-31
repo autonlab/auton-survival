@@ -80,18 +80,18 @@ def _fit_dcm(features, outcomes, random_seed, **hyperparams):
       Controls the rproduecibility of fitted estimators.
   hyperparams : Optional arguments
       Options include:
-      - 'k' : int, default=3
+      - `k` : int, default=3
           Size of the underlying Cox mixtures.
-      - 'layers' : list, default=[100]
+      - `layers` : list, default=[100]
           A list consisting of the number of neurons in each hidden layer.
-      - 'batch_size' : int, default=128
+      - `batch_size` : int, default=128
           Learning is performed on mini-batches of input data. This parameter
           specifies the size of each mini-batch.
-      - 'lr' : float, default=1e-3
+      - `lr` : float, default=1e-3
           Learning rate for the 'Adam' optimizer.
-      - 'epochs' : int, default=50
+      - `epochs` : int, default=50
           Number of complete passes through the training data.
-      -'smoothing_factor' : float, default=1e-4
+      -`smoothing_factor` : float, default=1e-4
 
   Returns
   -----------
@@ -113,7 +113,6 @@ def _fit_dcm(features, outcomes, random_seed, **hyperparams):
                           gamma=gamma,
                           smoothing_factor=smoothing_factor,
                           random_seed=random_seed)
-  
   model.fit(features.values, outcomes.time.values, outcomes.event.values,
             iters=epochs, batch_size=batch_size, learning_rate=learning_rate)
 
@@ -276,7 +275,7 @@ def _fit_dcph(features, outcomes, random_seed, **hyperparams):
   #           val_batch_size=bs)
   # model.compute_baseline_hazards()
 
-  return model
+  # return model
 
 def __interpolate_missing_times(survival_predictions, times):
   """Interpolate survival probabilities at missing time points.
@@ -681,7 +680,6 @@ class SurvivalModel:
       features = data_resampled[features.columns]
       outcomes = data_resampled[outcomes.columns]
 
-    #linting
     if self.model == 'cph':
       self._model = _fit_cph(features, outcomes, self.random_seed, 
                              **self.hyperparams)
@@ -732,7 +730,8 @@ class SurvivalModel:
       return _predict_dcph(self._model, features, times)
     elif self.model == 'dcm':
       return _predict_dcm(self._model, features, times)
-    else : raise NotImplementedError()
+    else :
+      raise NotImplementedError()
 
   def predict_risk(self, features, times):
 
