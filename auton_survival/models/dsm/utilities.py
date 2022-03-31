@@ -115,8 +115,11 @@ def train_dsm(model,
               x_train, t_train, e_train,
               x_valid, t_valid, e_valid,
               n_iter=10000, lr=1e-3, elbo=True,
-              bs=100):
+              bs=100, random_seed=0):
   """Function to train the torch instance of the model."""
+
+  torch.manual_seed(random_seed)
+  np.random.seed(random_seed)
 
   logging.info('Pretraining the Underlying Distributions...')
   # For padded variable length sequences we first unroll the input and

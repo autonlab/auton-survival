@@ -107,6 +107,8 @@ class DeepCoxMixturesHeterogenousEffects:
   layers: list
       A list of integers consisting of the number of neurons in each
       hidden layer.
+  random_seed: int
+      Controls the reproducibility of called functions.
 
   Example
   -------
@@ -116,12 +118,13 @@ class DeepCoxMixturesHeterogenousEffects:
 
   """
 
-  def __init__(self, k, g, layers=None):
+  def __init__(self, k, g, layers=None, random_seed=0):
 
     self.layers = layers
     self.fitted = False
     self.k = k
     self.g = g
+    self.random_seed = random_seed
 
   def __call__(self):
     if self.fitted:
@@ -138,11 +141,11 @@ class DeepCoxMixturesHeterogenousEffects:
       return torch.from_numpy(x).float()
 
   def _preprocess_training_data(self, x, t, e, a, vsize, val_data,
-                                random_state):
+                                random_seed):
 
     idx = list(range(x.shape[0]))
 
-    np.random.seed(random_state)
+    np.random.seed(random_seed)
     np.random.shuffle(idx)
 
     x_tr, t_tr, e_tr, a_tr = x[idx], t[idx], e[idx], a[idx]
@@ -176,13 +179,17 @@ class DeepCoxMixturesHeterogenousEffects:
 
   def _gen_torch_model(self, inputdim, optimizer):
     """Helper function to return a torch model."""
+    
+    np.random.seed(self.random_seed)
+    torch.manual_seed(self.random_seed)
+    
     return DeepCMHETorch(self.k, self.g, inputdim,
                          layers=self.layers,
                          optimizer=optimizer)
 
   def fit(self, x, t, e, a, vsize=0.15, val_data=None,
           iters=1, learning_rate=1e-3, batch_size=100,
-          patience=2, optimizer="Adam", random_state=100):
+          patience=2, optimizer="Adam"):
 
     r"""This method is used to train an instance of the DSM model.
 
@@ -212,13 +219,12 @@ class DeepCoxMixturesHeterogenousEffects:
     optimizer: str
         The choice of the gradient based optimization method. One of
         'Adam', 'RMSProp' or 'SGD'.
-    random_state: float
-        random seed that determines how the validation set is chosen.
+        
     """
 
     processed_data = self._preprocess_training_data(x, t, e, a,
                                                     vsize, val_data,
-                                                    random_state)
+                                                    self.random_seed)
 
     x_tr, t_tr, e_tr, a_tr, x_vl, t_vl, e_vl, a_vl = processed_data
 
@@ -235,7 +241,8 @@ class DeepCoxMixturesHeterogenousEffects:
                           lr=learning_rate,
                           bs=batch_size,
                           patience=patience,
-                          return_losses=True)
+                          return_losses=True,
+                          random_seed=self.random_seed)
 
     self.torch_model = (model[0].eval(), model[1])
     self.fitted = True

@@ -1,0 +1,42 @@
+### Font
+font.family : Serif
+font.size : 16.0
+
+### Lines
+lines.linewidth : 0.6
+lines.antialiased : True
+
+### Axes settings
+axes.facecolor : fafafa
+axes.edgecolor : black
+axes.linewidth : 0.6
+axes.labelsize : 12.0
+axes.axisbelow : True
+
+### Ticks
+xtick.major.size     : 5      # major tick size in points
+xtick.color          : black # color of the tick labels
+xtick.labelsize      : 10.0 # fontsize of the tick labels
+xtick.direction      : out     # direction: in or out
+ytick.major.size     : 5      # major tick size in points
+ytick.color          : black # color of the tick labels
+ytick.labelsize      : 10.0 # fontsize of the tick labels
+ytick.direction      : out     # direction: in or out
+
+### Grid settings
+axes.grid : True
+grid.alpha : 0.4
+grid.linewidth : 0.5
+
+### Legend
+legend.fancybox     : True
+legend.fontsize     : 10.0
+legend.facecolor    : fdfdfd
+
+### Figure
+figure.figsize      : 10.0, 4.0
+figure.facecolor    : white
+figure.edgecolor    : black
+
+### Bar plots
+hatch.linewidth : 0.1
