@@ -145,8 +145,8 @@ class IntersectionalPhenotyper(Phenotyper):
 
       var_min, var_max = self.min_max[num_var]
 
-      features[num_var][features[num_var]>=var_max] = var_max
-      features[num_var][features[num_var]<=var_min] = var_min
+      features.loc[features[num_var]>=var_max, [num_var]] = var_max
+      features.loc[features[num_var]<=var_min, [num_var]] = var_min
 
       features[num_var] = pd.cut(features[num_var], self.cut_bins[num_var],
                                  include_lowest=True)
@@ -167,7 +167,7 @@ class IntersectionalPhenotyper(Phenotyper):
     phenotypes : list
         List of lists containing all possible combinations of specified
         categorical and numerical variable values.
-  
+
     Returns
     --------
     list:
@@ -178,10 +178,10 @@ class IntersectionalPhenotyper(Phenotyper):
     ft_names = self.cat_vars + self.num_vars
     renamed = []
     for i in range(len(phenotypes)):
-        row = []
-        for j in range(len(ft_names)):
-            row.append(ft_names[j]+":"+str(phenotypes[i][j]))
-        renamed.append(" & ".join(row))
+      row = []
+      for j in range(len(ft_names)):
+        row.append(ft_names[j]+":"+str(phenotypes[i][j]))
+      renamed.append(" & ".join(row))
     return renamed
 
   def fit_phenotype(self, features):
@@ -221,7 +221,8 @@ class ClusteringPhenotyper(Phenotyper):
       Options include:
 
       - `kmeans`: K-Means Clustering
-      - `dbscan`: Density-Based Spatial Clustering of Applications with Noise (DBSCAN)
+      - `dbscan`: Density-Based Spatial Clustering of Applications with
+         Noise (DBSCAN)
       - `gmm`: Gaussian Mixture
       - `hierarchical`: Agglomerative Clustering
   dim_red_method: str, default=None
@@ -236,7 +237,8 @@ class ClusteringPhenotyper(Phenotyper):
       Controls the randomness and reproducibility of called functions
   kwargs: dict
       Additional arguments for dimensionality reduction and clustering
-      Please include dictionary key and item pairs specified by the following scikit-learn modules:
+      Please include dictionary key and item pairs specified by the following
+      scikit-learn modules:
 
       - `pca` : sklearn.decomposition.PCA
       - `nnmf` : sklearn.decomposition.NMF
@@ -251,7 +253,8 @@ class ClusteringPhenotyper(Phenotyper):
   _VALID_DIMRED_METHODS = ['pca', 'kpca', 'nnmf', None]
   _VALID_CLUSTERING_METHODS = ['kmeans', 'dbscan', 'gmm', 'hierarchical']
 
-  def __init__(self, clustering_method = 'kmeans', dim_red_method = None, random_seed=0, **kwargs):
+  def __init__(self, clustering_method = 'kmeans', dim_red_method = None,
+               random_seed=0, **kwargs):
 
     assert clustering_method in ClusteringPhenotyper._VALID_CLUSTERING_METHODS, "Please specify a valid Clustering method"
     assert dim_red_method in ClusteringPhenotyper._VALID_DIMRED_METHODS, "Please specify a valid Dimensionality Reduction method"
@@ -292,7 +295,8 @@ class ClusteringPhenotyper(Phenotyper):
         c_kwargs['covariance_type'] = 'diag'
       c_kwargs['n_components'] = c_kwargs.get('n_clusters', 3)
 
-    self.clustering_model = clustering_model(**c_kwargs)
+    self.clustering_model = clustering_model(random_state=random_seed,
+                                             **c_kwargs)
     if dim_red_method is not None:
       d_kwargs = _get_method_kwargs(dim_red_model, kwargs)
       if dim_red_method == 'kpca':
@@ -301,7 +305,8 @@ class ClusteringPhenotyper(Phenotyper):
           d_kwargs['n_jobs'] = -1
           d_kwargs['max_iter'] = 500
 
-      self.dim_red_model = dim_red_model(**d_kwargs)
+      self.dim_red_model = dim_red_model(random_state=random_seed,
+                                         **d_kwargs)
 
   def fit(self, features):
 
@@ -320,7 +325,7 @@ class ClusteringPhenotyper(Phenotyper):
 
     """
 
-    if self.dim_red_method is not None: 
+    if self.dim_red_method is not None:
       print("Fitting the following Dimensionality Reduction Model:\n", self.dim_red_model)
       self.dim_red_model = self.dim_red_model.fit(features)
       features = self.dim_red_model.transform(features)
@@ -358,7 +363,7 @@ class ClusteringPhenotyper(Phenotyper):
 
     negative_exp_distances = np.exp(-self.clustering_model.transform(features))
     probs = negative_exp_distances/negative_exp_distances.sum(axis=1).reshape((-1, 1))
-    
+
     #assert int(np.sum(probs)) == len(probs), 'Not valid probabilities'
 
     return probs
@@ -378,16 +383,18 @@ class ClusteringPhenotyper(Phenotyper):
     Returns
     -----------
     np.array:
-        a numpy array of the probability estimates of sample association to learned subgroups.
+        a numpy array of the probability estimates of sample association to
+        learned subgroups.
 
     """
 
-    assert self.fitted, "Phenotyper must be `fitted` before calling `phenotype`."
- 
+    assert self.fitted, "Phenotyper must be `fitted` before calling \
+    `phenotype`."
+
     if self.dim_red_method is not None:
       features =  self.dim_red_model.transform(features)
-    if self.clustering_method == 'gmm': 
-      return self.clustering_model.predict_proba(features) 
+    if self.clustering_method == 'gmm':
+      return self.clustering_model.predict_proba(features)
     elif self.clustering_method == 'kmeans':
       return self._predict_proba_kmeans(features)
 
@@ -404,7 +411,8 @@ class ClusteringPhenotyper(Phenotyper):
     Returns
     -----------
     np.array
-        a numpy array of the probability estimates of sample association to learned clusters.
+        a numpy array of the probability estimates of sample association
+        to learned clusters.
 
     """
 
@@ -414,7 +422,7 @@ class SurvivalVirtualTwinsPhenotyper(object):
 
   """"Not Yet Implemented"""
 
-   
+
   _VALID_PHENO_METHODS = ['rsf']
   _DEFAULT_PHENO_HYPERPARAMS = {}
   _DEFAULT_PHENO_HYPERPARAMS['rsf'] = {'n_estimators': 50,
@@ -422,7 +430,7 @@ class SurvivalVirtualTwinsPhenotyper(object):
 
   def __init__(self,
                cf_method='dcph',
-               phenotyping_method='rsf', 
+               phenotyping_method='rsf',
                cf_hyperparams=None,
                phenotyper_hyperparams=None,
                random_seed=0):
@@ -441,7 +449,7 @@ class SurvivalVirtualTwinsPhenotyper(object):
       phenotyper_hyperparams = {}
 
     phenotyper_hyperparams = deepcopy(SurvivalVirtualTwinsPhenotyper._DEFAULT_PHENO_HYPERPARAMS[phenotyping_method]).update(phenotyper_hyperparams)
-    self.phenotyper_hyperparams = phenotyper_hyperparams 
+    self.phenotyper_hyperparams = phenotyper_hyperparams
 
     cf_hyperparams =  deepcopy(SurvivalVirtualTwinsPhenotyper._DEFAULT_PHENO_HYPERPARAMS[cf_method]).update(cf_hyperparams)
     self.cf_hyperparams = cf_hyperparams
@@ -454,11 +462,13 @@ class SurvivalVirtualTwinsPhenotyper(object):
 
     cf_model = CounterfactualSurvivalRegressionCV(**self.cf_method_hyperparams)
 
-    self.cf_model = cf_model.fit(features, outcomes, interventions) 
+    self.cf_model = cf_model.fit(features, outcomes, interventions)
 
     times = np.unique(outcomes.times.values)
-    cf_predictions = self.cf_model.predict_counterfactual_survival(features, interventions, times)
-    
+    cf_predictions = self.cf_model.predict_counterfactual_survival(features,
+                                                                   interventions,
+                                                                   times)
+
     ite_estimates = cf_predictions[1] - cf_predictions[0]
 
     if self.phenotyping_method == 'rsf':
@@ -476,8 +486,4 @@ class SurvivalVirtualTwinsPhenotyper(object):
 
     phenotype_preds=  self.pheno_model.predict(features)
     phenotype_preds = (phenotype_preds -  phenotype_preds.min()) / (phenotype_preds.max() - phenotype_preds.min())
-    return phenotype_preds 
-
-
-
-  
+    return phenotype_preds

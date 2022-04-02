@@ -62,14 +62,14 @@ class Imputer:
 
     self.fitted = False
 
-  def fit(self, data, cat_feats=None, num_feats=None, 
+  def fit(self, data, cat_feats=None, num_feats=None,
           fill_value=-1, n_neighbors=5, **kwargs):
 
     if cat_feats is None: cat_feats = []
     if num_feats is None: num_feats = []
 
-    assert (len(cat_feats + num_feats) != 0, 
-            "Please specify categorical and numerical features.")
+    assert len(cat_feats + num_feats) != 0, "Please specify \
+    categorical and numerical features."
 
     self._cat_feats = cat_feats
     self._num_feats = num_feats
@@ -83,22 +83,22 @@ class Imputer:
       df = df.drop(columns=list(remaining_feats))
 
     ####### CAT VARIABLES
-    if len(cat_feats):
+    if self._cat_feats:
       if self.cat_feat_strat == 'replace':
-        self._cat_base_imputer = SimpleImputer(strategy='constant', 
+        self._cat_base_imputer = SimpleImputer(strategy='constant',
                                                fill_value=fill_value).fit(df[cat_feats])
       elif self.cat_feat_strat == 'mode':
         self._cat_base_imputer = SimpleImputer(strategy='most_frequent',
                                                fill_value=fill_value).fit(df[cat_feats])
 
     ####### NUM VARIABLES
-    if len(num_feats):
+    if self._num_feats:
       if self.num_feat_strat == 'mean':
         self._num_base_imputer = SimpleImputer(strategy='mean').fit(df[num_feats])
       elif self.num_feat_strat == 'median':
         self._num_base_imputer = SimpleImputer(strategy='median').fit(df[num_feats])
       elif self.num_feat_strat == 'knn':
-        self._num_base_imputer = KNNImputer(n_neighbors=n_neighbors, 
+        self._num_base_imputer = KNNImputer(n_neighbors=n_neighbors,
                                             **kwargs).fit(df[num_feats])
       elif self.num_feat_strat == 'missforest':
         from missingpy import MissForest
@@ -110,7 +110,8 @@ class Imputer:
   def transform(self, data):
 
     all_feats = self._cat_feats + self._num_feats
-    assert len(set(data.columns)^set(all_feats)) == 0, "Passed columns don't match columns trained on !!! "
+    assert len(set(data.columns)^set(all_feats)) == 0, "Passed columns don't \
+    match columns trained on !!! "
     assert self.fitted, "Model is not fitted yet !!!"
 
     df = data.copy()
@@ -179,8 +180,66 @@ class Scaler:
 
     self.scaling_strategy = scaling_strategy
 
-  def fit_transform(self, data, feats=[]):
-    """Scales dataset using the scaling strategy.
+  def fit(self, data, num_feats=None):
+    """Fits scaler to dataset using scaling strategy.
+
+    Parameters
+    ----------
+    data: pandas.DataFrame
+        Dataframe to be scaled.
+    feats: list
+        List of numerical/continuous features to be scaled.
+        **NOTE**: if left empty, all features are interpreted as numerical.
+    Returns:
+        Fitted instance of scaler.
+    """
+
+    self._num_feats = num_feats
+
+    df = data.copy()
+
+    if self.scaling_strategy == 'standard':
+      scaler = StandardScaler()
+    elif self.scaling_strategy == 'minmax':
+      scaler = MinMaxScaler()
+    else:
+      scaler = None
+
+    if scaler:
+      if self._num_feats:
+        self.scaler = scaler.fit(df[self._num_feats])
+      else:
+        self.scaler = scaler.fit(df)
+
+    self.fitted = True
+    return self
+
+  def transform(self, data):
+    """Scales data using scaling strategy.
+
+    Parameters
+    ----------
+    data: pandas.DataFrame
+        Dataframe to be scaled.
+    feats: list
+        List of numerical/continuous features to be scaled.
+        **NOTE**: if left empty, all features are interpreted as numerical.
+    Returns:
+        Fitted instance of scaler.
+    """
+
+    df = data.copy()
+
+    if self._num_feats:
+      df[self._num_feats] = self.scaler.transform(df[self._num_feats])
+    else:
+      df[df.columns] = self.scaler.transform(df)
+
+    return df
+
+  def fit_transform(self, data, num_feats=[]):
+    """Fits a scaler and rescales a dataset using a standard rescaling
+    strategy.
 
     Parameters
     ----------
@@ -206,7 +265,8 @@ class Scaler:
       scaler = None
 
     if scaler is not None:
-      if feats: df[feats] = scaler.fit_transform(df[feats])
+      if num_feats:
+        df[num_feats] = scaler.fit_transform(df[num_feats])
       else: df[df.columns] = scaler.fit_transform(df)
 
     return df
@@ -223,6 +283,8 @@ class Preprocessor:
       Strategy for imputing numerical/continuous features.
   scaling_strategy: str
       Strategy to use for scaling numerical/continuous data.
+  one_hot: bool
+      Whether to apply one hot encoding to the data.
   remaining: str
       Strategy for handling remaining columns.
   """
@@ -230,7 +292,10 @@ class Preprocessor:
   def __init__(self, cat_feat_strat='ignore',
                      num_feat_strat='mean',
                      scaling_strategy='standard',
+                     one_hot=True,
                      remaining='drop'):
+
+    self.one_hot = one_hot
 
     self.imputer = Imputer(cat_feat_strat=cat_feat_strat,
                            num_feat_strat=num_feat_strat,
@@ -238,8 +303,42 @@ class Preprocessor:
 
     self.scaler = Scaler(scaling_strategy=scaling_strategy)
 
-  def fit_transform(self, data, cat_feats, num_feats,
-                    one_hot=True, fill_value=-1, n_neighbors=5, **kwargs):
+  def fit(self, data, cat_feats, num_feats,
+            fill_value=-1, n_neighbors=5, **kwargs):
+    """Fit imputer and scaler to dataset."""
+
+    self._cat_feats = cat_feats
+    self._num_feats = num_feats
+
+    self.imputer.fit(data, 
+                     cat_feats=self._cat_feats,
+                     num_feats=self._num_feats, 
+                     fill_value=fill_value,
+                     n_neighbors=n_neighbors,
+                     **kwargs)
+
+    data_imputed = self.imputer.transform(data)
+
+    self.scaler.fit(data_imputed, num_feats=self._num_feats)
+
+    self.fitted = True
+    return self
+
+  def transform(self, data):
+    """Impute and scale the dataset."""
+
+    data_imputed = self.imputer.transform(data)
+    data_transformed = self.scaler.transform(data_imputed)
+
+    if self.one_hot:
+      data_transformed[self._cat_feats] = data_transformed[self._cat_feats].astype('category')
+      data_transformed = pd.get_dummies(data_transformed,
+                                        dummy_na=False,
+                                        drop_first=True)
+    return data_transformed
+
+  def fit_transform(self, data, cat_feats, num_feats, 
+                    fill_value=-1, n_neighbors=5, **kwargs):
     """Imputes and scales dataset.
 
     Parameters
@@ -264,14 +363,15 @@ class Preprocessor:
         pandas.DataFrame: Imputed and scaled dataset.
     """
 
-    imputer_output = self.imputer.fit_transform(data, cat_feats=cat_feats,
+    imputer_output = self.imputer.fit_transform(data,
+                                                cat_feats=cat_feats,
                                                 num_feats=num_feats,
                                                 fill_value=fill_value,
                                                 n_neighbors=n_neighbors,
                                                 **kwargs)
-    output = self.scaler.fit_transform(imputer_output, feats=num_feats)
+    output = self.scaler.fit_transform(imputer_output, num_feats=num_feats)
 
-    if one_hot:
+    if self.one_hot:
       output[cat_feats] = output[cat_feats].astype('category')
       output = pd.get_dummies(output, dummy_na=False, drop_first=True)
 
