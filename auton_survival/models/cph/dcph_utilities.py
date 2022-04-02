@@ -75,10 +75,10 @@ def test_step(model, x, t, e):
 
 def train_dcph(model, train_data, val_data, epochs=50,
                patience=3, bs=256, lr=1e-3, debug=False,
-               random_state=0, return_losses=False):
+               random_seed=0, return_losses=False):
 
-  torch.manual_seed(random_state)
-  np.random.seed(random_state)
+  torch.manual_seed(random_seed)
+  np.random.seed(random_seed)
 
   if val_data is None:
     val_data = train_data

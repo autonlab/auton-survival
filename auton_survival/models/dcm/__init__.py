@@ -79,12 +79,18 @@ class DeepCoxMixtures:
   layers: list
       A list of integers consisting of the number of neurons in each
       hidden layer.
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 =======
   random_seed: int
       Controls the reproducibility of called functions.
  
 >>>>>>> Stashed changes
+=======
+  random_seed: int
+      Controls the reproducibility of called functions.
+        
+>>>>>>> db17080dcfd91df1c07937d54c479ae6ab1eaf88
   Example
   -------
   >>> from auton_survival.models.dcm import DeepCoxMixtures
@@ -103,7 +109,7 @@ class DeepCoxMixtures:
     self.gamma = gamma
     self.smoothing_factor = smoothing_factor
     self.use_activation = use_activation
-    self.random_seed = random_seed
+    self.random_seed = random_seed 
 
   def __call__(self):
     if self.fitted:
@@ -189,8 +195,6 @@ class DeepCoxMixtures:
     optimizer: str
         The choice of the gradient based optimization method. One of
         'Adam', 'RMSProp' or 'SGD'.
-    random_seed: float
-        random seed that determines how the validation set is chosen.
 
     """
 

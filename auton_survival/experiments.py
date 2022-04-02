@@ -1,5 +1,4 @@
 import numpy as np
-from sklearn.utils import shuffle
 
 from auton_survival.estimators import SurvivalModel, CounterfactualSurvivalModel
 from auton_survival.metrics import survival_regression_metric
@@ -63,7 +62,7 @@ class SurvivalRegressionCV:
 
   def fit(self, features, outcomes, ret_trained_model=True):
 
-    r"""Fits the Survival Regression Model to the data in a Cross
+    r"""Fits the Survival Regression Model to the data in a Cross 
     Validation fashion.
 
     Parameters
@@ -77,14 +76,13 @@ class SurvivalRegressionCV:
         a column named 'event' that contains the censoring status.
         \( \delta_i = 1 \) if the event is observed.
     ret_trained_model : bool
-        If True, the trained model is returned. If False, the fit function
+        If True, the trained model is returned. If False, the fit function 
         returns self.
 
     Returns
     -----------
     auton_survival.estimators.SurvivalModel:
         The selected survival model based on lowest integrated brier score.
-    
     """
 
     n = len(features)
@@ -122,16 +120,23 @@ class SurvivalRegressionCV:
       fold_models = {}
       for fold in tqdm(range(self.cv_folds)):
         # Fit the model
-        fold_model = SurvivalModel(model=self.model, random_seed=self.random_seed, **hyper_param)    
+        fold_model = SurvivalModel(model=self.model, random_seed=self.random_seed, **hyper_param)  
         fold_model.fit(features.loc[folds!=fold], outcomes.loc[folds!=fold])
         fold_models[fold] = fold_model
 
         # Predict risk scores
-        predictions[folds==fold] = fold_model.predict_survival(features.loc[folds==fold], times=unique_times)
-        # Evaluate IBS
+        predictions[folds==fold] = fold_model.predict_survival(features.loc[folds==fold], 
+                                                               times=unique_times)
+
       score_per_fold = []
       for fold in range(self.cv_folds):
-        score = survival_regression_metric('ibs', predictions, outcomes, unique_times, folds, fold)
+        outcomes_train = outcomes.loc[folds!=fold]
+        outcomes_test = outcomes.loc[folds==fold]
+        predictions_test = predictions[folds==fold]
+
+        # Compute IBS
+        score = survival_regression_metric('ibs', outcomes_train, outcomes_test, 
+                                           predictions_test, unique_times)
         score_per_fold.append(score)
 
       current_score = np.mean(score_per_fold)
@@ -148,7 +153,8 @@ class SurvivalRegressionCV:
 
     if ret_trained_model:
 
-      model = SurvivalModel(model=self.model, random_seed=self.random_seed, **self.best_hyperparameter)
+      model = SurvivalModel(model=self.model, random_seed=self.random_seed, 
+                            **self.best_hyperparameter)
       model.fit(features, outcomes)
 
       return model
@@ -174,7 +180,8 @@ class SurvivalRegressionCV:
     for fold in range(self.cv_folds):
 
       fold_model = self.best_model_per_fold[fold]
-      fold_predictions = fold_model.predict(features.loc[self.folds==fold], times=horizons) 
+      fold_predictions = fold_model.predict(features.loc[self.folds==fold], 
+                                            times=horizons) 
 
       for i, horizon in enumerate(horizons):
         for metric in metrics:
