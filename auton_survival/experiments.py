@@ -63,7 +63,8 @@ class SurvivalRegressionCV:
 
   def fit(self, features, outcomes, ret_trained_model=True):
 
-    r"""Fits the Survival Regression Model to the data in a Cross Validation fashion.
+    r"""Fits the Survival Regression Model to the data in a Cross
+    Validation fashion.
 
     Parameters
     -----------
@@ -76,8 +77,8 @@ class SurvivalRegressionCV:
         a column named 'event' that contains the censoring status.
         \( \delta_i = 1 \) if the event is observed.
     ret_trained_model : bool
-        If True, the trained model is returned. If False, the fit function returns
-        self.
+        If True, the trained model is returned. If False, the fit function
+        returns self.
 
     Returns
     -----------

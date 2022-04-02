@@ -43,7 +43,8 @@ class DeepCMHETorch(torch.nn.Module):
     self.phi_gate = torch.nn.Linear(lastdim, self.g, bias=False)
     self.omega = torch.nn.Parameter(torch.rand(self.g)-0.5)
 
-  def __init__(self, k, g, inputdim, layers=None, optimizer='Adam'):
+  def __init__(self, k, g, inputdim, layers=None, gamma=100,
+               smoothing_factor=1e-4, optimizer='Adam'):
 
     super(DeepCMHETorch, self).__init__()
 
@@ -56,6 +57,9 @@ class DeepCMHETorch(torch.nn.Module):
     self.k = k # Base Physiology groups
     self.g = g # Treatment Effect groups
 
+    self.gamma = gamma
+    self.smoothing_factor = smoothing_factor
+  
     if len(layers) == 0: lastdim = inputdim
     else: lastdim = layers[-1]
 
@@ -69,7 +73,9 @@ class DeepCMHETorch(torch.nn.Module):
     x = self.embedding(x)
     a = 2*(a-0.5)
 
-    log_hrs = torch.clamp(self.expert(x), min=-100, max=100)
+    log_hrs = torch.clamp(self.expert(x),
+                          min=-self.gamma,
+                          max=self.gamma)
 
     logp_z_gate = torch.nn.LogSoftmax(dim=1)(self.z_gate(x)) #
     logp_phi_gate = torch.nn.LogSoftmax(dim=1)(self.phi_gate(x))
@@ -87,15 +93,3 @@ class DeepCMHETorch(torch.nn.Module):
         logp_joint_hrs[:, i, j] = log_hrs[:, i] + (j!=2)*a*self.omega[j]
 
     return logp_jointlatent_gate, logp_joint_hrs
-
-# class DeepCoxMixtureHETorch(CoxMixtureHETorch):
-
-#   def __init__(self, k, g, inputdim, hidden):
-
-#     super(DeepCoxMixtureHETorch, self).__init__(k, g, inputdim, hidden)
-
-#     # Get rich feature representations of the covariates
-#     self.embedding = torch.nn.Sequential(torch.nn.Linear(inputdim, hidden),
-#                                          torch.nn.Tanh(),
-#                                          torch.nn.Linear(hidden, hidden),
-#                                          torch.nn.Tanh())

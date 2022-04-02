@@ -116,12 +116,17 @@ class DeepCoxMixturesHeterogenousEffects:
 
   """
 
-  def __init__(self, k, g, layers=None):
+  def __init__(self, k, g, layers=None, gamma=100,
+               smoothing_factor=1e-4,
+               random_seed=0):
 
-    self.layers = layers
-    self.fitted = False
     self.k = k
     self.g = g
+    self.layers = layers
+    self.fitted = False
+    self.gamma = gamma
+    self.smoothing_factor = smoothing_factor
+    self.random_seed = random_seed
 
   def __call__(self):
     if self.fitted:
@@ -176,8 +181,14 @@ class DeepCoxMixturesHeterogenousEffects:
 
   def _gen_torch_model(self, inputdim, optimizer):
     """Helper function to return a torch model."""
+
+    np.random.seed(self.random_seed)
+    torch.manual_seed(self.random_seed)
+
     return DeepCMHETorch(self.k, self.g, inputdim,
                          layers=self.layers,
+                         gamma=self.gamma,
+                         smoothing_factor=self.smoothing_factor,
                          optimizer=optimizer)
 
   def fit(self, x, t, e, a, vsize=0.15, val_data=None,
@@ -235,7 +246,9 @@ class DeepCoxMixturesHeterogenousEffects:
                           lr=learning_rate,
                           bs=batch_size,
                           patience=patience,
-                          return_losses=True)
+                          return_losses=True,
+                          use_posteriors=True,
+                          random_seed=self.random_seed)
 
     self.torch_model = (model[0].eval(), model[1])
     self.fitted = True

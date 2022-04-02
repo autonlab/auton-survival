@@ -3,9 +3,7 @@ import pandas as pd
 
 from lifelines import KaplanMeierFitter, NelsonAalenFitter
 
-from collections import Counter
-
-from lifelines import KaplanMeierFitter, CoxPHFitter
+from lifelines import KaplanMeierFitter
 from lifelines.plotting import add_at_risk_counts
 
 
@@ -75,10 +73,10 @@ def plot_nelsonaalen(outcomes, groups=None, **kwargs):
   for group in sorted(set(groups)):
     if pd.isna(group): continue
 
-    print("Group:", group)
+    print('Group:', group)
 
-    NelsonAalenFitter().fit(outcomes[groups==group]['time'], 
-                            outcomes[groups==group]['event']).plot(label=group, 
+    NelsonAalenFitter().fit(outcomes[groups==group]['time'],
+                            outcomes[groups==group]['event']).plot(label=group,
                                                                    **kwargs)
 
 

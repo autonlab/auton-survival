@@ -14,7 +14,7 @@ from matplotlib import cm
 from matplotlib.colors import ListedColormap, LinearSegmentedColormap
 
 def plot_synthetic_data(outcomes, features, interventions):
-    plt.rcParams['text.usetex'] = True
+    import matplotlib.pyplot as plt
     plt.rcParams['text.latex.preamble'] = r"\usepackage{bm} \usepackage{amsmath}"
     fs = 48 # Font size
     s = 65 # Size of the marker
@@ -34,8 +34,8 @@ def plot_synthetic_data(outcomes, features, interventions):
     # First sub-plot X1 vs X2
     for z in set(outcomes.Z):
         mask = (outcomes.Z == z)
-        sns.kdeplot(ax=ax1, x=X1[mask], y=X2[mask], 
-                    fill=False,  levels=10, thresh=0.3, 
+        sns.kdeplot(ax=ax1, x=X1[mask], y=X2[mask],
+                    fill=False,  levels=10, thresh=0.3,
                     cmap=color_maps[z])
 
     ax1.tick_params(axis="both", labelsize=21)
@@ -108,7 +108,7 @@ def find_max_treatment_effect_phenotype(g, zeta_probs, factual_outcomes):
         z_mask = zeta_probs_g>np.quantile(zeta_probs_g, 0.75) 
 
         mean_differential_survival[gr] = find_mean_differential_survival(
-            outcomes_train.loc[z_mask], interventions_train.loc[z_mask]) 
+            outcomes_train.loc[z_mask], interventions_train.loc[z_mask])
 
     return np.nanargmax(mean_differential_survival)
 
@@ -133,9 +133,9 @@ def find_mean_differential_survival(outcomes, interventions):
     return mean_differential_survival
 
 def plot_phenotypes_roc(outcomes, zeta_probs):
-    plt.rcParams['text.usetex'] = True
+    from matplotlib import pyplot as plt
     plt.rcParams['text.latex.preamble'] = r"\usepackage{bm} \usepackage{amsmath}"
-    
+
     zeta = outcomes['Zeta']
 
     y_true = zeta == 0
