@@ -79,18 +79,9 @@ class DeepCoxMixtures:
   layers: list
       A list of integers consisting of the number of neurons in each
       hidden layer.
-<<<<<<< HEAD
-<<<<<<< Updated upstream
-=======
   random_seed: int
       Controls the reproducibility of called functions.
- 
->>>>>>> Stashed changes
-=======
-  random_seed: int
-      Controls the reproducibility of called functions.
-        
->>>>>>> db17080dcfd91df1c07937d54c479ae6ab1eaf88
+
   Example
   -------
   >>> from auton_survival.models.dcm import DeepCoxMixtures
