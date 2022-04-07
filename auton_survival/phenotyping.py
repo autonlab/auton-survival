@@ -326,12 +326,8 @@ class ClusteringPhenotyper(Phenotyper):
     """
 
     if self.dim_red_method is not None:
-<<<<<<< HEAD
       print("Fitting the following Dimensionality Reduction Model:\n", 
             self.dim_red_model)
-=======
-      print("Fitting the following Dimensionality Reduction Model:\n", self.dim_red_model)
->>>>>>> db17080dcfd91df1c07937d54c479ae6ab1eaf88
       self.dim_red_model = self.dim_red_model.fit(features)
       features = self.dim_red_model.transform(features)
 
@@ -471,10 +467,7 @@ class SurvivalVirtualTwinsPhenotyper(object):
 
     times = np.unique(outcomes.times.values)
     cf_predictions = self.cf_model.predict_counterfactual_survival(features,
-<<<<<<< HEAD
-=======
                                                                    interventions,
->>>>>>> db17080dcfd91df1c07937d54c479ae6ab1eaf88
                                                                    times)
 
     ite_estimates = cf_predictions[1] - cf_predictions[0]
