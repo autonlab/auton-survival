@@ -60,9 +60,9 @@ def plot_synthetic_data(outcomes, features, interventions):
 
     ax2.set_xlabel(r'$\mathcal{X}_3 \longrightarrow$', fontsize=fs)
     ax2.set_ylabel(r'$\mathcal{X}_4 \longrightarrow$', fontsize=fs)
-    ax2.text(-1.25,.25, s=r'$\bm{\phi}_1$', color='C0', fontsize=fs, 
+    ax2.text(-1.25,.25, s=r'$\phi_1$', color='C0', fontsize=fs, 
              bbox=dict( lw=2, boxstyle="round", ec='C0', fc=(.95, .95, .95)))
-    ax2.text(1,-1.75, s=r'$\bm{\phi}_2$', color='C3', fontsize=fs, 
+    ax2.text(1,-1.75, s=r'$\phi_2$', color='C3', fontsize=fs, 
              bbox=dict( lw=2, boxstyle="round", ec='C3', fc=(.95, .95, .95)))
     ax2.tick_params(axis="both", labelsize=21)
     ax2.set_xlim(-lim, lim)
