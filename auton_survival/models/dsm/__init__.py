@@ -505,17 +505,18 @@ class DeepRecurrentSurvivalMachines(DSMBase):
   """
 
   def __init__(self, k=3, layers=None, hidden=None,
-               distribution="Weibull", temp=1000., discount=1.0, typ="LSTM"):
+               distribution="Weibull", temp=1000., discount=1.0, typ="LSTM",
+               random_seed=0):
     super(DeepRecurrentSurvivalMachines, self).__init__(k=k,
                                                         layers=layers,
                                                         distribution=distribution,
                                                         temp=temp,
                                                         discount=discount,
-                                                        random_seed=0)
+                                                        random_seed=random_seed)
     self.hidden = hidden
     self.typ = typ
     self.random_seed = random_seed
-    
+  
   def _gen_torch_model(self, inputdim, optimizer, risks):
     """Helper function to return a torch model."""
     
