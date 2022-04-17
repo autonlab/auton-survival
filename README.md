@@ -16,6 +16,9 @@ Python package `auton_survival` provides a flexible API for various problems
 in survival analysis, including regression, counterfactual estimation,
 and phenotyping.
 
+**For complete details on** `auton-survival` **see**: 
+<h3>• <a href="https://www.cs.cmu.edu/~chiragn/papers/auton_survival.pdf">White Paper</a> &nbsp;&nbsp; • <a href="https://autonlab.github.io/auton-survival/">Documentation</a> &nbsp;&nbsp; • <a href="https://nbviewer.org/github/autonlab/auton-survival/tree/master/examples/">Demo Notebooks</a></h3>
+
 What is Survival Analysis?
 --------------------------
 
