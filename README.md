@@ -7,10 +7,10 @@
 &nbsp;&nbsp;&nbsp;
 [![GitHub Repo stars](https://img.shields.io/github/stars/autonlab/auton-survival?style=social)](https://github.com/autonlab/auton-survival)
 
+<br>
+
 
 <img align=right style="align:right;" src="https://ndownloader.figshare.com/files/34052981" width=30%>
-
-<br>
 
 The `auton-survival` Package
 ---------------------------
