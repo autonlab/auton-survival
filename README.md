@@ -43,11 +43,25 @@ regression problems, Survival Analysis differs in two major ways:
 Survival Regression
 -------------------
 
-Currently supported Survival Models are:
+Training a Deep Cox Proportional Hazards Model with `auton-survival`
 
-### `auton_survival.models.dsm.DeepSurvivalMachines`
-### `auton_survival.models.dcm.DeepCoxMixtures`
-### `auton_survival.models.cph.DeepCoxPH`
+```python
+from auton_survival import datasets, preprocessing, models 
+
+# Load the SUPPORT Dataset
+outcomes, features = datasets.load_dataset("SUPPORT")
+
+# Preprocess (Impute and Scale) the features
+features = preprocessing.Preprocessor().fit_transform(features)
+
+# Train a Deep Cox Proportional Hazards (DCPH) model
+model = models.cph.DeepCoxPH(layers=[100])
+model.fit(features, outcomes.time, outcomes.event)
+
+# Predict risk at specific time horizons.
+predictions = model.predict_risk(features, t=[8, 12, 16])
+```
+
 
 
 ### `auton_survival.estimators`
@@ -68,32 +82,20 @@ survival regression estimators
 Modules to perform standard survival analysis experiments. This module
 provides a top-level interface to run `auton-survival` style experiments
 of survival analysis, involving cross-validation style experiments with
-multiple different survival analysis models at different horizons of
-event times.
-
-The module further eases evaluation by automatically computing the
-*censoring adjusted* estimates of the Metrics of interest, like
-**Time Dependent Concordance Index** and **Brier Score** with **IPCW**
-adjustment.
+multiple different survival analysis models
 
 ```python
-# auton_survival Style Cross Validation Experiment.
-from auton_survival import datasets
-features, outcomes = datasets.load_topcat()
+# auton-survival Style Cross Validation Experiment.
+from auton_survival.experiments import SurvivalRegressionCV
 
-from auton_survival.experiments import SurvivalCVRegressionExperiment
+# Define the Hyperparameter grid to perform Cross Validation
+hyperparam_grid = {'n_estimators' : [50, 100],  'max_depth' : [3, 5],
+                   'max_features' : ['sqrt', 'log2']}
 
-# instantiate an auton_survival Experiment by
-# specifying the features and outcomes to use.
-experiment = SurvivalCVRegressionExperiment(features, outcomes)
+# Train a RSF model with cross-validation using the SurvivalRegressionCV class
+model = SurvivalRegressionCV(model='rsf', cv_folds=5, hyperparam_grid=hyperparam_grid)
+model.fit(features, outcomes)
 
-# Fit the `experiment` object with a Cox Model
-experiment.fit(model='cph')
-
-# Evaluate the performance at time=1 year horizon.
-scores = experiment.evaluate(time=1.)
-
-print(scores)
 ```
 
 
@@ -109,6 +111,27 @@ we refer to this task as **phenotyping**. `auton_survival.phenotyping` allows:
 - **Unsupervised Phenotyping**: Involves first performing dimensionality
 reduction on the inpute covariates \( x \) followed by the use of a clustering
 algorithm on this representation.
+
+```python
+from auton_survival.phenotyping import ClusteringPhenotyper
+
+# Dimensionality reduction using Principal Component Analysis (PCA) to 8 dimensions.
+dim_red_method, = 'pca', 8
+
+# We use a Gaussian Mixture Model (GMM) with 3 components and diagonal covariance.
+clustering_method, n_clusters = 'gmm', 3
+
+# Initialize the phenotyper with the above hyperparameters.
+phenotyper = ClusteringPhenotyper(clustering_method=clustering_method, 
+                                  dim_red_method=dim_red_method, 
+                                  n_components=n_components, 
+                                  n_clusters=n_clusters)
+# Fit and infer the phenogroups.
+phenotypes = phenotyper.fit_phenotype(features)
+
+# Plot the phenogroup specific Kaplan-Meier survival estimate.
+auton_survival.reporting.plot_kaplanmeier(outcomes, phenotypes)
+```
 
 - **Factual Phenotyping**: Involves the use of structured latent variable
 models, `auton_survival.models.dcm.DeepCoxMixtures` or
