@@ -12,12 +12,18 @@
 
 <br>
 
-Python package `auton_survival` provides a flexible API for various problems
-in survival analysis, including regression, counterfactual estimation,
-and phenotyping.
+The `auton-survival` Package
+---------------------------
+
+The python package `auton-survival` is repository of reusable utilities for projects
+involving censored Time-to-Event Data. `auton_survival` provides a flexible APIs 
+allowing rapid experimentation including dataset preprocessing, regression, 
+counterfactual estimation, clustering and phenotyping and propensity adjusted evaluation.
 
 **For complete details on** `auton-survival` **see**: 
 <h3>• <a href="https://www.cs.cmu.edu/~chiragn/papers/auton_survival.pdf">White Paper</a> &nbsp;&nbsp; • <a href="https://autonlab.github.io/auton-survival/">Documentation</a> &nbsp;&nbsp; • <a href="https://nbviewer.org/github/autonlab/auton-survival/tree/master/examples/">Demo Notebooks</a></h3>
+
+
 
 What is Survival Analysis?
 --------------------------
@@ -32,14 +38,6 @@ regression problems, Survival Analysis differs in two major ways:
   \( T \in [0, \infty) \).
 * There is presence of censoring ie. a large number of instances of data are
   lost to follow up.
-
-The Auton Survival Package
----------------------------
-
-The package `auton_survival` is repository of reusable utilities for projects
-involving censored Time-to-Event Data. `auton_survival` allows rapid
-experimentation including dataset preprocessing, regression, counterfactual
-estimation, clustering and phenotyping and propnsity adjusted evaluation.
 
 
 Survival Regression
