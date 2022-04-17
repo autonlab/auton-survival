@@ -43,6 +43,8 @@ regression problems, Survival Analysis differs in two major ways:
 Survival Regression
 -------------------
 
+#### `auton_survival.models`
+
 Training a Deep Cox Proportional Hazards Model with `auton-survival`
 
 ```python
@@ -64,20 +66,29 @@ predictions = model.predict_risk(features, t=[8, 12, 16])
 
 
 
-### `auton_survival.estimators`
+#### `auton_survival.estimators`
 
-This module provids a wrapper to model survival datasets with standard
-survival (time-to-event) analysis methods. The use of the wrapper allows
-a simple standard interface for multiple different survival regression methods.
+This module provides a wrapper `auton_survival.estimators.SurvivalModel` to model
+survival datasets with standard survival (time-to-event) analysis methods.
+The use of the wrapper allows a simple standard interface for multiple different
+survival regression methods.
 
 `auton_survival.estimators` also provides convenient wrappers around other popular
-python survival analysis packages to experiment with the following
-survival regression estimators
+python survival analysis packages to experiment with Random Survival Forests and 
+Weibull Accelerated Failure Time regression models.
 
-- Random Survival Forests (`pysurvival`):
-- Weibull Accelerated Failure Time (`lifelines`) :
+```python
+from auton_survival import estimators
 
-### `auton_survival.experiments`
+# Train a Deep Survival Machines model using the SurvivalModel class.
+model = estimators.SurvivalModel(model='dsm')
+model.fit(features, outcomes)
+
+# Predict risk at time horizons.
+predictions = model.predict_risk(features, times=[8, 12, 16])
+```
+
+#### `auton_survival.experiments`
 
 Modules to perform standard survival analysis experiments. This module
 provides a top-level interface to run `auton-survival` style experiments
@@ -102,7 +113,7 @@ model.fit(features, outcomes)
 Phenotyping and Knowledge Discovery
 -----------------------------------
 
-### `auton_survival.phenotyping`
+#### `auton_survival.phenotyping`
 
 `auton_survival.phenotyping` allows extraction of latent clusters or subgroups
 of patients that demonstrate similar outcomes. In the context of this package,
@@ -150,7 +161,7 @@ Helper functions to load and prerocsss various time-to-event data like the
 popular `SUPPORT`, `FRAMINGHAM` and `PBC` dataset for survival analysis.
 
 
-### `auton_survival.datasets`
+#### `auton_survival.datasets`
 
 ```python
 # Load the SUPPORT Dataset
@@ -158,7 +169,7 @@ from auton_survival import dataset
 features, outcomes = datasets.load_dataset('SUPPORT')
 ```
 
-### `auton_survival.preprocessing`
+#### `auton_survival.preprocessing`
 This module provides a flexible API to perform imputation and data
 normalization for downstream machine learning models. The module has
 3 distinct classes, `Scaler`, `Imputer` and `Preprocessor`. The `Preprocessor`
@@ -183,7 +194,7 @@ features = Preprocessor().fit_transform(features,
 Evaluation and Reporting
 -------------------------
 
-### `auton_survival.metrics`
+#### `auton_survival.metrics`
 
 Helper functions to generate standard reports for common Survival Analysis tasks.
 
