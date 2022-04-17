@@ -16,7 +16,7 @@ The `auton-survival` Package
 ---------------------------
 
 The python package `auton-survival` is repository of reusable utilities for projects
-involving censored Time-to-Event Data. `auton_survival` provides a flexible APIs 
+involving censored Time-to-Event Data. `auton-survival` provides a flexible APIs 
 allowing rapid experimentation including dataset preprocessing, regression, 
 counterfactual estimation, clustering and phenotyping and propensity adjusted evaluation.
 
@@ -66,7 +66,7 @@ survival regression estimators
 ### `auton_survival.experiments`
 
 Modules to perform standard survival analysis experiments. This module
-provides a top-level interface to run `auton_survival` style experiments
+provides a top-level interface to run `auton-survival` style experiments
 of survival analysis, involving cross-validation style experiments with
 multiple different survival analysis models at different horizons of
 event times.
@@ -234,14 +234,14 @@ foo@bar:~$ pip install -r requirements.txt
 
 Compatibility
 -------------
-`auton_survival` requires `python` 3.5+ and `pytorch` 1.1+.
+`auton-survival` requires `python` 3.5+ and `pytorch` 1.1+.
 
 To evaluate performance using standard metrics
-`auton_survival` requires `scikit-survival`.
+`auton-survival` requires `scikit-survival`.
 
 Contributing
 ------------
-`auton_survival` is [on GitHub]. Bug reports and pull requests are welcome.
+`auton-survival` is [on GitHub]. Bug reports and pull requests are welcome.
 
 [on GitHub]: https://github.com/autonlab/auton-survival
 
