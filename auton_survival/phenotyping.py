@@ -31,6 +31,7 @@ import pandas as pd
 from copy import deepcopy
 
 from sklearn import cluster, decomposition, mixture
+from sklearn.metrics import auc
 
 from auton_survival.utils import _get_method_kwargs
 from auton_survival.experiments import CounterfactualSurvivalRegressionCV
@@ -419,72 +420,171 @@ class ClusteringPhenotyper(Phenotyper):
 
     return self.fit(features).phenotype(features)
 
-class SurvivalVirtualTwinsPhenotyper(object):
+class SurvivalVirtualTwinsPhenotyper(Phenotyper):
 
-  """"Not Yet Implemented"""
+  """Phenotyper that estimates the potential outcomes under treatment and
+  control using a counterfactual Deep Cox Proportional Hazards model, 
+  followed by regressing the difference of the estimated counterfactual 
+  Restricted Mean Survival Times using a Random Forest regressor."""
 
-
-  _VALID_PHENO_METHODS = ['rsf']
+  _VALID_PHENO_METHODS = ['rfr']
   _DEFAULT_PHENO_HYPERPARAMS = {}
-  _DEFAULT_PHENO_HYPERPARAMS['rsf'] = {'n_estimators': 50,
+  _DEFAULT_PHENO_HYPERPARAMS['rfr'] = {'n_estimators': 50,
                                        'max_depth': 5}
 
   def __init__(self,
                cf_method='dcph',
-               phenotyping_method='rsf',
+               phenotyping_method='rfr',
                cf_hyperparams=None,
                phenotyper_hyperparams=None,
                random_seed=0):
-
-    raise NotImplementedError()
-
-    assert cf_method in CounterfactualSurvivalRegressionCV._VALID_CF_METHODS, "Invalid Counterfactual Method: "+cf_method
-    assert phenotyping_method in self._VALID_PHENO_METHODS, "Invalid Phenotyping Method: "+phenotyping_method
+    
+    assert cf_method in CounterfactualSurvivalRegressionCV._VALID_CF_METHODS, "\
+    Invalid Counterfactual Method: "+cf_method
+    assert phenotyping_method in self._VALID_PHENO_METHODS, "Invalid Phenotyping Method:\
+    "+phenotyping_method
 
     self.cf_method = cf_method
     self.phenotyping_method = phenotyping_method
 
-    if cf_method_hyperparams is None:
-      cf_method_hyperparams = {}
+    if cf_hyperparams is None:
+      cf_hyperparams = {}
     if phenotyper_hyperparams is None:
       phenotyper_hyperparams = {}
-
-    phenotyper_hyperparams = deepcopy(SurvivalVirtualTwinsPhenotyper._DEFAULT_PHENO_HYPERPARAMS[phenotyping_method]).update(phenotyper_hyperparams)
+    
     self.phenotyper_hyperparams = phenotyper_hyperparams
-
-    cf_hyperparams =  deepcopy(SurvivalVirtualTwinsPhenotyper._DEFAULT_PHENO_HYPERPARAMS[cf_method]).update(cf_hyperparams)
     self.cf_hyperparams = cf_hyperparams
 
     self.random_seed = random_seed
 
   def fit(self, features, outcomes, interventions, horizon):
+    
+    """Fit a counterfactual model and regress the difference of the estimated 
+    counterfactual RMST using a Random Forest regressor.
+    
+    Parameters
+    -----------
+    features: pd.DataFrame
+        A pandas dataframe with rows corresponding to individual samples
+        and columns as covariates.
+    outcomes : pd.DataFrame
+        A pandas dataframe with rows corresponding to individual samples
+        and columns 'time' and 'event'.
+    treatment_indicator : np.array
+        Boolean numpy array of treatment indicators. True means individual
+        was assigned a specific treatment.
+    horizon : np.float
+        The event horizon at which to compute the counterfacutal RMST for
+        regression.
 
-    raise NotImplementedError()
+    Returns
+    -----------
+    Trained instance of Survival Virtual Twins Phenotyer.
 
-    cf_model = CounterfactualSurvivalRegressionCV(**self.cf_method_hyperparams)
+    """
+
+    cf_model = CounterfactualSurvivalRegressionCV(model=self.cf_method, 
+                                                  hyperparam_grid=self.cf_hyperparams)
 
     self.cf_model = cf_model.fit(features, outcomes, interventions)
 
-    times = np.unique(outcomes.times.values)
+    times = np.unique(outcomes.time.values)
     cf_predictions = self.cf_model.predict_counterfactual_survival(features,
-                                                                   interventions,
-                                                                   times)
+                                                                   times.tolist())
 
     ite_estimates = cf_predictions[1] - cf_predictions[0]
+    ite_estimates = [estimate[times < horizon] for estimate in ite_estimates]
+    times = times[times < horizon]
+    # Compute rmst for each sample based on user-specified event-horizon
+    rmst = np.array([auc(times, i) for i in ite_estimates])
 
-    if self.phenotyping_method == 'rsf':
+    if self.phenotyping_method == 'rfr':
 
       from sklearn.ensemble import RandomForestRegressor
 
-      pheno_model = RandomForestRegressor(**self.phenotyping_method_hyperparams)
-      pheno_model.fit(features.values, ite_estimates)
+      pheno_model = RandomForestRegressor(**self.phenotyper_hyperparams)
+      pheno_model.fit(features.values, rmst)
 
     self.pheno_model = pheno_model
+    self.fitted = True
+    
+    return self
+
+  def predict_proba(self, features):
+        
+    """Estimate the probability that the treatment group RMST is greater than
+    that of the control group.
+    
+    Parameters
+    -----------
+    features: pd.DataFrame
+        a pandas dataframe with rows corresponding to individual samples
+        and columns as covariates.
+
+    Returns
+    -----------
+    np.array
+        a numpy array of the phenogroup probabilties.
+
+    """
+
+    phenotype_preds=  self.pheno_model.predict(features)
+    preds_surv_greater = (phenotype_preds -  phenotype_preds.min()) / (phenotype_preds.max() - phenotype_preds.min())
+    preds_surv_less = 1 - preds_surv_greater
+    preds = np.array([[preds_surv_less[i], preds_surv_greater[i]] 
+                      for i in range(len(features))])
+    
+    return preds
 
   def predict(self, features):
 
-    raise NotImplementedError()
+    """Predict phenogroups.
+    
+    Parameters
+    -----------
+    features: pd.DataFrame
+        a pandas dataframe with rows corresponding to individual samples
+        and columns as covariates.
 
+    Returns
+    -----------
+    np.array
+        a numpy array of the phenogroup labels
+
+    """
+    
     phenotype_preds=  self.pheno_model.predict(features)
-    phenotype_preds = (phenotype_preds -  phenotype_preds.min()) / (phenotype_preds.max() - phenotype_preds.min())
-    return phenotype_preds
+    preds_surv_greater = (phenotype_preds -  phenotype_preds.min()) / (phenotype_preds.max() - phenotype_preds.min())
+    preds_surv_less = 1 - preds_surv_greater
+    preds = np.array([[preds_surv_less[i], preds_surv_greater[i]] 
+                      for i in range(len(features))])
+    
+    return np.argmax(preds, axis=1)
+
+  def fit_predict(self, features, outcomes, interventions, horizon):
+
+    """Fit and perform phenotyping on a given dataset.
+
+    Parameters
+    -----------
+    features: pd.DataFrame
+        A pandas dataframe with rows corresponding to individual samples
+        and columns as covariates.
+    outcomes : pd.DataFrame
+        A pandas dataframe with rows corresponding to individual samples
+        and columns 'time' and 'event'.
+    treatment_indicator : np.array
+        Boolean numpy array of treatment indicators. True means individual
+        was assigned a specific treatment.
+    horizon : np.float
+        The event horizon at which to compute the counterfacutal RMST for
+        regression.
+
+    Returns
+    -----------
+    np.array
+        a numpy array of the phenogroup labels.
+
+    """
+
+    return self.fit(features, outcomes, interventions, horizon).predict(features)

@@ -118,62 +118,6 @@ def _fit_dcm(features, outcomes, random_seed, **hyperparams):
 
   return model
 
-  # if len(layers): model = DeepCoxMixture(k=k, inputdim=features.shape[1], hidden=layers[0])
-  # else: model = CoxMixture(k=k, inputdim=features.shape[1])
-
-  # x = torch.from_numpy(features.values.astype('float32'))
-  # t = torch.from_numpy(outcomes['time'].values.astype('float32'))
-  # e = torch.from_numpy(outcomes['event'].values.astype('float32'))
-
-  # vidx = _get_valid_idx(x.shape[0], 0.15, random_seed)
-
-  # train_data = (x[~vidx], t[~vidx], e[~vidx])
-  # val_data = (x[vidx], t[vidx], e[vidx])
-
-  # (model, breslow_splines, unique_times) = train(model,
-  #                                                train_data,
-  #                                                val_data, 
-  #                                                epochs=epochs,
-  #                                                lr=lr, bs=bs,
-  #                                                use_posteriors=True,
-  #                                                patience=5,
-  #                                                return_losses=False,
-  #                                                smoothing_factor=smoothing_factor)
-
-  #return (model, breslow_splines, unique_times)
-
-# THIS IS 1 OF 2 _PREDICT_DCM FUNCTIONS HERE BUT THIS ONE THROWS A BUG SO I USE _PREDICT_DCM FUNCTION BELOW
-# def _predict_dcm(model, features, times):
-
-#   """Predict survival probabilities at specified time(s) using the
-#   Deep Cox Mixtures model.
-
-#   Parameters
-#   -----------
-#   model : Trained instance of the Deep Cox Mixtures model.
-#   features : pd.DataFrame
-#       A pandas dataframe with rows corresponding to individual
-#       samples and columns as covariates.
-#   times: float or list
-#       A float or list of the times at which to compute
-#       the survival probability.
-
-#   Returns
-#   -----------
-#   np.array : An array of the survival probabilites at each
-#   time point in times.
-
-#   """
-
-#   #raise NotImplementedError()
-
-#   survival_predictions = model.predict_survival(features, times)
-#   if len(times)>1:
-#     survival_predictions = pd.DataFrame(survival_predictions, columns=times).T
-#     return __interpolate_missing_times(survival_predictions, times)
-#   else:
-#     return survival_predictions
-
 def _fit_dcph(features, outcomes, random_seed, **hyperparams):
 
   """Fit a Deep Cox Proportional Hazards Model/Farragi Simon Network [1,2]
@@ -227,55 +171,6 @@ def _fit_dcph(features, outcomes, random_seed, **hyperparams):
             optimizer="Adam")
 
   return model
-
-  #raise NotImplementedError()
-  # import torch
-  # import torchtuples as ttup
-
-  # from pycox.models import CoxPH
-
-  # torch.manual_seed(random_seed)
-  # np.random.seed(random_seed)
-
-  # layers = hyperparams.get('layers', [100])
-  # lr = hyperparams.get('lr', 1e-3)
-  # bs = hyperparams.get('bs', 100)
-  # epochs = hyperparams.get('epochs', 50)
-  # activation = hyperparams.get('activation', 'relu')
-
-  # if activation == 'relu': activation = torch.nn.ReLU
-  # elif activation == 'relu6': activation = torch.nn.ReLU6
-  # elif activation == 'tanh': activation = torch.nn.Tanh
-  # else: raise NotImplementedError("Activation function not implemented")
-
-  # x = features.values.astype('float32')
-  # t = outcomes['time'].values.astype('float32')
-  # e = outcomes['event'].values.astype('bool')
-
-  # in_features = x.shape[1]
-  # out_features = 1
-  # batch_norm = False
-  # dropout = 0.0
-
-  # net = ttup.practical.MLPVanilla(in_features, layers,
-  #                                 out_features, batch_norm, dropout,
-  #                                 activation=activation,
-  #                                 output_bias=False)
-
-  # model = CoxPH(net, torch.optim.Adam)
-
-  # vidx = _get_valid_idx(x.shape[0], 0.15, random_seed)
-
-  # y_train, y_val = (t[~vidx], e[~vidx]), (t[vidx], e[vidx])
-  # val_data = x[vidx], y_val
-
-  # callbacks = [ttup.callbacks.EarlyStopping()]
-  # model.fit(x[~vidx], y_train, bs, epochs, callbacks, True,
-  #           val_data=val_data,
-  #           val_batch_size=bs)
-  # model.compute_baseline_hazards()
-
-  # return model
 
 def __interpolate_missing_times(survival_predictions, times):
   """Interpolate survival probabilities at missing time points.
@@ -771,14 +666,14 @@ class CounterfactualSurvivalModel:
 
   def predict_counterfactual_survival(self, features, times):
 
-    control_outcomes = self.control_model.predict_survival(features, times)
     treated_outcomes = self.treated_model.predict_survival(features, times)
+    control_outcomes = self.control_model.predict_survival(features, times)
 
     return treated_outcomes, control_outcomes
 
   def predict_counterfactual_risk(self, features, times):
 
-    control_outcomes = self.control_model.predict_risk(features, times)
     treated_outcomes = self.treated_model.predict_risk(features, times)
+    control_outcomes = self.control_model.predict_risk(features, times)
 
     return treated_outcomes, control_outcomes

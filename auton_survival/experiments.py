@@ -1,3 +1,29 @@
+# coding=utf-8
+# MIT License
+
+# Copyright (c) 2022 Carnegie Mellon University, Auton Lab
+
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+"""Utilities to perform cross-validation."""
+
+from copy import deepcopy
 import numpy as np
 
 from auton_survival.estimators import SurvivalModel, CounterfactualSurvivalModel
@@ -94,17 +120,23 @@ class SurvivalRegressionCV:
 
     self.folds = folds
 
-    unique_times = np.unique(outcomes['time'].values)
-
-    time_min, time_max = unique_times.min(), unique_times.max()
-
+    unique_times = np.unique(outcomes.time.values)
+    time_max, time_min = unique_times.max(), unique_times.min()
+    
     for fold in range(self.cv_folds):
-
-      fold_outcomes = outcomes.loc[folds==fold, 'time']
-
-      if fold_outcomes.min() > time_min: time_min = fold_outcomes.min()
-      if fold_outcomes.max() < time_max: time_max = fold_outcomes.max()
+        
+      time_test = outcomes.loc[folds==fold, 'time'] 
+      time_train = outcomes.loc[folds!=fold, 'time'] 
       
+      if time_test.min() > time_min: 
+        time_min = time_test.min()
+    
+      if (time_test.max() < time_max)|(time_train.max() < time_max):
+        if time_test.max() > time_train.max():
+          time_max = max(time_test[time_test < time_train.max()])
+        else:
+          time_max = max(time_test[time_test < time_test.max()])
+    
     unique_times = unique_times[unique_times>=time_min]
     unique_times = unique_times[unique_times<time_max]
 
@@ -119,6 +151,7 @@ class SurvivalRegressionCV:
 
       fold_models = {}
       for fold in tqdm(range(self.cv_folds)):
+            
         # Fit the model
         fold_model = SurvivalModel(model=self.model, random_seed=self.random_seed, **hyper_param)  
         fold_model.fit(features.loc[folds!=fold], outcomes.loc[folds!=fold])
@@ -126,17 +159,22 @@ class SurvivalRegressionCV:
 
         # Predict risk scores
         predictions[folds==fold] = fold_model.predict_survival(features.loc[folds==fold], 
-                                                               times=unique_times)
+                                                               times=unique_times.tolist())
 
       score_per_fold = []
-      for fold in range(self.cv_folds):
+      for fold in range(self.cv_folds):        
         outcomes_train = outcomes.loc[folds!=fold]
-        outcomes_test = outcomes.loc[folds==fold]
-        predictions_test = predictions[folds==fold]
+        outcomes_test = outcomes.loc[folds==fold].copy()
+        predictions_test = deepcopy(predictions[folds==fold])
+        
+        # Cannot compute IBS for test set samples with time > follow-up time
+        max_follow_up = outcomes_train.time.max()
+        predictions_test = predictions_test[outcomes_test.time.values < max_follow_up]
+        outcomes_test = outcomes_test.loc[outcomes_test.time.values < max_follow_up]
 
         # Compute IBS
-        score = survival_regression_metric('ibs', outcomes_train, outcomes_test, 
-                                           predictions_test, unique_times)
+        score = survival_regression_metric('ibs', outcomes_train, predictions_test, 
+                                           unique_times, outcomes_test)
         score_per_fold.append(score)
 
       current_score = np.mean(score_per_fold)
@@ -235,6 +273,8 @@ class CounterfactualSurvivalRegressionCV:
 
   """
 
+  _VALID_CF_METHODS = ['dsm', 'dcph', 'dcm', 'rsf', 'cph']
+
   def __init__(self, model, cv_folds=5, random_seed=0, hyperparam_grid={}):
 
     self.model = model
@@ -277,11 +317,9 @@ class CounterfactualSurvivalRegressionCV:
 
     """
 
-
-    treated, control = interventions==1, interventions!=1
-    treated_model = self.treated_experiment.fit(features.loc[treated],
-                                                outcomes.loc[treated])
-    control_model = self.control_experiment.fit(features.loc[control],
-                                                outcomes.loc[control])
+    treated_model = self.treated_experiment.fit(features.loc[interventions==1],
+                                                outcomes.loc[interventions==1])
+    control_model = self.control_experiment.fit(features.loc[interventions!=1],
+                                                outcomes.loc[interventions!=1])
 
     return CounterfactualSurvivalModel(treated_model, control_model)

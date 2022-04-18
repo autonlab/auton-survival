@@ -24,22 +24,20 @@
 """Tools to compute metrics used to assess survival outcomes and survival
 model performance."""
 
-from sksurv import metrics, util
 from lifelines import KaplanMeierFitter, CoxPHFitter
-
-from sklearn.metrics import auc
-
 import pandas as pd
 import numpy as np
-
+from sksurv import metrics, util
+from scipy.optimize import fsolve
+from sklearn.metrics import auc
 from tqdm import tqdm
-
 import warnings
 
-def survival_diff_metric(metric, outcomes, treatment_indicator,
-                         weights=None, horizon=None, interpolate=True,
-                         weights_clip=1e-2, n_bootstrap=None,
-                         size_bootstrap=1.0, random_seed=0):
+def treatment_effect(metric, outcomes, treatment_indicator,
+                     weights=None, horizons=None, risks=None,
+                     interpolate=True, weights_clip=1e-2, 
+                     n_bootstrap=None, size_bootstrap=1.0, 
+                     random_seed=0):
 
   """Compute metrics for comparing population level survival outcomes
   across treatment arms.
@@ -50,7 +48,7 @@ def survival_diff_metric(metric, outcomes, treatment_indicator,
     The metric to evalute for comparing survival outcomes.
     Options include:
       - `median`
-      - `time_to`
+      - `tar`
       - `hazard_ratio`
       - `restricted_mean`
       - `survival_at`
@@ -63,10 +61,14 @@ def survival_diff_metric(metric, outcomes, treatment_indicator,
   weights : pd.Series, default=None
       Treatment assignment propensity scores, \( \widehat{\mathbb{P}}(A|X=x) \).
       If `None`, all weights are set to \( 0.5 \). Default is `None`.
-  horizon : float
-      The time horizon at which to compare the survival curves.
+  horizons : float or int or array of floats or ints, default=None
+      Event horizon(s) at which to compute the metric.
       Must be specified for metric 'restricted_mean' and 'survival_at'.
       For 'hazard_ratio' this is ignored.
+  risks : float or array of floats
+      The risk level (0-1) at which to compare times between treatment arms.
+      Must be specified for metric 'tar'.
+      Ignored for other metrics.
   interpolate : bool, default=True
       Whether to interpolate the survival curves.
   weights_clip : float
@@ -88,10 +90,17 @@ def survival_diff_metric(metric, outcomes, treatment_indicator,
   """
 
   assert metric in ['median', 'hazard_ratio', 'restricted_mean',
-                    'survival_at', 'time_to']
+                    'survival_at', 'tar']
 
-  if metric in ['restricted_mean', 'survival_at', 'time_to']:
-    assert horizon is not None, "Please specify Event Horizon"
+  if metric in ['restricted_mean', 'survival_at']:
+    assert horizons is not None, "Please specify Event Horizon"
+    assert risks is None, "Risks must be non for 'restricted_mean' and \
+'survival_at' metrics"
+    
+  if metric in ['tar']:
+    assert risks is not None, "Please specify risk level(s) at \
+which to compare time-to-event."
+    assert horizons is None, "Horizons must be none for 'tar' metric."
 
   if metric == 'hazard_ratio':
     warnings.warn("WARNING: You are computing Hazard Ratios.\n Make sure you have tested the PH Assumptions.")
@@ -101,6 +110,12 @@ def survival_diff_metric(metric, outcomes, treatment_indicator,
   # Bootstrapping ...
   if n_bootstrap is not None:
     assert isinstance(n_bootstrap, int), '`bootstrap` must be None or int'
+    
+  if isinstance(horizons, (int, float)):
+    horizons = [horizons]
+    
+  if isinstance(risks, (int, float)):
+    risks = [risks]
 
   if isinstance(n_bootstrap, int):
     print('Bootstrapping... ', n_bootstrap,
@@ -120,12 +135,12 @@ def survival_diff_metric(metric, outcomes, treatment_indicator,
 
   if metric == 'survival_at':
     _metric = _survival_at_diff
-  elif metric == 'time_to':
-    _metric = _time_to_diff
+  elif metric == 'tar':
+    _metric = _tar
   elif metric == 'restricted_mean':
     _metric = _restricted_mean_diff
   elif metric == 'median':
-    _metric = _time_to_diff
+    _metric = _median  # Lifelines .median_survival_time_?
   elif metric == 'hazard_ratio':
     _metric = _hazard_ratio
   else: raise NotImplementedError()
@@ -133,22 +148,24 @@ def survival_diff_metric(metric, outcomes, treatment_indicator,
   if n_bootstrap is None:
     return _metric(treated_outcomes,
                    control_outcomes,
-                   horizon=horizon,
+                   horizons=horizons,
+                   risks=risks,
                    interpolate=interpolate,
                    treated_weights=iptw_weights[treatment_indicator],
                    control_weights=iptw_weights[~treatment_indicator])
   else:
     return [_metric(treated_outcomes,
                     control_outcomes,
-                    horizon=horizon,
+                    horizons=horizons,
+                    risks=risks,
                     interpolate=interpolate,
                     treated_weights=iptw_weights[treatment_indicator],
                     control_weights=iptw_weights[~treatment_indicator],
                     size_bootstrap=size_bootstrap,
                     random_seed=i) for i in range(n_bootstrap)]
 
-def survival_regression_metric(metric, outcomes_train, outcomes_test,
-                               predictions, times):
+def survival_regression_metric(metric, outcomes_train, predictions, 
+                               times, outcomes_test=None):
   """Compute metrics to assess survival model performance.
 
   Parameters
@@ -178,6 +195,19 @@ def survival_regression_metric(metric, outcomes_train, outcomes_test,
 
   """
 
+  if isinstance(times, (float,int)):
+    times = [times]
+
+  if outcomes_test is None:
+    outcomes_test = outcomes_train
+    warnings.warn("You are are evaluating model performance on the \
+same data used to train the model.")
+    
+  assert max(times) < outcomes_train.time.max(), "Times should \
+be within the range of training set times to avoid exterpolation."
+  assert max(times) < outcomes_test.time.max(), "Times \
+must be within the range of test set times."
+
   survival_train = util.Surv.from_dataframe('event', 'time', outcomes_train)
   survival_test = util.Surv.from_dataframe('event', 'time', outcomes_test)
   predictions_test = predictions
@@ -201,10 +231,10 @@ def survival_regression_metric(metric, outcomes_train, outcomes_test,
 
   else:
     raise NotImplementedError()
-
+    
 def phenotype_purity(phenotypes_train, outcomes_train,
                      phenotypes_test=None, outcomes_test=None,
-                     strategy='instantaneous', horizon=None,
+                     strategy='instantaneous', horizons=None,
                      bootstrap=None):
   """Compute the brier score to assess survival model performance
   for phenotypes.
@@ -227,7 +257,7 @@ def phenotype_purity(phenotypes_train, outcomes_train,
       Options include:
       - `instantaneous` : Compute the brier score.
       - `integrated` : Compute the integrated brier score.
-  horizon : float or int or np.array of floats or ints, default=None
+  horizons : float or int or an array of floats or ints, default=None
       Event horizon(s) at which to compute the metric
   bootstrap : integer, default=None
       The number of bootstrap iterations.
@@ -240,8 +270,6 @@ def phenotype_purity(phenotypes_train, outcomes_train,
 
   """
 
-  # CODE UPDATE: enable phenotype purity to be computed for the test set...
-  # without specifying folds to determine the train/test sets when folds are inapplicable (no CV)
   np.random.seed(0)
 
   if (outcomes_test is None) & (phenotypes_test is not None):
@@ -249,17 +277,19 @@ def phenotype_purity(phenotypes_train, outcomes_train,
   if (outcomes_test is not None) & (phenotypes_test is None):
     raise Exception("Specify phenotypes for test set.")
 
-  assert horizon is not None, "Please specify Event Horizon"
+  assert horizons is not None, "Please specify Event Horizon"
 
-  if isinstance(horizon, float) | isinstance(horizon, int):
-    horizon = [horizon]
+  if isinstance(horizons, (float,int)):
+    horizons = [horizons]
 
   if outcomes_test is None:
     phenotypes_test = phenotypes_train
     outcomes_test = outcomes_train
     warnings.warn("You are are estimating survival probabilities for \
-                    the same dataset used to estimate the censoring \
-                    distribution.")
+the same dataset used to estimate the censoring distribution.")
+    
+  assert outcomes_test.time.max() >= outcomes_train.time.max(), "Test \
+set times must be within the range of training set follow-up times."
 
   survival_curves = {}
   for phenotype in np.unique(phenotypes_train):
@@ -272,28 +302,28 @@ def phenotype_purity(phenotypes_train, outcomes_train,
 
   if strategy == 'instantaneous':
 
-    predictions = np.zeros((len(survival_test), len(horizon)))
+    predictions = np.zeros((len(survival_test), len(horizons)))
     for phenotype in set(phenotypes_test):
-      predictions[phenotypes_test==phenotype, :] = survival_curves[phenotype].predict(times=horizon,
+      predictions[phenotypes_test==phenotype, :] = survival_curves[phenotype].predict(times=horizons,
                                                                                     interpolate=True)
     if bootstrap is None:
       return metrics.brier_score(survival_train, survival_test,
-                                 predictions, horizon)[1]
+                                 predictions, horizons)[1]
     else:
       scores = []
       for i in tqdm(range(bootstrap)):
         idx = np.random.choice(n, size=n, replace=True)
         score = metrics.brier_score(survival_train, survival_test[idx],
-                                    predictions[idx], horizon)[1]
+                                    predictions[idx], horizons)[1]
         scores.append(score)
       return scores
 
   elif strategy == 'integrated':
 
     horizon_scores = []
-    for time in horizon:
+    for horizon in horizons:
       times = np.unique(outcomes_test['time'])
-      times = times[times<time]
+      times = times[times<horizon]
       predictions = np.zeros((len(survival_test), len(times)))
       for phenotype in set(phenotypes_test):
         predictions[phenotypes_test==phenotype, :] = survival_curves[phenotype].predict(times=times,
@@ -330,7 +360,7 @@ def __get_restricted_area(km_estimate, horizon):
   Parameters
   -----------
   km_estimate : Fitted Kaplan Meier estimator.
-  horizon : float
+  horizon : float or int
       The time horizon at which to compare the survival curves.
       Must be specified for metric 'restricted_mean' and 'survival_at'.
       For 'hazard_ratio' this is ignored.
@@ -351,7 +381,7 @@ def __get_restricted_area(km_estimate, horizon):
 
   return auc(x, y)
 
-def _restricted_mean_diff(treated_outcomes, control_outcomes, horizon,
+def _restricted_mean_diff(treated_outcomes, control_outcomes, horizons,
                           treated_weights, control_weights,
                           size_bootstrap=1.0, random_seed=None, **kwargs):
   """Compute the difference in the area under the Kaplan Meier curve
@@ -365,7 +395,7 @@ def _restricted_mean_diff(treated_outcomes, control_outcomes, horizon,
   control_outcomes : pd.DataFrame
       A pandas dataframe with columns 'time' and 'event' for samples that
       did not receive a specific treatment.
-  horizon : float
+  horizons : float or int or array of floats or ints, default=None
       The time horizon at which to compare the survival curves.
       Must be specified for metric 'restricted_mean' and 'survival_at'.
       For 'hazard_ratio' this is ignored.
@@ -404,11 +434,18 @@ def _restricted_mean_diff(treated_outcomes, control_outcomes, horizon,
   control_survival = KaplanMeierFitter().fit(control_outcomes['time'],
                                              control_outcomes['event'])
 
-  return __get_restricted_area(treatment_survival, horizon) - __get_restricted_area(control_survival, horizon)
+  horizon_estimates = []
+  for horizon in horizons:
+    treatment_estimate = __get_restricted_area(treatment_survival, horizon)
+    control_estimate = __get_restricted_area(control_survival, horizon)
+    horizon_estimates.append(treatment_estimate-control_estimate)
 
-def _survival_at_diff(treated_outcomes, control_outcomes, horizon,
+  return np.array(horizon_estimates)
+
+def _survival_at_diff(treated_outcomes, control_outcomes, horizons,
                       treated_weights, control_weights,
-                      interpolate=True, size_bootstrap=1.0, random_seed=None):
+                      interpolate=True, size_bootstrap=1.0, 
+                      random_seed=None, **kwargs):
   """Compute the difference in Kaplan Meier survival function estimates
   between the control and treatment groups at a specified time horizon.
 
@@ -420,7 +457,7 @@ def _survival_at_diff(treated_outcomes, control_outcomes, horizon,
   control_outcomes : pd.DataFrame
       A pandas dataframe with columns 'time' and 'event' for samples that
       did not receive a specific treatment.
-  horizon : float
+  horizons : float or int or array of floats or ints, default=None
       The time horizon at which to compare the survival curves.
       Must be specified for metric 'restricted_mean' and 'survival_at'.
       For 'hazard_ratio' this is ignored.
@@ -440,8 +477,8 @@ def _survival_at_diff(treated_outcomes, control_outcomes, horizon,
   Returns
   -----------
   pd.Series : A pandas series of the difference in Kaplan Meier survival
-  estimates between the control and treatment groups at a specified time
-  horizon.
+  estimates between the control and treatment groups at the specified time
+  horizons.
 
   """
 
@@ -458,10 +495,17 @@ def _survival_at_diff(treated_outcomes, control_outcomes, horizon,
   control_survival = KaplanMeierFitter().fit(control_outcomes['time'],
                                              control_outcomes['event'])
 
-  return treatment_survival.predict(horizon, interpolate=interpolate) - control_survival.predict(horizon, interpolate=interpolate)
+  treatment_estimate = treatment_survival.predict(horizons, interpolate=interpolate)
+  control_estimate = control_survival.predict(horizons, interpolate=interpolate)
 
-def _time_to_diff(treated_outcomes, control_outcomes, horizon, interpolate=True):
-  """Not implemented.
+  return np.array(treatment_estimate-control_estimate)
+    
+
+def _tar(treated_outcomes, control_outcomes, risks, 
+         treated_weights, control_weights, interpolate=True, 
+         size_bootstrap=1.0, random_seed=None, **kwargs):
+  """Time at Risk (TaR) measures time-to-event at a specified level 
+  of risk.
 
   Parameters
   -----------
@@ -471,21 +515,70 @@ def _time_to_diff(treated_outcomes, control_outcomes, horizon, interpolate=True)
   control_outcomes : pd.DataFrame
       A pandas dataframe with columns 'time' and 'event' for samples that
       did not receive a specific treatment.
-  horizon : float
-      The time horizon at which to compare the survival curves.
-      Must be specified for metric 'restricted_mean' and 'survival_at'.
-      For 'hazard_ratio' this is ignored.
+  risks : float or array of floats
+      The risk level (0-1) at which to compare times between treatment arms.
+      Must be specified for metric 'tar'.
+      Ignored for other metrics.
+  treated_weights : pd.Series
+      A pandas series of the inverse probability of censoring weights for
+      samples that received a specific treatment.
+  control_weights : pd.Series
+      A pandas series of the inverse probability of censoring weights for
+      samples that did not receive a specific treatment.
   interpolate : bool, default=True
       Whether to interpolate the survival curves.
+  size_bootstrap : float, default=1.0
+      The fraction of the population to sample for each bootstrap sample.
+  random_seed: int, default=None
+      Controls the reproducibility random sampling for bootstrapping.
 
   """
 
-  raise NotImplementedError()
+  # Assuming risk increases as time increases:
+  # Use linear interpolation and fsolve to estimate time at..
+  # user-specified risk
+  from scipy.optimize import fsolve
+  def interp_x(y, x, thres):
+    if len(y[y<thres])==0:
+      x1, y1 = 0, y[0]
+    else:
+      x1, y1 = x[y<thres][-1], y[y<thres][-1]
+    x2, y2 = x[y>thres][0], y[y>thres][0]
+    root = fsolve(func, x0=x1, args=(thres, x1, y1, x2, y2))[0]
+    return root
+  def func(x, y, x1, y1, x2, y2):
+    return y1 + (x-x1)*((y2-y1)/(x2-x1)) - y
+    
+  if random_seed is not None:
+    treated_outcomes = treated_outcomes.sample(n=int(size_bootstrap*len(treated_outcomes)),
+                                               weights=treated_weights,
+                                               random_state=random_seed, replace=True)
+    control_outcomes = control_outcomes.sample(n=int(size_bootstrap*len(control_outcomes)),
+                                               weights=control_weights,
+                                               random_state=random_seed, replace=True)
 
-  treatment_survival = KaplanMeierFitter().fit(treated_outcomes['time'],
-                                               treated_outcomes['event'])
+  treated_survival = KaplanMeierFitter().fit(treated_outcomes['time'],
+                                             treated_outcomes['event'])
   control_survival = KaplanMeierFitter().fit(control_outcomes['time'],
                                              control_outcomes['event'])
+
+  treated_horizons = np.linspace(treated_outcomes.time.min(), 
+                        treated_outcomes.time.max(), 
+                        round((treated_outcomes.time.max()-treated_outcomes.time.min())*20))
+  control_horizons = np.linspace(control_outcomes.time.min(), 
+                        control_outcomes.time.max(),
+                        round((control_outcomes.time.max()-control_outcomes.time.min())*20))
+  
+  treated_risk = 1-treated_survival.predict(treated_horizons, interpolate).values
+  control_risk = 1-control_survival.predict(control_horizons, interpolate).values
+
+  tar_diff = []
+  for risk in risks:
+    treated_tar = interp_x(treated_risk, treated_horizons, risk)
+    control_tar = interp_x(control_risk, control_horizons, risk)
+    tar_diff.append(treated_tar - control_tar)
+
+  return np.array(tar_diff)
 
 def _hazard_ratio(treated_outcomes, control_outcomes,
                   treated_weights, control_weights,
