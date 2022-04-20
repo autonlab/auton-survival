@@ -25,6 +25,7 @@ r""" Deep Cox Proportional Hazards Model"""
 
 import torch
 import numpy as np
+import pandas as pd
 
 from .dcph_torch import DeepCoxPHTorch, DeepRecurrentCoxPHTorch
 from .dcph_utilities import train_dcph, predict_survival
@@ -84,10 +85,19 @@ class DeepCoxPH:
     print("Hidden Layers:", self.layers)
 
   def _preprocess_test_data(self, x):
+    if isinstance(x, pd.DataFrame):
+      x = x.values
     return torch.from_numpy(x).float()
 
   def _preprocess_training_data(self, x, t, e, vsize, val_data, random_seed):
-
+        
+    if isinstance(x, pd.DataFrame):
+      x = x.values
+    if isinstance(t, (pd.Series, pd.DataFrame)):
+      t = t.values
+    if isinstance(e, (pd.Series, pd.DataFrame)):
+      e = e.values
+    
     idx = list(range(x.shape[0]))
 
     np.random.seed(random_seed)
@@ -276,11 +286,20 @@ class DeepRecurrentCoxPH(DeepCoxPH):
                                    optimizer=optimizer, typ=self.typ)
 
   def _preprocess_test_data(self, x):
+    if isinstance(x, pd.DataFrame):
+      x = x.values
     return torch.from_numpy(_get_padded_features(x)).float()
 
   def _preprocess_training_data(self, x, t, e, vsize, val_data, random_seed):
     """RNNs require different preprocessing for variable length sequences"""
 
+    if isinstance(x, pd.DataFrame):
+      x = x.values
+    if isinstance(t, (pd.Series, pd.DataFrame)):
+      t = t.values
+    if isinstance(e, (pd.Series, pd.DataFrame)):
+      e = e.values
+    
     idx = list(range(x.shape[0]))
     np.random.seed(random_seed)
     np.random.shuffle(idx)

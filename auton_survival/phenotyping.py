@@ -120,7 +120,7 @@ class IntersectionalPhenotyper(Phenotyper):
     self.fitted = True
     return self
 
-  def phenotype(self, features):
+  def predict(self, features):
 
     """Phenotype out of sample test data.
 
@@ -185,7 +185,7 @@ class IntersectionalPhenotyper(Phenotyper):
       renamed.append(" & ".join(row))
     return renamed
 
-  def fit_phenotype(self, features):
+  def fit_predict(self, features):
 
     """Fit and perform phenotyping on a given dataset.
 
@@ -204,7 +204,7 @@ class IntersectionalPhenotyper(Phenotyper):
 
     """
 
-    return self.fit(features).phenotype(features)
+    return self.fit(features).predict(features)
 
 class ClusteringPhenotyper(Phenotyper):
 
@@ -370,11 +370,10 @@ class ClusteringPhenotyper(Phenotyper):
 
     return probs
 
-  def phenotype(self, features):
+  def predict_proba(self, features):
 
-    """Peform dimensionality reduction, clustering, and create phenotypes
-    based on the probability estimates of sample association to learned
-    clusters, or subgroups.
+    """Peform dimensionality reduction, clustering, and estimate probability 
+    estimates of sample association to learned clusters, or subgroups.
 
     Parameters
     -----------
@@ -400,7 +399,36 @@ class ClusteringPhenotyper(Phenotyper):
     elif self.clustering_method == 'kmeans':
       return self._predict_proba_kmeans(features)
 
-  def fit_phenotype(self, features):
+  def predict(self, features):
+        
+    """Peform dimensionality reduction, clustering, and extract phenogroups
+    that maximize the probability estimates of sample association to
+    specific learned clusters, or subgroups.
+    
+    Parameters
+    -----------
+    features: pd.DataFrame
+        a pandas dataframe with rows corresponding to individual samples
+        and columns as covariates.
+
+    Returns
+    -----------
+    np.array:
+        a numpy array of phenogroup labels
+
+    """
+        
+    assert self.fitted, "Phenotyper must be `fitted` before calling \
+    `phenotype`."
+
+    if self.dim_red_method is not None:
+      features =  self.dim_red_model.transform(features)
+    if self.clustering_method == 'gmm':
+      return np.argmax(self.clustering_model.predict_proba(features), axis=1)
+    elif self.clustering_method == 'kmeans':
+      return np.argmax(self._predict_proba_kmeans(features), axis=1)
+
+  def fit_predict(self, features):
 
     """Fit and perform phenotyping on a given dataset.
 
@@ -418,7 +446,7 @@ class ClusteringPhenotyper(Phenotyper):
 
     """
 
-    return self.fit(features).phenotype(features)
+    return self.fit(features).predict(features)
 
 class SurvivalVirtualTwinsPhenotyper(Phenotyper):
 

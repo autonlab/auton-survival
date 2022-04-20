@@ -52,6 +52,7 @@ for Survival Regression. Machine Learning in Health Conference (2021)</a>
 
 import torch
 import numpy as np
+import pandas as pd
 
 from .dcm_torch import DeepCoxMixturesTorch
 from .dcm_utilities import train_dcm, predict_survival, predict_latent_z
@@ -112,10 +113,19 @@ class DeepCoxMixtures:
     print("Hidden Layers:", self.layers)
 
   def _preprocess_test_data(self, x):
+    if isinstance(x, pd.DataFrame):
+      x = x.values
     return torch.from_numpy(x).float()
 
   def _preprocess_training_data(self, x, t, e, vsize, val_data, random_seed):
-
+        
+    if isinstance(x, pd.DataFrame):
+      x = x.values
+    if isinstance(t, (pd.Series, pd.DataFrame)):
+      t = t.values
+    if isinstance(e, (pd.Series, pd.DataFrame)):
+      e = e.values
+    
     idx = list(range(x.shape[0]))
     np.random.seed(random_seed)
     np.random.shuffle(idx)

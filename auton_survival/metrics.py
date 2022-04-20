@@ -574,9 +574,13 @@ def _tar(treated_outcomes, control_outcomes, risks,
 
   tar_diff = []
   for risk in risks:
-    treated_tar = interp_x(treated_risk, treated_horizons, risk)
-    control_tar = interp_x(control_risk, control_horizons, risk)
-    tar_diff.append(treated_tar - control_tar)
+    if risk == 1:
+        tar_diff.append((treated_horizons[treated_risk==1] - 
+                         control_horizons[control_risk==1])[0])
+    else:
+        treated_tar = interp_x(treated_risk, treated_horizons, risk)
+        control_tar = interp_x(control_risk, control_horizons, risk)
+        tar_diff.append(treated_tar - control_tar)
 
   return np.array(tar_diff)
 

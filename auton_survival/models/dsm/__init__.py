@@ -169,6 +169,7 @@ from .utilities import _reshape_tensor_with_nans
 
 import torch
 import numpy as np
+import pandas as pd
 
 __pdoc__ = {}
 __pdoc__["DeepSurvivalMachines.fit"] = True
@@ -304,10 +305,19 @@ class DSMBase():
     return loss
 
   def _preprocess_test_data(self, x):
+    if isinstance(x, pd.DataFrame):
+      x = x.values
     return torch.from_numpy(x)
 
   def _preprocess_training_data(self, x, t, e, vsize, val_data, random_seed):
 
+    if isinstance(x, pd.DataFrame):
+      x = x.values
+    if isinstance(t, (pd.Series, pd.DataFrame)):
+      t = t.values
+    if isinstance(e, (pd.Series, pd.DataFrame)):
+      e = e.values
+    
     idx = list(range(x.shape[0]))
     np.random.seed(random_seed)
     np.random.shuffle(idx)
@@ -535,11 +545,20 @@ class DeepRecurrentSurvivalMachines(DSMBase):
                                               risks=risks)
 
   def _preprocess_test_data(self, x):
+    if isinstance(x, pd.DataFrame):
+      x = x.values
     return torch.from_numpy(_get_padded_features(x))
 
   def _preprocess_training_data(self, x, t, e, vsize, val_data, random_seed):
     """RNNs require different preprocessing for variable length sequences"""
 
+    if isinstance(x, pd.DataFrame):
+      x = x.values
+    if isinstance(t, (pd.Series, pd.DataFrame)):
+      t = t.values
+    if isinstance(e, (pd.Series, pd.DataFrame)):
+      e = e.values
+    
     idx = list(range(x.shape[0]))
     np.random.seed(random_seed)
     np.random.shuffle(idx)

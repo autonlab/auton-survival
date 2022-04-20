@@ -76,6 +76,7 @@ Example Usage
 """
 
 import numpy as np
+import pandas as pd
 import torch
 
 from .cmhe_torch import DeepCMHETorch
@@ -139,14 +140,27 @@ class DeepCoxMixturesHeterogenousEffects:
     print("Hidden Layers:", self.layers)
 
   def _preprocess_test_data(self, x, a=None):
+    if isinstance(x, pd.DataFrame):
+      x = x.values
     if a is not None:
+      if isinstance(a, (pd.Series, pd.DataFrame)):
+        a = a.values
       return torch.from_numpy(x).float(), torch.from_numpy(a).float()
     else:
       return torch.from_numpy(x).float()
 
   def _preprocess_training_data(self, x, t, e, a, vsize, val_data,
                                 random_seed):
-
+    
+    if isinstance(x, pd.DataFrame):
+      x = x.values
+    if isinstance(t, (pd.Series, pd.DataFrame)):
+      t = t.values
+    if isinstance(e, (pd.Series, pd.DataFrame)):
+      e = e.values
+    if isinstance(a, (pd.Series, pd.DataFrame)):
+      a = a.values
+    
     idx = list(range(x.shape[0]))
 
     np.random.seed(random_seed)
