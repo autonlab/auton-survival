@@ -35,8 +35,8 @@ import warnings
 
 def treatment_effect(metric, outcomes, treatment_indicator,
                      weights=None, horizons=None, risks=None,
-                     interpolate=True, weights_clip=1e-2, 
-                     n_bootstrap=None, size_bootstrap=1.0, 
+                     interpolate=True, weights_clip=1e-2,
+                     n_bootstrap=None, size_bootstrap=1.0,
                      random_seed=0):
 
   """Compute metrics for comparing population level survival outcomes
@@ -96,7 +96,7 @@ def treatment_effect(metric, outcomes, treatment_indicator,
     assert horizons is not None, "Please specify Event Horizon"
     assert risks is None, "Risks must be non for 'restricted_mean' and \
 'survival_at' metrics"
-    
+
   if metric in ['tar']:
     assert risks is not None, "Please specify risk level(s) at \
 which to compare time-to-event."
@@ -110,10 +110,10 @@ which to compare time-to-event."
   # Bootstrapping ...
   if n_bootstrap is not None:
     assert isinstance(n_bootstrap, int), '`bootstrap` must be None or int'
-    
+
   if isinstance(horizons, (int, float)):
     horizons = [horizons]
-    
+
   if isinstance(risks, (int, float)):
     risks = [risks]
 
@@ -164,7 +164,7 @@ which to compare time-to-event."
                     size_bootstrap=size_bootstrap,
                     random_seed=i) for i in range(n_bootstrap)]
 
-def survival_regression_metric(metric, outcomes_train, predictions, 
+def survival_regression_metric(metric, outcomes_train, predictions,
                                times, outcomes_test=None):
   """Compute metrics to assess survival model performance.
 
@@ -202,7 +202,7 @@ def survival_regression_metric(metric, outcomes_train, predictions,
     outcomes_test = outcomes_train
     warnings.warn("You are are evaluating model performance on the \
 same data used to train the model.")
-    
+
   assert max(times) < outcomes_train.time.max(), "Times should \
 be within the range of training set times to avoid exterpolation."
   assert max(times) < outcomes_test.time.max(), "Times \
@@ -231,7 +231,7 @@ must be within the range of test set times."
 
   else:
     raise NotImplementedError()
-    
+
 def phenotype_purity(phenotypes_train, outcomes_train,
                      phenotypes_test=None, outcomes_test=None,
                      strategy='instantaneous', horizons=None,
@@ -287,7 +287,7 @@ def phenotype_purity(phenotypes_train, outcomes_train,
     outcomes_test = outcomes_train
     warnings.warn("You are are estimating survival probabilities for \
 the same dataset used to estimate the censoring distribution.")
-    
+
   assert outcomes_test.time.max() >= outcomes_train.time.max(), "Test \
 set times must be within the range of training set follow-up times."
 
@@ -348,7 +348,8 @@ set times must be within the range of training set follow-up times."
       return np.array(horizon_scores)
     else:
       # Format scores exactly like "instantaneous" option w/ bootstrapping for consistency
-      return [np.array([j[i] for j in np.array(horizon_scores)]) for i in range(bootstrap)]
+      return [np.array([j[i] for j in np.array(horizon_scores)])
+              for i in range(bootstrap)]
 
   else:
     raise NotImplementedError()
@@ -444,7 +445,7 @@ def _restricted_mean_diff(treated_outcomes, control_outcomes, horizons,
 
 def _survival_at_diff(treated_outcomes, control_outcomes, horizons,
                       treated_weights, control_weights,
-                      interpolate=True, size_bootstrap=1.0, 
+                      interpolate=True, size_bootstrap=1.0,
                       random_seed=None, **kwargs):
   """Compute the difference in Kaplan Meier survival function estimates
   between the control and treatment groups at a specified time horizon.
@@ -499,12 +500,12 @@ def _survival_at_diff(treated_outcomes, control_outcomes, horizons,
   control_estimate = control_survival.predict(horizons, interpolate=interpolate)
 
   return np.array(treatment_estimate-control_estimate)
-    
 
-def _tar(treated_outcomes, control_outcomes, risks, 
-         treated_weights, control_weights, interpolate=True, 
+
+def _tar(treated_outcomes, control_outcomes, risks,
+         treated_weights, control_weights, interpolate=True,
          size_bootstrap=1.0, random_seed=None, **kwargs):
-  """Time at Risk (TaR) measures time-to-event at a specified level 
+  """Time at Risk (TaR) measures time-to-event at a specified level
   of risk.
 
   Parameters
@@ -548,39 +549,45 @@ def _tar(treated_outcomes, control_outcomes, risks,
     return root
   def func(x, y, x1, y1, x2, y2):
     return y1 + (x-x1)*((y2-y1)/(x2-x1)) - y
-    
+
   if random_seed is not None:
     treated_outcomes = treated_outcomes.sample(n=int(size_bootstrap*len(treated_outcomes)),
                                                weights=treated_weights,
-                                               random_state=random_seed, replace=True)
+                                               random_state=random_seed,
+                                               replace=True)
     control_outcomes = control_outcomes.sample(n=int(size_bootstrap*len(control_outcomes)),
                                                weights=control_weights,
-                                               random_state=random_seed, replace=True)
+                                               random_state=random_seed,
+                                               replace=True)
 
   treated_survival = KaplanMeierFitter().fit(treated_outcomes['time'],
                                              treated_outcomes['event'])
   control_survival = KaplanMeierFitter().fit(control_outcomes['time'],
                                              control_outcomes['event'])
 
-  treated_horizons = np.linspace(treated_outcomes.time.min(), 
-                        treated_outcomes.time.max(), 
-                        round((treated_outcomes.time.max()-treated_outcomes.time.min())*20))
-  control_horizons = np.linspace(control_outcomes.time.min(), 
+  treated_horizons = np.linspace(treated_outcomes.time.min(),
+                        treated_outcomes.time.max(),
+                        round((treated_outcomes.time.max()-
+                               treated_outcomes.time.min())*20))
+  control_horizons = np.linspace(control_outcomes.time.min(),
                         control_outcomes.time.max(),
-                        round((control_outcomes.time.max()-control_outcomes.time.min())*20))
-  
-  treated_risk = 1-treated_survival.predict(treated_horizons, interpolate).values
-  control_risk = 1-control_survival.predict(control_horizons, interpolate).values
+                        round((control_outcomes.time.max()-
+                               control_outcomes.time.min())*20))
+
+  treated_risk = 1-treated_survival.predict(treated_horizons,
+                                            interpolate).values
+  control_risk = 1-control_survival.predict(control_horizons,
+                                            interpolate).values
 
   tar_diff = []
   for risk in risks:
     if risk == 1:
-        tar_diff.append((treated_horizons[treated_risk==1] - 
-                         control_horizons[control_risk==1])[0])
+      tar_diff.append((treated_horizons[treated_risk==1] -
+                       control_horizons[control_risk==1])[0])
     else:
-        treated_tar = interp_x(treated_risk, treated_horizons, risk)
-        control_tar = interp_x(control_risk, control_horizons, risk)
-        tar_diff.append(treated_tar - control_tar)
+      treated_tar = interp_x(treated_risk, treated_horizons, risk)
+      control_tar = interp_x(control_risk, control_horizons, risk)
+      tar_diff.append(treated_tar - control_tar)
 
   return np.array(tar_diff)
 
@@ -615,7 +622,8 @@ def _hazard_ratio(treated_outcomes, control_outcomes,
 
   Returns
   -----------
-  pd.Series : The exp(coefficients) (hazard ratios) of the Cox Proportional Hazards model.
+  pd.Series : The exp(coefficients) (hazard ratios) of the Cox Proportional 
+  Hazards model.
 
   """
 

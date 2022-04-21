@@ -35,11 +35,11 @@ from tqdm import tqdm
 
 class SurvivalRegressionCV:
   """Universal interface to train Survival Analysis models in a Cross Validation fashion.
-  
+
   Each of the model is trained in a CV fashion over the user specified
   hyperparameter grid. The best model (in terms of integrated brier score)
   is then selected.
-  
+
   Parameters
   -----------
   model : str
@@ -88,7 +88,7 @@ class SurvivalRegressionCV:
 
   def fit(self, features, outcomes, ret_trained_model=True):
 
-    r"""Fits the Survival Regression Model to the data in a Cross 
+    r"""Fits the Survival Regression Model to the data in a Cross
     Validation fashion.
 
     Parameters
@@ -102,7 +102,7 @@ class SurvivalRegressionCV:
         a column named 'event' that contains the censoring status.
         \( \delta_i = 1 \) if the event is observed.
     ret_trained_model : bool
-        If True, the trained model is returned. If False, the fit function 
+        If True, the trained model is returned. If False, the fit function
         returns self.
 
     Returns
@@ -122,25 +122,23 @@ class SurvivalRegressionCV:
 
     unique_times = np.unique(outcomes.time.values)
     time_max, time_min = unique_times.max(), unique_times.min()
-    
+
     for fold in range(self.cv_folds):
-        
-      time_test = outcomes.loc[folds==fold, 'time'] 
-      time_train = outcomes.loc[folds!=fold, 'time'] 
-      
-      if time_test.min() > time_min: 
+
+      time_test = outcomes.loc[folds==fold, 'time']
+      time_train = outcomes.loc[folds!=fold, 'time']
+
+      if time_test.min() > time_min:
         time_min = time_test.min()
-    
+
       if (time_test.max() < time_max)|(time_train.max() < time_max):
         if time_test.max() > time_train.max():
           time_max = max(time_test[time_test < time_train.max()])
         else:
           time_max = max(time_test[time_test < time_test.max()])
-    
+
     unique_times = unique_times[unique_times>=time_min]
     unique_times = unique_times[unique_times<time_max]
-
-    scores = []
 
     best_model = {}
     best_score = np.inf
@@ -151,29 +149,31 @@ class SurvivalRegressionCV:
 
       fold_models = {}
       for fold in tqdm(range(self.cv_folds)):
-            
+
         # Fit the model
-        fold_model = SurvivalModel(model=self.model, random_seed=self.random_seed, **hyper_param)  
+        fold_model = SurvivalModel(model=self.model, random_seed=self.random_seed,
+                                   **hyper_param)
         fold_model.fit(features.loc[folds!=fold], outcomes.loc[folds!=fold])
         fold_models[fold] = fold_model
 
         # Predict risk scores
-        predictions[folds==fold] = fold_model.predict_survival(features.loc[folds==fold], 
+        predictions[folds==fold] = fold_model.predict_survival(features.loc[folds==fold],
                                                                times=unique_times.tolist())
 
       score_per_fold = []
-      for fold in range(self.cv_folds):        
+      for fold in range(self.cv_folds):
         outcomes_train = outcomes.loc[folds!=fold]
         outcomes_test = outcomes.loc[folds==fold].copy()
         predictions_test = deepcopy(predictions[folds==fold])
-        
+
         # Cannot compute IBS for test set samples with time > follow-up time
         max_follow_up = outcomes_train.time.max()
         predictions_test = predictions_test[outcomes_test.time.values < max_follow_up]
         outcomes_test = outcomes_test.loc[outcomes_test.time.values < max_follow_up]
 
         # Compute IBS
-        score = survival_regression_metric('ibs', outcomes_train, predictions_test, 
+        score = survival_regression_metric('ibs', outcomes_train,
+                                           predictions_test,
                                            unique_times, outcomes_test)
         score_per_fold.append(score)
 
@@ -191,12 +191,12 @@ class SurvivalRegressionCV:
 
     if ret_trained_model:
 
-      model = SurvivalModel(model=self.model, random_seed=self.random_seed, 
+      model = SurvivalModel(model=self.model, random_seed=self.random_seed,
                             **self.best_hyperparameter)
       model.fit(features, outcomes)
 
       return model
- 
+
     else:
       return self
 
@@ -218,8 +218,8 @@ class SurvivalRegressionCV:
     for fold in range(self.cv_folds):
 
       fold_model = self.best_model_per_fold[fold]
-      fold_predictions = fold_model.predict(features.loc[self.folds==fold], 
-                                            times=horizons) 
+      fold_predictions = fold_model.predict(features.loc[self.folds==fold],
+                                            times=horizons)
 
       for i, horizon in enumerate(horizons):
         for metric in metrics:
@@ -283,18 +283,19 @@ class CounterfactualSurvivalRegressionCV:
     self.cv_folds = cv_folds
 
     self.treated_experiment = SurvivalRegressionCV(model=model,
-                                                   cv_folds=cv_folds,
-                                                   random_seed=random_seed,
-                                                   hyperparam_grid=hyperparam_grid)
+                                                cv_folds=cv_folds,
+                                                random_seed=random_seed,
+                                                hyperparam_grid=hyperparam_grid)
 
     self.control_experiment = SurvivalRegressionCV(model=model,
-                                                   cv_folds=cv_folds,
-                                                   random_seed=random_seed,
-                                                   hyperparam_grid=hyperparam_grid)
+                                                cv_folds=cv_folds,
+                                                random_seed=random_seed,
+                                                hyperparam_grid=hyperparam_grid)
 
   def fit(self, features, outcomes, interventions):
 
-    r"""Fits the Survival Regression Model to the data in a Cross Validation fashion.
+    r"""Fits the Survival Regression Model to the data in a Cross 
+    Validation fashion.
 
     Parameters
     -----------

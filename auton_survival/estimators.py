@@ -76,6 +76,13 @@ def _fit_dcm(features, outcomes, vsize, val_data, random_seed, **hyperparams):
       and columns as covariates.
   outcomes : pd.DataFrame
       A pandas dataframe with columns 'time' and 'event'.
+  vsize : float, default=0.15
+      Amount of data to set aside as the validation set.
+      Not applicable to 'rsf' and 'cph' models.
+  val_data : tuple
+      A tuple of the validation dataset features and outcomes of
+      'time' and 'event'.
+      If passed, vsize is ignored.
   random_seed : int
       Controls the rproduecibility of fitted estimators.
   hyperparams : Optional arguments
@@ -100,10 +107,10 @@ def _fit_dcm(features, outcomes, vsize, val_data, random_seed, **hyperparams):
 
   from .models.dcm import DeepCoxMixtures
 
-  k = hyperparams.get("k", 3) 
+  k = hyperparams.get("k", 3)
   layers = hyperparams.get("layers", [100])
-  batch_size = hyperparams.get("batch_size", 128)
-  learning_rate = hyperparams.get("learning_rate", 1e-3)
+  bs = hyperparams.get("batch_size", 128)
+  lr = hyperparams.get("learning_rate", 1e-3)
   epochs = hyperparams.get("epochs", 50)
   smoothing_factor = hyperparams.get("smoothing_factor", 1e-4)
   gamma = hyperparams.get("gamma", 10)
@@ -113,9 +120,9 @@ def _fit_dcm(features, outcomes, vsize, val_data, random_seed, **hyperparams):
                           gamma=gamma,
                           smoothing_factor=smoothing_factor,
                           random_seed=random_seed)
-  model.fit(x=features, t=outcomes.time, e=outcomes.event, vsize=vsize, 
-            val_data=val_data, iters=epochs, batch_size=batch_size, 
-            learning_rate=learning_rate)
+  model.fit(x=features, t=outcomes.time, e=outcomes.event, vsize=vsize,
+            val_data=val_data, iters=epochs, batch_size=bs,
+            learning_rate=lr)
 
   return model
 
@@ -139,6 +146,13 @@ def _fit_dcph(features, outcomes, vsize, val_data, random_seed, **hyperparams):
       and columns as covariates.
   outcomes : pd.DataFrame
       A pandas dataframe with columns 'time' and 'event'.
+  vsize : float, default=0.15
+      Amount of data to set aside as the validation set.
+      Not applicable to 'rsf' and 'cph' models.
+  val_data : tuple
+      A tuple of the validation dataset features and outcomes of
+      'time' and 'event'.
+      If passed, vsize is ignored.
   random_seed : int
       Controls the reproducibility of called functions.
   hyperparams : Optional arguments
@@ -147,7 +161,7 @@ def _fit_dcph(features, outcomes, vsize, val_data, random_seed, **hyperparams):
           A list consisting of the number of neurons in each hidden layer.
       - 'learning rate' : float, default=1e-3
           Learning rate for the 'Adam' optimizer.
-      - 'bs' : int, default=100
+      - 'batch_size' : int, default=100
           Learning is performed on mini-batches of input data.
           This parameter specifies the size of each mini-batch.
       - 'epochs' : int, default=50
@@ -161,15 +175,15 @@ def _fit_dcph(features, outcomes, vsize, val_data, random_seed, **hyperparams):
   from .models.cph import DeepCoxPH
 
   layers = hyperparams.get("layers", [100])
-  learning_rate = hyperparams.get("learning_rate", 1e-3)
-  bs = hyperparams.get("bs", 100)
+  lr = hyperparams.get("learning_rate", 1e-3)
+  bs = hyperparams.get("batch_size", 128)
   epochs = hyperparams.get("epochs", 50)
 
   model = DeepCoxPH(layers=layers, random_seed=random_seed)
 
-  model.fit(x=features, t=outcomes.time, e=outcomes.event, vsize=vsize, 
-            val_data=val_data, iters=epochs, batch_size=batch_size, 
-            learning_rate=learning_rate)
+  model.fit(x=features, t=outcomes.time, e=outcomes.event, vsize=vsize,
+            val_data=val_data, iters=epochs, batch_size=bs,
+            learning_rate=lr)
 
   return model
 
@@ -271,7 +285,7 @@ def _fit_rsf(features, outcomes, random_seed, **hyperparams):
   Parameters
   -----------
   features : pd.DataFrame
-      A pandas dataframe with rows corresponding to individual samples and 
+      A pandas dataframe with rows corresponding to individual samples and
       columns as covariates.
   outcomes : pd.DataFrame
       A pandas dataframe with columns 'time' and 'event'.
@@ -334,6 +348,13 @@ def _fit_dsm(features, outcomes, vsize, val_data, random_seed, **hyperparams):
       columns as covariates.
   outcomes : pd.DataFrame
       A pandas dataframe with columns 'time' and 'event'.
+  vsize : float, default=0.15
+      Amount of data to set aside as the validation set.
+      Not applicable to 'rsf' and 'cph' models.
+  val_data : tuple
+      A tuple of the validation dataset features and outcomes of
+      'time' and 'event'.
+      If passed, vsize is ignored.
   random_seed : int
       Controls the reproducibility of called functions.
   hyperparams : Optional arguments
@@ -348,7 +369,7 @@ def _fit_dsm(features, outcomes, vsize, val_data, random_seed, **hyperparams):
       - `batch_size` : int, default=100
           Learning is performed on mini-batches of input data. This parameter
           specifies the size of each mini-batch.
-      - `lr` : float, default=1e-3
+      - `learning_rate` : float, default=1e-3
           Learning rate for the 'Adam' optimizer.
       - `epochs` : int, default=1
           Number of complete passes through the training data.
@@ -366,15 +387,15 @@ def _fit_dsm(features, outcomes, vsize, val_data, random_seed, **hyperparams):
   epochs = hyperparams.get("iters", 10)
   distribution = hyperparams.get("distribution", "Weibull")
   temperature = hyperparams.get("temperature", 1.0)
-  lr = hyperparams.get("lr", 1e-3)
-  bs = hyperparams.get("batch_size", 1.0)
+  lr = hyperparams.get("learning_rate", 1e-3)
+  bs = hyperparams.get("batch_size", 128)
 
   model = DeepSurvivalMachines(k=k, layers=layers,
                                distribution=distribution,
                                temp=temperature,
                                random_seed=random_seed)
 
-  model.fit(x=features, t=outcomes.time, e=outcomes.event, vsize=vsize, 
+  model.fit(x=features, t=outcomes.time, e=outcomes.event, vsize=vsize,
             val_data=val_data, iters=epochs, learning_rate=lr, batch_size=bs)
 
   return model
@@ -538,8 +559,8 @@ class SurvivalModel:
     self.random_seed = random_seed
     self.fitted = False
 
-  def fit(self, features, outcomes, vsize=None, val_data=None,
-          weights_train=None, weights_val=None, resample_size=1.0):
+  def fit(self, features, outcomes, vsize=0.15, val_data=None,
+          weights=None, weights_val=None, resample_size=1.0):
 
     """This method is used to train an instance of the survival model.
 
@@ -550,17 +571,19 @@ class SurvivalModel:
         columns as covariates.
     outcomes : pd.DataFrame
         a pandas dataframe with columns 'time' and 'event'.
-    vsize : float
+    vsize : float, default=0.15
         Amount of data to set aside as the validation set.
         Not applicable to 'rsf' and 'cph' models.
     val_data : tuple
-        A tuple of the validation dataset. 
-        If passed vsize is ignored.
+        A tuple of the validation dataset features and outcomes of 'time'
+        and 'event'.
+        If passed, vsize is ignored.
         Not applicable to 'rsf' and 'cph' models.
     weights_train : list or np.array
         a list or numpy array of importance weights for each sample.
     weights_val :  list or np.array
-        a list or numpy array of importance weights for each validation set sample.
+        a list or numpy array of importance weights for each validation
+        set sample.
         Ignored if val_data is None.
     resample_size : float
         a float between 0 and 1 that controls the size of the resampled dataset.
@@ -571,25 +594,26 @@ class SurvivalModel:
         Trained instance of a survival model.
 
     """
-    
-    if (self.model=='cph') | (self.model=='rsf'):
-      if (vsize is not None) | (val_data is not None):
-        raise Exception("'vsize' and 'val_data' should be None for 'cph' and 'rsf' models.")
 
-    if weights_train is not None:
-      assert len(weights_train) == features.shape[0], "Size of passed weights \
+    if weights is not None:
+      assert len(weights) == features.shape[0], "Size of passed weights \
 must match size of training data."
-      assert (weights_train>0.).any(), "All weights must be positive."
-      assert (vsize is not None) | (val_data is not None), "'vsize' or 'val_data' must \
-be specified if weights are used."
-   
-      weights = pd.Series(weights, index=data.index)
+      assert (weights>0.).any(), "All weights must be positive."
 
       data = features.join(outcomes)
-        
+      weights = pd.Series(weights, index=data.index)
+
       if val_data is not None:
+        assert weights_val is not None, "Validation set weights must be \
+specified."
+        assert len(weights_val) == val_data[0].shape[0], "Size of passed \
+weights_val must match size of validation data."
+        assert (weights_val>0.).any(), "All weights_val must be positive."
+
         data_train = data
-        data_val = val_data
+        data_val = val_data[0].join(val_data[1])
+        weights_train = weights
+
       else:
         data_train = data.sample(frac=1-vsize, random_state=self.random_seed)
         data_val = data[~data.index.isin(data_train.index)]
@@ -605,12 +629,15 @@ be specified if weights are used."
                                            frac = resample_size,
                                            replace = True,
                                            random_state = self.random_seed)
-                   
+
       features = data_train_resampled[features.columns]
       outcomes = data_train_resampled[outcomes.columns]
 
-      val_data = (data_val_resampled[features.columns], 
+      val_data = (data_val_resampled[features.columns],
                   data_val_resampled[outcomes.columns])
+
+    if val_data is not None:
+      val_data = (val_data[0], val_data[1].time, val_data[1].event)
         
     if self.model == 'cph':
       self._model = _fit_cph(features, outcomes,
@@ -638,7 +665,7 @@ be specified if weights are used."
 
     else:
       raise NotImplementedError()
-        
+
     self.fitted = True
     return self
 
@@ -652,7 +679,7 @@ be specified if weights are used."
         a pandas dataframe with rows corresponding to individual samples
         and columns as covariates.
     times : float or list
-        a float or list of the times at which to compute the survival 
+        a float or list of the times at which to compute the survival
         probability.
 
     Returns

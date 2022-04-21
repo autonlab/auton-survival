@@ -327,7 +327,7 @@ class ClusteringPhenotyper(Phenotyper):
     """
 
     if self.dim_red_method is not None:
-      print("Fitting the following Dimensionality Reduction Model:\n", 
+      print("Fitting the following Dimensionality Reduction Model:\n",
             self.dim_red_model)
       self.dim_red_model = self.dim_red_model.fit(features)
       features = self.dim_red_model.transform(features)
@@ -372,7 +372,7 @@ class ClusteringPhenotyper(Phenotyper):
 
   def predict_proba(self, features):
 
-    """Peform dimensionality reduction, clustering, and estimate probability 
+    """Peform dimensionality reduction, clustering, and estimate probability
     estimates of sample association to learned clusters, or subgroups.
 
     Parameters
@@ -400,11 +400,11 @@ class ClusteringPhenotyper(Phenotyper):
       return self._predict_proba_kmeans(features)
 
   def predict(self, features):
-        
+
     """Peform dimensionality reduction, clustering, and extract phenogroups
     that maximize the probability estimates of sample association to
     specific learned clusters, or subgroups.
-    
+
     Parameters
     -----------
     features: pd.DataFrame
@@ -417,7 +417,7 @@ class ClusteringPhenotyper(Phenotyper):
         a numpy array of phenogroup labels
 
     """
-        
+
     assert self.fitted, "Phenotyper must be `fitted` before calling \
     `phenotype`."
 
@@ -451,8 +451,8 @@ class ClusteringPhenotyper(Phenotyper):
 class SurvivalVirtualTwinsPhenotyper(Phenotyper):
 
   """Phenotyper that estimates the potential outcomes under treatment and
-  control using a counterfactual Deep Cox Proportional Hazards model, 
-  followed by regressing the difference of the estimated counterfactual 
+  control using a counterfactual Deep Cox Proportional Hazards model,
+  followed by regressing the difference of the estimated counterfactual
   Restricted Mean Survival Times using a Random Forest regressor."""
 
   _VALID_PHENO_METHODS = ['rfr']
@@ -464,9 +464,9 @@ class SurvivalVirtualTwinsPhenotyper(Phenotyper):
                cf_method='dcph',
                phenotyping_method='rfr',
                cf_hyperparams=None,
-               phenotyper_hyperparams=None,
-               random_seed=0):
-    
+               random_seed=0,
+               **phenotyper_hyperparams):
+
     assert cf_method in CounterfactualSurvivalRegressionCV._VALID_CF_METHODS, "\
     Invalid Counterfactual Method: "+cf_method
     assert phenotyping_method in self._VALID_PHENO_METHODS, "Invalid Phenotyping Method:\
@@ -477,19 +477,17 @@ class SurvivalVirtualTwinsPhenotyper(Phenotyper):
 
     if cf_hyperparams is None:
       cf_hyperparams = {}
-    if phenotyper_hyperparams is None:
-      phenotyper_hyperparams = {}
-    
+
     self.phenotyper_hyperparams = phenotyper_hyperparams
     self.cf_hyperparams = cf_hyperparams
 
     self.random_seed = random_seed
 
   def fit(self, features, outcomes, interventions, horizon):
-    
-    """Fit a counterfactual model and regress the difference of the estimated 
-    counterfactual RMST using a Random Forest regressor.
-    
+
+    """Fit a counterfactual model and regress the difference of the estimated
+    counterfactual Restricted Mean Survival Time using a Random Forest regressor.
+
     Parameters
     -----------
     features: pd.DataFrame
@@ -511,8 +509,8 @@ class SurvivalVirtualTwinsPhenotyper(Phenotyper):
 
     """
 
-    cf_model = CounterfactualSurvivalRegressionCV(model=self.cf_method, 
-                                                  hyperparam_grid=self.cf_hyperparams)
+    cf_model = CounterfactualSurvivalRegressionCV(model=self.cf_method,
+                                    hyperparam_grid=self.cf_hyperparams)
 
     self.cf_model = cf_model.fit(features, outcomes, interventions)
 
@@ -535,14 +533,14 @@ class SurvivalVirtualTwinsPhenotyper(Phenotyper):
 
     self.pheno_model = pheno_model
     self.fitted = True
-    
+
     return self
 
   def predict_proba(self, features):
-        
-    """Estimate the probability that the treatment group RMST is greater than
-    that of the control group.
-    
+
+    """Estimate the probability that the Restrictred Mean Survival Time under
+    the Treatment group is greater than that under the control group.
+
     Parameters
     -----------
     features: pd.DataFrame
@@ -552,22 +550,23 @@ class SurvivalVirtualTwinsPhenotyper(Phenotyper):
     Returns
     -----------
     np.array
-        a numpy array of the phenogroup probabilties.
+        a numpy array of the phenogroup probabilties in the format
+        [control_group, treated_group].
 
     """
 
     phenotype_preds=  self.pheno_model.predict(features)
     preds_surv_greater = (phenotype_preds -  phenotype_preds.min()) / (phenotype_preds.max() - phenotype_preds.min())
     preds_surv_less = 1 - preds_surv_greater
-    preds = np.array([[preds_surv_less[i], preds_surv_greater[i]] 
+    preds = np.array([[preds_surv_less[i], preds_surv_greater[i]]
                       for i in range(len(features))])
-    
+
     return preds
 
   def predict(self, features):
 
-    """Predict phenogroups.
-    
+    """Extract phenogroups that maximize probability estimates.
+
     Parameters
     -----------
     features: pd.DataFrame
@@ -580,11 +579,11 @@ class SurvivalVirtualTwinsPhenotyper(Phenotyper):
         a numpy array of the phenogroup labels
 
     """
-    
+
     phenotype_preds=  self.pheno_model.predict(features)
     preds_surv_greater = (phenotype_preds -  phenotype_preds.min()) / (phenotype_preds.max() - phenotype_preds.min())
     preds_surv_less = 1 - preds_surv_greater
-    preds = np.array([[preds_surv_less[i], preds_surv_greater[i]] 
+    preds = np.array([[preds_surv_less[i], preds_surv_greater[i]]
                       for i in range(len(features))])
     
     return np.argmax(preds, axis=1)

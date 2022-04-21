@@ -30,6 +30,7 @@ import pandas as pd
 from .dcph_torch import DeepCoxPHTorch, DeepRecurrentCoxPHTorch
 from .dcph_utilities import train_dcph, predict_survival
 
+from auton_survival.preprocessing import _dataframe_to_array
 from auton_survival.models.dsm.utilities import _get_padded_features
 from auton_survival.models.dsm.utilities import _get_padded_targets
 
@@ -85,19 +86,15 @@ class DeepCoxPH:
     print("Hidden Layers:", self.layers)
 
   def _preprocess_test_data(self, x):
-    if isinstance(x, pd.DataFrame):
-      x = x.values
+    x = _dataframe_to_array(x)
     return torch.from_numpy(x).float()
 
   def _preprocess_training_data(self, x, t, e, vsize, val_data, random_seed):
-        
-    if isinstance(x, pd.DataFrame):
-      x = x.values
-    if isinstance(t, (pd.Series, pd.DataFrame)):
-      t = t.values
-    if isinstance(e, (pd.Series, pd.DataFrame)):
-      e = e.values
-    
+
+    x = _dataframe_to_array(x)
+    t = _dataframe_to_array(t)
+    e = _dataframe_to_array(e)
+
     idx = list(range(x.shape[0]))
 
     np.random.seed(random_seed)
@@ -121,6 +118,10 @@ class DeepCoxPH:
     else:
 
       x_val, t_val, e_val = val_data
+
+      x_val = _dataframe_to_array(x_val)
+      t_val = _dataframe_to_array(t_val)
+      e_val = _dataframe_to_array(e_val)
 
       x_val = torch.from_numpy(x_val).float()
       t_val = torch.from_numpy(t_val).float()
@@ -293,13 +294,10 @@ class DeepRecurrentCoxPH(DeepCoxPH):
   def _preprocess_training_data(self, x, t, e, vsize, val_data, random_seed):
     """RNNs require different preprocessing for variable length sequences"""
 
-    if isinstance(x, pd.DataFrame):
-      x = x.values
-    if isinstance(t, (pd.Series, pd.DataFrame)):
-      t = t.values
-    if isinstance(e, (pd.Series, pd.DataFrame)):
-      e = e.values
-    
+    x = _dataframe_to_array(x)
+    t = _dataframe_to_array(t)
+    e = _dataframe_to_array(e)
+
     idx = list(range(x.shape[0]))
     np.random.seed(random_seed)
     np.random.shuffle(idx)
@@ -327,6 +325,10 @@ class DeepRecurrentCoxPH(DeepCoxPH):
     else:
 
       x_val, t_val, e_val = val_data
+
+      x_val = _dataframe_to_array(x_val)
+      t_val = _dataframe_to_array(t_val)
+      e_val = _dataframe_to_array(e_val)
 
       x_val = _get_padded_features(x_val)
       t_val = _get_padded_features(t_val)
