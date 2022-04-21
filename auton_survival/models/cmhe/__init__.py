@@ -76,7 +76,6 @@ Example Usage
 """
 
 import numpy as np
-import pandas as pd
 import torch
 
 from .cmhe_torch import DeepCMHETorch

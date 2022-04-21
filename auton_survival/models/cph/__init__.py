@@ -25,7 +25,6 @@ r""" Deep Cox Proportional Hazards Model"""
 
 import torch
 import numpy as np
-import pandas as pd
 
 from .dcph_torch import DeepCoxPHTorch, DeepRecurrentCoxPHTorch
 from .dcph_utilities import train_dcph, predict_survival

@@ -158,7 +158,6 @@ Healthcare (2021)](https://arxiv.org/abs/2101.06536)</a>
 
 import torch
 import numpy as np
-import pandas as pd
 
 from .dsm_torch import DeepSurvivalMachinesTorch
 from .dsm_torch import DeepRecurrentSurvivalMachinesTorch

@@ -52,7 +52,6 @@ for Survival Regression. Machine Learning in Health Conference (2021)</a>
 
 import torch
 import numpy as np
-import pandas as pd
 
 from .dcm_torch import DeepCoxMixturesTorch
 from .dcm_utilities import train_dcm, predict_survival, predict_latent_z
