@@ -201,7 +201,26 @@ Helper functions to generate standard reports for common Survival Analysis tasks
 Citing and References
 ----------------------
 
-Please cite the following papers if you are using the `auton_survival` package.
+Please cite the following if you use `auton-survival`:
+
+[auton-survival: an Open-Source Package for Regression,
+Counterfactual Estimation, Evaluation and Phenotyping 
+with Censored Time-to-Event Data (2022)](https://arxiv.org/abs/2204.07276)</a>
+
+```
+@article{nagpal2022autonsurvival,
+  url = {https://arxiv.org/abs/2204.07276},
+  author = {Nagpal, Chirag and Potosnak, Willa and Dubrawski, Artur},
+  title = {auton-survival: an Open-Source Package for Regression,
+  Counterfactual Estimation, Evaluation and Phenotyping with
+  Censored Time-to-Event Data},
+  publisher = {arXiv},
+  year = {2022},
+}
+```
+
+Additionally, models and methods in `auton_survival` come from the following papers.
+Please cite the individual papers if you employ them in your research:
 
 [1] [Deep Survival Machines:
 Fully Parametric Survival Regression and
@@ -258,7 +277,6 @@ Healthcare (2021)](https://arxiv.org/abs/2101.06536)</a>
   year={2022}
   }
 ```
-
 ## Installation
 
 ```console
