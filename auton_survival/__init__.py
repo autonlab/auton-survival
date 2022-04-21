@@ -9,10 +9,23 @@ r'''
 &nbsp;&nbsp;&nbsp;
 [![GitHub Repo stars](https://img.shields.io/github/stars/autonlab/auton-survival?style=social)](https://github.com/autonlab/auton-survival)
 
+<img align=right style="align:right;" src="https://ndownloader.figshare.com/files/34052981" width=30%>
 
-Python package `auton_survival` provides a flexible API for various problems
-in survival analysis, including regression, counterfactual estimation,
-and phenotyping.
+<br>
+
+
+The `auton-survival` Package
+---------------------------
+
+The python package `auton-survival` is repository of reusable utilities for projects
+involving censored Time-to-Event Data. `auton-survival` provides a flexible APIs 
+allowing rapid experimentation including dataset preprocessing, regression, 
+counterfactual estimation, clustering and phenotyping and propensity adjusted evaluation.
+
+**For complete details on** `auton-survival` **see**: 
+<h3>• <a href="https://www.cs.cmu.edu/~chiragn/papers/auton_survival.pdf">White Paper</a> &nbsp;&nbsp; • <a href="https://autonlab.github.io/auton-survival/">Documentation</a> &nbsp;&nbsp; • <a href="https://nbviewer.org/github/autonlab/auton-survival/tree/master/examples/">Demo Notebooks</a></h3>
+
+
 
 What is Survival Analysis?
 --------------------------
@@ -28,76 +41,81 @@ regression problems, Survival Analysis differs in two major ways:
 * There is presence of censoring ie. a large number of instances of data are
   lost to follow up.
 
-The Auton Survival Package
----------------------------
-
-The package `auton_survival` is repository of reusable utilities for projects
-involving censored Time-to-Event Data. `auton_survival` allows rapid
-experimentation including dataset preprocessing, regression, counterfactual
-estimation, clustering and phenotyping and propnsity adjusted evaluation.
-
 
 Survival Regression
 -------------------
 
-Currently supported Survival Models are:
+#### `auton_survival.models`
 
-### `auton_survival.models.dsm.DeepSurvivalMachines`
-### `auton_survival.models.dcm.DeepCoxMixtures`
-### `auton_survival.models.cph.DeepCoxPH`
-
-
-### `auton_survival.estimators`
-
-This module provids a wrapper to model survival datasets with standard
-survival (time-to-event) analysis methods. The use of the wrapper allows
-a simple standard interface for multiple different survival regression methods.
-
-`auton_survival.estimators` also provides convenient wrappers around other popular
-python survival analysis packages to experiment with the following
-survival regression estimators
-
-- Random Survival Forests (`pysurvival`):
-- Weibull Accelerated Failure Time (`lifelines`) :
-
-### `auton_survival.experiments`
-
-Modules to perform standard survival analysis experiments. This module
-provides a top-level interface to run `auton_survival` style experiments
-of survival analysis, involving cross-validation style experiments with
-multiple different survival analysis models at different horizons of
-event times.
-
-The module further eases evaluation by automatically computing the
-*censoring adjusted* estimates of the Metrics of interest, like
-**Time Dependent Concordance Index** and **Brier Score** with **IPCW**
-adjustment.
+Training a Deep Cox Proportional Hazards Model with `auton-survival`
 
 ```python
-# auton_survival Style Cross Validation Experiment.
-from auton_survival import datasets
-features, outcomes = datasets.load_topcat()
+from auton_survival import datasets, preprocessing, models 
 
-from auton_survival.experiments import SurvivalCVRegressionExperiment
+# Load the SUPPORT Dataset
+outcomes, features = datasets.load_dataset("SUPPORT")
 
-# instantiate an auton_survival Experiment by
-# specifying the features and outcomes to use.
-experiment = SurvivalCVRegressionExperiment(features, outcomes)
+# Preprocess (Impute and Scale) the features
+features = preprocessing.Preprocessor().fit_transform(features)
 
-# Fit the `experiment` object with a Cox Model
-experiment.fit(model='cph')
+# Train a Deep Cox Proportional Hazards (DCPH) model
+model = models.cph.DeepCoxPH(layers=[100])
+model.fit(features, outcomes.time, outcomes.event)
 
-# Evaluate the performance at time=1 year horizon.
-scores = experiment.evaluate(time=1.)
+# Predict risk at specific time horizons.
+predictions = model.predict_risk(features, t=[8, 12, 16])
+```
 
-print(scores)
+
+
+#### `auton_survival.estimators`
+
+This module provides a wrapper `auton_survival.estimators.SurvivalModel` to model
+survival datasets with standard survival (time-to-event) analysis methods.
+The use of the wrapper allows a simple standard interface for multiple different
+survival regression methods.
+
+`auton_survival.estimators` also provides convenient wrappers around other popular
+python survival analysis packages to experiment with Random Survival Forests and 
+Weibull Accelerated Failure Time regression models.
+
+```python
+from auton_survival import estimators
+
+# Train a Deep Survival Machines model using the SurvivalModel class.
+model = estimators.SurvivalModel(model='dsm')
+model.fit(features, outcomes)
+
+# Predict risk at time horizons.
+predictions = model.predict_risk(features, times=[8, 12, 16])
+```
+
+#### `auton_survival.experiments`
+
+Modules to perform standard survival analysis experiments. This module
+provides a top-level interface to run `auton-survival` style experiments
+of survival analysis, involving cross-validation style experiments with
+multiple different survival analysis models
+
+```python
+# auton-survival Style Cross Validation Experiment.
+from auton_survival.experiments import SurvivalRegressionCV
+
+# Define the Hyperparameter grid to perform Cross Validation
+hyperparam_grid = {'n_estimators' : [50, 100],  'max_depth' : [3, 5],
+                   'max_features' : ['sqrt', 'log2']}
+
+# Train a RSF model with cross-validation using the SurvivalRegressionCV class
+model = SurvivalRegressionCV(model='rsf', cv_folds=5, hyperparam_grid=hyperparam_grid)
+model.fit(features, outcomes)
+
 ```
 
 
 Phenotyping and Knowledge Discovery
 -----------------------------------
 
-### `auton_survival.phenotyping`
+#### `auton_survival.phenotyping`
 
 `auton_survival.phenotyping` allows extraction of latent clusters or subgroups
 of patients that demonstrate similar outcomes. In the context of this package,
@@ -106,6 +124,27 @@ we refer to this task as **phenotyping**. `auton_survival.phenotyping` allows:
 - **Unsupervised Phenotyping**: Involves first performing dimensionality
 reduction on the inpute covariates \( x \) followed by the use of a clustering
 algorithm on this representation.
+
+```python
+from auton_survival.phenotyping import ClusteringPhenotyper
+
+# Dimensionality reduction using Principal Component Analysis (PCA) to 8 dimensions.
+dim_red_method, = 'pca', 8
+
+# We use a Gaussian Mixture Model (GMM) with 3 components and diagonal covariance.
+clustering_method, n_clusters = 'gmm', 3
+
+# Initialize the phenotyper with the above hyperparameters.
+phenotyper = ClusteringPhenotyper(clustering_method=clustering_method, 
+                                  dim_red_method=dim_red_method, 
+                                  n_components=n_components, 
+                                  n_clusters=n_clusters)
+# Fit and infer the phenogroups.
+phenotypes = phenotyper.fit_phenotype(features)
+
+# Plot the phenogroup specific Kaplan-Meier survival estimate.
+auton_survival.reporting.plot_kaplanmeier(outcomes, phenotypes)
+```
 
 - **Factual Phenotyping**: Involves the use of structured latent variable
 models, `auton_survival.models.dcm.DeepCoxMixtures` or
@@ -124,7 +163,7 @@ Helper functions to load and prerocsss various time-to-event data like the
 popular `SUPPORT`, `FRAMINGHAM` and `PBC` dataset for survival analysis.
 
 
-### `auton_survival.datasets`
+#### `auton_survival.datasets`
 
 ```python
 # Load the SUPPORT Dataset
@@ -132,7 +171,7 @@ from auton_survival import dataset
 features, outcomes = datasets.load_dataset('SUPPORT')
 ```
 
-### `auton_survival.preprocessing`
+#### `auton_survival.preprocessing`
 This module provides a flexible API to perform imputation and data
 normalization for downstream machine learning models. The module has
 3 distinct classes, `Scaler`, `Imputer` and `Preprocessor`. The `Preprocessor`
@@ -157,14 +196,33 @@ features = Preprocessor().fit_transform(features,
 Evaluation and Reporting
 -------------------------
 
-### `auton_survival.metrics`
+#### `auton_survival.metrics`
 
 Helper functions to generate standard reports for common Survival Analysis tasks.
 
 Citing and References
 ----------------------
 
-Please cite the following papers if you are using the `auton_survival` package.
+Please cite the following if you use `auton-survival`:
+
+[auton-survival: an Open-Source Package for Regression,
+Counterfactual Estimation, Evaluation and Phenotyping 
+with Censored Time-to-Event Data (2022)](https://arxiv.org/abs/2204.07276)</a>
+
+```
+@article{nagpal2022autonsurvival,
+  url = {https://arxiv.org/abs/2204.07276},
+  author = {Nagpal, Chirag and Potosnak, Willa and Dubrawski, Artur},
+  title = {auton-survival: an Open-Source Package for Regression,
+  Counterfactual Estimation, Evaluation and Phenotyping with
+  Censored Time-to-Event Data},
+  publisher = {arXiv},
+  year = {2022},
+}
+```
+
+Additionally, models and methods in `auton_survival` come from the following papers.
+Please cite the individual papers if you employ them in your research:
 
 [1] [Deep Survival Machines:
 Fully Parametric Survival Regression and
@@ -231,14 +289,14 @@ foo@bar:~$ pip install -r requirements.txt
 
 Compatibility
 -------------
-`auton_survival` requires `python` 3.5+ and `pytorch` 1.1+.
+`auton-survival` requires `python` 3.5+ and `pytorch` 1.1+.
 
 To evaluate performance using standard metrics
-`auton_survival` requires `scikit-survival`.
+`auton-survival` requires `scikit-survival`.
 
 Contributing
 ------------
-`auton_survival` is [on GitHub]. Bug reports and pull requests are welcome.
+`auton-survival` is [on GitHub]. Bug reports and pull requests are welcome.
 
 [on GitHub]: https://github.com/autonlab/auton-survival
 
@@ -266,10 +324,8 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
-<img style="float: right;" height="150px" src="https://www.cmu.edu/brand/\
-downloads/assets/images/wordmarks-600x600-min.jpg">
-<img style="float: right;padding-top:30px" height="110px"
-src="https://www.cs.cmu.edu/~chiragn/auton_logo.png">
+<img align="right" height ="120px" src="https://www.cs.cmu.edu/~chiragn/cmu_logo.jpeg">
+<img align="right" height ="110px" src="https://www.cs.cmu.edu/~chiragn/auton_logo.png"> 
 
 <br><br><br><br><br>
 
