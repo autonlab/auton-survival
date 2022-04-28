@@ -1,4 +1,5 @@
 import inspect
+import pandas as pd
 
 def _get_method_kwargs(method, kwargs):
 
@@ -11,3 +12,9 @@ def _get_method_kwargs(method, kwargs):
   method_kwargs = {k: kwargs[k] for k in method_params}
 
   return method_kwargs
+
+def _dataframe_to_array(data):
+  if isinstance(data, (pd.Series, pd.DataFrame)):
+    return data.to_numpy()
+  else:
+    return data

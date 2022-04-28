@@ -23,38 +23,52 @@
 
 """Utilities to perform cross-validation."""
 
-from copy import deepcopy
 import numpy as np
+import pandas as pd
 
 from auton_survival.estimators import SurvivalModel, CounterfactualSurvivalModel
 from auton_survival.metrics import survival_regression_metric
+from auton_survival.preprocessing import Preprocessor
 
 from sklearn.model_selection import ParameterGrid
+from sklearn.utils import shuffle
 
 from tqdm import tqdm
+import warnings
 
 class SurvivalRegressionCV:
-  """Universal interface to train Survival Analysis models in a Cross Validation fashion.
+  """Universal interface to train Survival Analysis models in a cross-
+  validation or nested cross-validation fashion.
 
   Each of the model is trained in a CV fashion over the user specified
-  hyperparameter grid. The best model (in terms of integrated brier score)
-  is then selected.
+  hyperparameter grid. The best model(s) in terms of user-specified metric
+  is selected.
 
   Parameters
   -----------
   model : str
-      A string that determines the choice of the surival analysis model.
+      A string that determines the choice of the surival regression model.
       Survival model choices include:
-
       - 'dsm' : Deep Survival Machines [3] model
       - 'dcph' : Deep Cox Proportional Hazards [2] model
       - 'dcm' : Deep Cox Mixtures [4] model
       - 'rsf' : Random Survival Forests [1] model
       - 'cph' : Cox Proportional Hazards [2] model
-  cv_folds : int
-      Number of folds in the cross validation.
-  random_seed : int
-      Random seed for reproducibility.
+  model : str, default='dcph'
+      Survival regression model name.
+  folds : np.array, default=None
+      A numpy array of fold assignment values for each sample.
+      For regular (unnested) cross-validation, folds correspond to train
+      and validation set.
+      For nested cross-validation, folds correspond to train and test set.
+  num_folds : int, default=5
+      The number of folds.
+      Ignored if folds is specified.
+  num_nested_folds : int, default=None
+      The number of folds to use for nested cross-validation.
+      If None, then regular (unnested) CV is performed.
+  random_seed : int, default=0
+      Controls reproducibility of results.
   hyperparam_grid : dict
       A dictionary that contains the hyperparameters for grid search.
       The keys of the dictionary are the hyperparameter names and the
@@ -65,45 +79,288 @@ class SurvivalRegressionCV:
 
   [1] Hemant Ishwaran et al. Random survival forests.
   The annals of applied statistics, 2(3):841–860, 2008.
-
   [2] Cox, D. R. (1972). Regression models and life-tables.
   Journal of the Royal Statistical Society: Series B (Methodological).
-
   [3] Chirag Nagpal, Xinyu Li, and Artur Dubrawski.
   Deep survival machines: Fully parametric survival regression and
   representation learning for censored data with competing risks. 2020.
-
   [4] Nagpal, C., Yadlowsky, S., Rostamzadeh, N., and Heller, K. (2021c).
   Deep cox mixtures for survival regression.
   In Machine Learning for Healthcare Conference, pages 674–708. PMLR
 
   """
 
-  def __init__(self, model, cv_folds=5, random_seed=0, hyperparam_grid={}):
+  def __init__(self, model='dcph', folds=None, num_folds=5,
+               num_nested_folds=None, random_seed=0, hyperparam_grid={}):
 
     self.model = model
-    self.hyperparam_grid = list(ParameterGrid(hyperparam_grid))
+    self.folds = folds
+    self.num_folds = num_folds
+    self.num_nested_folds = num_nested_folds
     self.random_seed = random_seed
-    self.cv_folds = cv_folds
+    self.hyperparam_grid = list(ParameterGrid(hyperparam_grid))
 
-  def fit(self, features, outcomes, ret_trained_model=True):
+  def fit(self, features, outcomes, metric='ibs', horizon=None,
+          cat_feats=None, num_feats=None, one_hot=False):
 
-    r"""Fits the Survival Regression Model to the data in a Cross
-    Validation fashion.
+    r"""Fits the survival regression model to the data in a cross-
+    validation or nested cross-validation fashion.
 
     Parameters
     -----------
-    features : pandas.DataFrame
-        a pandas dataframe containing the features to use as covariates.
-    outcomes : pandas.DataFrame
-        a pandas dataframe containing the survival outcomes. The index of the
-        dataframe should be the same as the index of the features dataframe.
-        Should contain a column named 'time' that contains the survival time and
-        a column named 'event' that contains the censoring status.
-        \( \delta_i = 1 \) if the event is observed.
+    features : pd.DataFrame
+        A pandas dataframe with rows corresponding to individual samples
+        and columns as covariates.
+    outcomes : pd.DataFrame
+        A pandas dataframe with columns 'time' and 'event' that contain the
+        survival time and censoring status \( \delta_i = 1 \), respectively.
+    metric : str, default='ibs'
+        Metric used to evaluate model performance and tune hyperparameters.
+        Options include:
+        - 'auc': Dynamic area under the ROC curve
+        - 'brs' : Brier Score
+        - 'ibs' : Integrated Brier Score
+        - 'ctd' : Concordance Index
+    horizon : int or float, default=None
+        Event-horizon at which to evaluate model performance.
+        If None, then the maximum permissible event-time from the data is used.
+    cat_feats: list
+        List of categorical features.
+    num_feats: list
+        List of numerical/continuous features.
+    one_hot : bool, default=False
+        Whether to perform One-Hot encoding for categorical features.
     ret_trained_model : bool
-        If True, the trained model is returned. If False, the fit function
-        returns self.
+        If True, the trained model is returned.
+        If False, the fit function returns self.
+
+    Returns
+    -----------
+    Python dictionary with the trained survival regression model(s) or self.
+
+    """
+
+    if (horizon is None) & (metric not in ['auc', 'ctd', 'brs']):
+      warnings.warn("Horizon is not specificed for {} metric, so the maximum \
+permissible horizon from the data is used to evaluate model \
+performance".format(metric))
+
+    if self.folds is None:
+      self.folds = self._get_stratified_folds(outcomes, 'event',
+                                             self.num_folds,
+                                             self.random_seed)
+
+    self.metric = metric
+    self.cat_feats = cat_feats
+    self.num_feats = num_feats
+    self.one_hot = one_hot
+    self.horizon = horizon
+
+    models = self._fold_cv(features, outcomes)
+    return models
+
+  def _fold_cv(self, features, outcomes):
+
+    """Train models in a CV or nested CV fashion.
+
+    Parameters
+    -----------
+    features : pd.DataFrame
+        A pandas dataframe with rows corresponding to individual samples
+        and columns as covariates.
+    outcomes : pd.DataFrame
+        A pandas dataframe with columns 'time' and 'event' that contain the
+        survival time and censoring status \( \delta_i = 1 \), respectively.
+
+    Returns
+    -----------
+    Trained survival regression model(s).
+
+    """
+
+    if self.num_nested_folds is None:
+      proc_x_tr,_ = self._process_data(features, features, self.cat_feats,
+                                                self.num_feats, self.one_hot)
+      best_params = self._select_parameters(features, outcomes, self.folds)
+
+      model = SurvivalModel(self.model, self.random_seed, **best_params)
+      return model.fit(proc_x_tr, outcomes)
+
+    else:
+      models = {}
+      for fold in set(self.folds):
+        models[fold] = self._nested_cv(features, outcomes, fold)
+      return models
+
+  def _nested_cv(self, features, outcomes, fold):
+
+    """Train models in a nested CV fashion.
+
+    Parameters
+    -----------
+    features : pd.DataFrame
+        A pandas dataframe with rows corresponding to individual samples
+        and columns as covariates.
+    outcomes : pd.DataFrame
+        A pandas dataframe with columns 'time' and 'event' that contain the
+        survival time and censoring status \( \delta_i = 1 \), respectively.
+    fold : int
+        fold number in folds.
+
+    Returns
+    -----------
+    Trained survival regression model.
+
+    """
+
+    x_tr = features.copy().loc[self.folds!=fold]
+    y_tr = outcomes.loc[self.folds!=fold]
+
+    proc_x_tr,_ = self._process_data(x_tr, x_tr, self.cat_feats,
+                                     self.num_feats, self.one_hot)
+
+    self.nested_folds = self._get_stratified_folds(y_tr, 'event',
+                                                     self.num_nested_folds,
+                                                     self.random_seed)
+    # Use unprocessed training set for nested CV.
+    best_params = self._select_parameters(x_tr, y_tr, self.nested_folds)
+    model = SurvivalModel(self.model, self.random_seed, **best_params)
+    refit_model = model.fit(proc_x_tr, y_tr)
+
+    return refit_model
+
+  def _select_parameters(self, features, outcomes, folds):
+
+    """Evaluate model performance on validation set in a CV fashion and
+    select hyperparameters.
+
+    Parameters
+    -----------
+    features : pd.DataFrame
+        A pandas dataframe with rows corresponding to individual samples
+        and columns as covariates.
+    outcomes : pd.DataFrame
+        A pandas dataframe with columns 'time' and 'event' that contain the
+        survival time and censoring status \( \delta_i = 1 \), respectively.
+    folds : np.array, default=None
+        A numpy array of fold assignment values for each sample.
+        For regular (unnested) cross-validation, folds correspond to train
+        and validation set.
+        For nested cross-validation, folds correspond to train and test set.
+
+    Returns
+    -----------
+    Dictionary of the best model hyperparameters based on the user-specified
+    metric.
+
+    """
+
+    unique_times = np.unique(outcomes.time.values)
+    if self.horizon is not None:
+      unique_times = unique_times[unique_times<self.horizon]
+      unique_times = list(unique_times)+[self.horizon]
+    unique_times = np.array(sorted(unique_times))
+    self.times = self._check_times(outcomes, unique_times, folds)
+
+    if (self.horizon is not None) & (self.horizon not in self.times):
+      warnings.warn("Specified horizon is not permissible based on \
+training and validation set times. %0.2f is used as the closest permissible \
+event-horizon" %(max(self.times)))
+
+    fold_results = pd.DataFrame()
+    for fold in set(folds):
+      x_tr = features.copy().loc[folds!=fold]
+      x_val = features.copy().loc[folds==fold]
+      y_tr = outcomes.loc[folds!=fold]
+      y_val = outcomes.loc[folds==fold]
+
+      proc_x_tr, proc_x_val = self._process_data(x_tr, x_val, self.cat_feats,
+                                                 self.num_feats,self.one_hot)
+
+      param_results = self._eval_parameters(proc_x_tr, y_tr, proc_x_val, y_val)
+
+      # Hyperparameter results as row items and fold results as columns.
+      fold_results = pd.concat([fold_results, pd.DataFrame(param_results)],
+                               axis=1)
+
+    agg_params_results = fold_results.mean(axis=1)
+    if (self.metric == 'ibs') | (self.metric == 'brs'):
+      best_params_idx = agg_params_results.reset_index(drop=True).idxmin()
+    elif (self.metric == 'auc') | (self.metric == 'ctd'):
+      best_params_idx = agg_params_results.reset_index(drop=True).idxmax()
+
+    return self.hyperparam_grid[best_params_idx]
+
+  def _eval_parameters(self, features_tr, outcomes_tr,
+                       features_val, outcomes_val):
+
+    """Train the model and evaluate model performance on validation set.
+
+    Parameters
+    -----------
+    features_tr : pd.DataFrame
+        A pandas dataframe with rows corresponding to individual samples
+        and columns as covariates for the training set data.
+    outcomes_tr : pd.DataFrame
+        A pandas dataframe with columns 'time' and 'event' that contain the
+        survival time and censoring status \( \delta_i = 1 \), respectively
+        for the training set data.
+    features_val : pd.DataFrame
+        A pandas dataframe with rows corresponding to individual samples
+        and columns as covariates for the validation set data.
+    outcomes_val : pd.DataFrame
+        A pandas dataframe with columns 'time' and 'event' that contain the
+        survival time and censoring status \( \delta_i = 1 \), respectively
+        for the validation set data.
+
+    Returns
+    -----------
+    Model performance results in terms of the user-specific metric for each
+    hyperparameter combination.
+
+    """
+
+    # Cannot compute IBS for test set samples with time > follow-up time
+    max_follow_up = outcomes_tr.time.max()
+    val_sample_idx = outcomes_val.time.values < max_follow_up
+    outcomes_val = outcomes_val.loc[val_sample_idx]
+
+    if self.metric == 'ibs':
+      times = self.times
+    else:
+      times = self.times[-1]
+
+    param_results = []
+    for hyper_param in tqdm(self.hyperparam_grid):
+      model = SurvivalModel(self.model, self.random_seed, **hyper_param)
+      model.fit(features_tr, outcomes_tr)
+
+      predictions_val = model.predict_survival(features_val, times)
+      predictions_val = predictions_val[val_sample_idx]
+      metric_val = survival_regression_metric(metric=self.metric,
+                                              outcomes_train=outcomes_tr,
+                                              predictions=predictions_val,
+                                              outcomes_test=outcomes_val,
+                                              times=times)
+      param_results.append(metric_val)
+
+    return param_results
+
+  def _get_stratified_folds(self, dataset, event_label, n_folds, random_seed):
+
+    """Get cross-validation fold value for each sample.
+
+    Parameters
+    -----------
+    dataset : pd.DataFrame
+        A pandas datafrom with with rows corresponding to individual samples
+        and columns with covariates and 'event'
+    event_label : str
+        String of 'event' or outcome label
+    n_folds : int
+        Number of folds.
+    random_seed : int
+        Controls reproducibility of results.
 
     Returns
     -----------
@@ -111,20 +368,91 @@ class SurvivalRegressionCV:
         The selected survival model based on lowest integrated brier score.
     """
 
-    n = len(features)
+    pos_id = dataset.loc[lambda dataset: dataset[event_label]==1].index.values
+    neg_id = dataset.loc[lambda dataset: dataset[event_label]==0].index.values
+    fold_assignments_pos = np.array_split(shuffle(pos_id, random_state=random_seed), n_folds)
+    fold_assignments_neg = np.array_split(shuffle(neg_id, random_state=random_seed), n_folds)
 
-    np.random.seed(self.random_seed)
+    fold_assignments = []
+    for i in range(n_folds):
+      fold_assignments.append(np.concatenate([fold_assignments_pos[i],
+                                              fold_assignments_neg[i]]))
 
-    folds = np.array(list(range(self.cv_folds))*n)[:n]
-    np.random.shuffle(folds)
+    df_folds = pd.DataFrame()
+    for fi, ids in enumerate(fold_assignments):
+      each_fold = pd.DataFrame({'idx': ids, 'fold': fi})
+      df_folds = pd.concat([df_folds, each_fold], axis=0)
 
-    self.folds = folds
+    df_folds.sort_values(by='idx', inplace=True)
+    df_folds.drop(columns='idx', inplace=True)
+    df_folds = df_folds.fold.values
 
-    unique_times = np.unique(outcomes.time.values)
-    time_max, time_min = unique_times.max(), unique_times.min()
+    return df_folds
 
-    for fold in range(self.cv_folds):
+  def _process_data(self, features_tr, features_te, cat_feats,
+                    num_feats, one_hot=False):
 
+    """Fit preprocessors to training set data and transform training
+    set and test set data.
+
+    Parameters
+    -----------
+    features_tr : pd.DataFrame
+        A pandas dataframe with rows corresponding to individual samples
+        and columns as covariates for the training set data.
+    features_te : pd.DataFrame
+        A pandas dataframe with rows corresponding to individual samples
+        and columns as covariates for the test set data.
+    cat_feats: list
+        List of categorical features.
+    num_feats: list
+        List of numerical/continuous features.
+    one_hot : bool, default=False
+        Whether to perform One-Hot encoding for categorical features.
+
+    Returns
+    -----------
+    Pandas dataframes of preprocessed training and test set data.
+
+    """
+
+    features_tr = features_tr.copy()
+    features_te = features_te.copy()
+
+    preprocessor = Preprocessor(cat_feat_strat='replace',
+                                num_feat_strat='median',
+                                scaling_strategy='standard',
+                                one_hot=one_hot)
+    transformer = preprocessor.fit(features_tr, cat_feats=cat_feats,
+                                   num_feats=num_feats, fill_value=-1)
+    features_tr = transformer.transform(features_tr)
+    features_te = transformer.transform(features_te)
+
+    return features_tr, features_te
+
+  def _check_times(self, outcomes, times, folds):
+
+    """Verify times are appropriate for model evaluation.
+
+    Parameters
+    -----------
+    outcomes : pd.DataFrame
+        A pandas dataframe with columns 'time' and 'event' that contain the
+        survival time and censoring status \( \delta_i = 1 \), respectively.
+    times : np.array
+        A numpy array of times or an event horizon.
+    folds : np.array, default=None
+        A numpy array of fold assignment values for each sample.
+
+    Returns
+    -----------
+    auton_survival.estimators.SurvivalModel:
+        The selected survival model based on lowest integrated brier score.
+
+    """
+
+    time_max, time_min = max(times), min(times)
+    for fold in set(folds):
       time_test = outcomes.loc[folds==fold, 'time']
       time_train = outcomes.loc[folds!=fold, 'time']
 
@@ -137,93 +465,10 @@ class SurvivalRegressionCV:
         else:
           time_max = max(time_test[time_test < time_test.max()])
 
-    unique_times = unique_times[unique_times>=time_min]
-    unique_times = unique_times[unique_times<time_max]
+    times = times[times>=time_min]
+    times = times[times<time_max]
 
-    best_model = {}
-    best_score = np.inf
-
-    for hyper_param in tqdm(self.hyperparam_grid):
-
-      predictions = np.zeros((len(features), len(unique_times)))
-
-      fold_models = {}
-      for fold in tqdm(range(self.cv_folds)):
-
-        # Fit the model
-        fold_model = SurvivalModel(model=self.model, random_seed=self.random_seed,
-                                   **hyper_param)
-        fold_model.fit(features.loc[folds!=fold], outcomes.loc[folds!=fold])
-        fold_models[fold] = fold_model
-
-        # Predict risk scores
-        predictions[folds==fold] = fold_model.predict_survival(features.loc[folds==fold],
-                                                               times=unique_times.tolist())
-
-      score_per_fold = []
-      for fold in range(self.cv_folds):
-        outcomes_train = outcomes.loc[folds!=fold]
-        outcomes_test = outcomes.loc[folds==fold].copy()
-        predictions_test = deepcopy(predictions[folds==fold])
-
-        # Cannot compute IBS for test set samples with time > follow-up time
-        max_follow_up = outcomes_train.time.max()
-        predictions_test = predictions_test[outcomes_test.time.values < max_follow_up]
-        outcomes_test = outcomes_test.loc[outcomes_test.time.values < max_follow_up]
-
-        # Compute IBS
-        score = survival_regression_metric('ibs', outcomes_train,
-                                           predictions_test,
-                                           unique_times, outcomes_test)
-        score_per_fold.append(score)
-
-      current_score = np.mean(score_per_fold)
-
-      if current_score < best_score:
-        best_score = current_score
-        best_model = fold_models
-        best_hyper_param = hyper_param
-        best_predictions = predictions
-
-    self.best_hyperparameter = best_hyper_param
-    self.best_model_per_fold = best_model
-    self.best_predictions = best_predictions
-
-    if ret_trained_model:
-
-      model = SurvivalModel(model=self.model, random_seed=self.random_seed,
-                            **self.best_hyperparameter)
-      model.fit(features, outcomes)
-
-      return model
-
-    else:
-      return self
-
-  def evaluate(self, features, outcomes, metrics=['auc', 'ctd'], horizons=[]):
-
-    """"Not implemented yet."""
-
-    raise NotImplementedError()
-
-    results = {}
-
-    for metric in metrics:
-      results[metric] = {}
-      for horizon in horizons:
-        results[metric][horizon] = {}
-        for fold in range(self.cv_folds):
-          results[metric][horizon][fold] = {}
-
-    for fold in range(self.cv_folds):
-
-      fold_model = self.best_model_per_fold[fold]
-      fold_predictions = fold_model.predict(features.loc[self.folds==fold],
-                                            times=horizons)
-
-      for i, horizon in enumerate(horizons):
-        for metric in metrics:
-          raise NotImplementedError()
+    return times.tolist()
 
 class CounterfactualSurvivalRegressionCV:
 
@@ -283,18 +528,19 @@ class CounterfactualSurvivalRegressionCV:
     self.cv_folds = cv_folds
 
     self.treated_experiment = SurvivalRegressionCV(model=model,
-                                                cv_folds=cv_folds,
+                                                num_folds=cv_folds,
                                                 random_seed=random_seed,
                                                 hyperparam_grid=hyperparam_grid)
 
     self.control_experiment = SurvivalRegressionCV(model=model,
-                                                cv_folds=cv_folds,
+                                                num_folds=cv_folds,
                                                 random_seed=random_seed,
                                                 hyperparam_grid=hyperparam_grid)
 
-  def fit(self, features, outcomes, interventions):
+  def fit(self, features, outcomes, interventions,
+          metric, cat_feats, num_feats):
 
-    r"""Fits the Survival Regression Model to the data in a Cross 
+    r"""Fits the Survival Regression Model to the data in a Cross
     Validation fashion.
 
     Parameters
@@ -319,8 +565,14 @@ class CounterfactualSurvivalRegressionCV:
     """
 
     treated_model = self.treated_experiment.fit(features.loc[interventions==1],
-                                                outcomes.loc[interventions==1])
+                                                outcomes.loc[interventions==1],
+                                                metric=metric,
+                                                cat_feats=cat_feats,
+                                                num_feats=num_feats)
     control_model = self.control_experiment.fit(features.loc[interventions!=1],
-                                                outcomes.loc[interventions!=1])
+                                                outcomes.loc[interventions!=1],
+                                                metric=metric,
+                                                cat_feats=cat_feats,
+                                                num_feats=num_feats)
 
     return CounterfactualSurvivalModel(treated_model, control_model)

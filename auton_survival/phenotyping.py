@@ -483,7 +483,8 @@ class SurvivalVirtualTwinsPhenotyper(Phenotyper):
 
     self.random_seed = random_seed
 
-  def fit(self, features, outcomes, interventions, horizon):
+  def fit(self, features, outcomes, interventions, metric, 
+          horizon, cat_feats, num_feats):
 
     """Fit a counterfactual model and regress the difference of the estimated
     counterfactual Restricted Mean Survival Time using a Random Forest regressor.
@@ -502,6 +503,10 @@ class SurvivalVirtualTwinsPhenotyper(Phenotyper):
     horizon : np.float
         The event horizon at which to compute the counterfacutal RMST for
         regression.
+    cat_feats: list
+        List of categorical features.
+    num_feats: list
+        List of numerical/continuous features. 
 
     Returns
     -----------
@@ -512,7 +517,8 @@ class SurvivalVirtualTwinsPhenotyper(Phenotyper):
     cf_model = CounterfactualSurvivalRegressionCV(model=self.cf_method,
                                     hyperparam_grid=self.cf_hyperparams)
 
-    self.cf_model = cf_model.fit(features, outcomes, interventions)
+    self.cf_model = cf_model.fit(features, outcomes, interventions,
+                                 metric, cat_feats, num_feats)
 
     times = np.unique(outcomes.time.values)
     cf_predictions = self.cf_model.predict_counterfactual_survival(features,

@@ -56,7 +56,7 @@ import numpy as np
 from .dcm_torch import DeepCoxMixturesTorch
 from .dcm_utilities import train_dcm, predict_survival, predict_latent_z
 
-from auton_survival.preprocessing import _dataframe_to_array
+from auton_survival.utils import _dataframe_to_array
 
 
 class DeepCoxMixtures:

@@ -170,7 +170,7 @@ from .utilities import train_dsm
 from .utilities import _get_padded_features, _get_padded_targets
 from .utilities import _reshape_tensor_with_nans
 
-from auton_survival.preprocessing import _dataframe_to_array
+from auton_survival.utils import _dataframe_to_array
 
 
 __pdoc__ = {}

@@ -29,7 +29,7 @@ import numpy as np
 from .dcph_torch import DeepCoxPHTorch, DeepRecurrentCoxPHTorch
 from .dcph_utilities import train_dcph, predict_survival
 
-from auton_survival.preprocessing import _dataframe_to_array
+from auton_survival.utils import _dataframe_to_array
 from auton_survival.models.dsm.utilities import _get_padded_features
 from auton_survival.models.dsm.utilities import _get_padded_targets
 

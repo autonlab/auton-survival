@@ -376,9 +376,3 @@ class Preprocessor:
       output = pd.get_dummies(output, dummy_na=False, drop_first=True)
 
     return output
-
-def _dataframe_to_array(data):
-  if isinstance(data, (pd.Series, pd.DataFrame)):
-    return data.to_numpy()
-  else:
-    return data
