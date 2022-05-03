@@ -183,7 +183,7 @@ from auton_survival.phenotyping import IntersectionalPhenotyper
 
 # ’ca’ is cancer status. ’age’ is binned into two quantiles.
 phenotyper = IntersectionalPhenotyper(num_vars_quantiles=(0, .5, 1.0),
-cat_vars=[’ca’], num_vars=[’age’])
+cat_vars=['ca'], num_vars=['age'])
 phenotypes = phenotyper.fit_predict(features)
 ```
 
@@ -449,7 +449,7 @@ To evaluate performance using standard metrics
 
 To install `auton_survival`, clone the following git repository:
 ```console
-foo@bar:~$ git clone https://github.com/autonlab/auton_survival
+foo@bar:~$ git clone https://github.com/autonlab/auton-survival.git
 foo@bar:~$ pip install -r requirements.txt
 ```
 
@@ -459,7 +459,7 @@ Contributing
 ------------
 `auton_survival` is [on GitHub]. Bug reports and pull requests are welcome.
 
-[on GitHub]: https://github.com/autonlab/auton-survival
+[on GitHub]: https://github.com/autonlab/auton-survival.git
 
 <a id="license"></a>
 
