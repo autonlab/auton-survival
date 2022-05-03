@@ -280,7 +280,7 @@ Healthcare (2021)](https://arxiv.org/abs/2101.06536)</a>
 ## Installation
 
 ```console
-foo@bar:~$ git clone https://github.com/autonlab/auton_survival
+foo@bar:~$ git clone https://github.com/autonlab/auton-survival.git
 foo@bar:~$ pip install -r requirements.txt
 ```
 
