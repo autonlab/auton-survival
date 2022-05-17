@@ -44,7 +44,8 @@ class DeepCMHETorch(torch.nn.Module):
     self.omega = torch.nn.Parameter(torch.rand(self.g)-0.5)
 
   def __init__(self, k, g, inputdim, layers=None, gamma=100,
-               smoothing_factor=1e-4, optimizer='Adam'):
+               smoothing_factor=1e-4, optimizer='Adam',
+               dropout=None):
 
     super(DeepCMHETorch, self).__init__()
 
@@ -65,7 +66,7 @@ class DeepCMHETorch(torch.nn.Module):
 
     self._init_dcmhe_layers(lastdim)
 
-    self.embedding = create_representation(inputdim, layers, 'Tanh')
+    self.embedding = create_representation(inputdim, layers, 'Tanh', dropout=dropout)
 
 
   def forward(self, x, a):
