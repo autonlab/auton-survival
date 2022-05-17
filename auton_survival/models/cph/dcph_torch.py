@@ -9,7 +9,7 @@ class DeepCoxPHTorch(nn.Module):
   def _init_coxph_layers(self, lastdim):
     self.expert = nn.Linear(lastdim, 1, bias=False)
 
-  def __init__(self, inputdim, layers=None, optimizer='Adam'):
+  def __init__(self, inputdim, layers=None, optimizer='Adam', dropout=None):
 
     super(DeepCoxPHTorch, self).__init__()
 
@@ -22,7 +22,7 @@ class DeepCoxPHTorch(nn.Module):
     else: lastdim = layers[-1]
 
     self._init_coxph_layers(lastdim)
-    self.embedding = create_representation(inputdim, layers, 'ReLU6')
+    self.embedding = create_representation(inputdim, layers, 'ReLU6', dropout=dropout)
 
   def forward(self, x):
 
