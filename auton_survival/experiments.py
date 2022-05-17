@@ -56,8 +56,8 @@ class SurvivalRegressionCV:
       - 'cph' : Cox Proportional Hazards [2] model
   model : str, default='dcph'
       Survival regression model name.
-  folds : np.array, default=None
-      A numpy array of fold assignment values for each sample.
+  folds : list, default=None
+      A list of fold assignment values for each sample.
       For regular (unnested) cross-validation, folds correspond to train
       and validation set.
       For nested cross-validation, folds correspond to train and test set.
@@ -130,19 +130,22 @@ class SurvivalRegressionCV:
         List of numerical/continuous features.
     one_hot : bool, default=False
         Whether to perform One-Hot encoding for categorical features.
-    ret_trained_model : bool
-        If True, the trained model is returned.
-        If False, the fit function returns self.
 
     Returns
     -----------
-    Python dictionary with the trained survival regression model(s) or self.
+    Trained survival regression model(s).
 
     """
+    
+    self.metric = metric
+    self.cat_feats = cat_feats
+    self.num_feats = num_feats
+    self.one_hot = one_hot
+    self.horizon = horizon
 
     if (horizon is None) & (metric not in ['auc', 'ctd', 'brs']):
       warnings.warn("Horizon is not specificed for {} metric, so the maximum \
-permissible horizon from the data is used to evaluate model \
+permissible time horizon from the data is used to evaluate model \
 performance".format(metric))
 
     if self.folds is None:
@@ -150,49 +153,21 @@ performance".format(metric))
                                              self.num_folds,
                                              self.random_seed)
 
-    self.metric = metric
-    self.cat_feats = cat_feats
-    self.num_feats = num_feats
-    self.one_hot = one_hot
-    self.horizon = horizon
-
-    models = self._fold_cv(features, outcomes)
-    return models
-
-  def _fold_cv(self, features, outcomes):
-
-    """Train models in a CV or nested CV fashion.
-
-    Parameters
-    -----------
-    features : pd.DataFrame
-        A pandas dataframe with rows corresponding to individual samples
-        and columns as covariates.
-    outcomes : pd.DataFrame
-        A pandas dataframe with columns 'time' and 'event' that contain the
-        survival time and censoring status \( \delta_i = 1 \), respectively.
-
-    Returns
-    -----------
-    Trained survival regression model(s).
-
-    """
-
     if self.num_nested_folds is None:
-      proc_x_tr,_ = self._process_data(features, features, self.cat_feats,
-                                                self.num_feats, self.one_hot)
-      best_params = self._select_parameters(features, outcomes, self.folds)
+      proc_x_tr = self._process_data(features_tr=features,
+                                     cat_feats=self.cat_feats,
+                                     num_feats=self.num_feats,
+                                     one_hot=self.one_hot)  
 
+      best_params = self._cv_select_parameters(features, outcomes, self.folds)
       model = SurvivalModel(self.model, self.random_seed, **best_params)
+
       return model.fit(proc_x_tr, outcomes)
 
     else:
-      models = {}
-      for fold in set(self.folds):
-        models[fold] = self._nested_cv(features, outcomes, fold)
-      return models
+      return self._train_nested_cv_models(features, outcomes)
 
-  def _nested_cv(self, features, outcomes, fold):
+  def _train_nested_cv_models(self, features, outcomes):
 
     """Train models in a nested CV fashion.
 
@@ -204,32 +179,34 @@ performance".format(metric))
     outcomes : pd.DataFrame
         A pandas dataframe with columns 'time' and 'event' that contain the
         survival time and censoring status \( \delta_i = 1 \), respectively.
-    fold : int
-        fold number in folds.
 
     Returns
     -----------
-    Trained survival regression model.
+    Trained survival regression models.
 
     """
 
-    x_tr = features.copy().loc[self.folds!=fold]
-    y_tr = outcomes.loc[self.folds!=fold]
+    models = {}
+    for fi, fold in enumerate(set(self.folds)):
+      x_tr = features.copy().loc[self.folds!=fold]
+      y_tr = outcomes.loc[self.folds!=fold]
+    
+      proc_x_tr = self._process_data(features_tr=x_tr,
+                                     cat_feats=self.cat_feats,
+                                     num_feats=self.num_feats,
+                                     one_hot=self.one_hot) 
 
-    proc_x_tr,_ = self._process_data(x_tr, x_tr, self.cat_feats,
-                                     self.num_feats, self.one_hot)
+      self.nested_folds = self._get_stratified_folds(y_tr, 'event',
+                                                   self.num_nested_folds,
+                                                   self.random_seed)
+      # Use unprocessed training set for nested CV.
+      best_params = self._cv_select_parameters(x_tr, y_tr, self.nested_folds)
+      model = SurvivalModel(self.model, self.random_seed, **best_params)
+      models[fi] = model.fit(proc_x_tr, y_tr)
 
-    self.nested_folds = self._get_stratified_folds(y_tr, 'event',
-                                                     self.num_nested_folds,
-                                                     self.random_seed)
-    # Use unprocessed training set for nested CV.
-    best_params = self._select_parameters(x_tr, y_tr, self.nested_folds)
-    model = SurvivalModel(self.model, self.random_seed, **best_params)
-    refit_model = model.fit(proc_x_tr, y_tr)
+    return models
 
-    return refit_model
-
-  def _select_parameters(self, features, outcomes, folds):
+  def _cv_select_parameters(self, features, outcomes, folds):
 
     """Evaluate model performance on validation set in a CV fashion and
     select hyperparameters.
@@ -242,11 +219,8 @@ performance".format(metric))
     outcomes : pd.DataFrame
         A pandas dataframe with columns 'time' and 'event' that contain the
         survival time and censoring status \( \delta_i = 1 \), respectively.
-    folds : np.array, default=None
-        A numpy array of fold assignment values for each sample.
-        For regular (unnested) cross-validation, folds correspond to train
-        and validation set.
-        For nested cross-validation, folds correspond to train and test set.
+    folds : list, default=None
+        A list of fold assignment values for each sample.
 
     Returns
     -----------
@@ -277,7 +251,7 @@ event-horizon" %(max(self.times)))
       proc_x_tr, proc_x_val = self._process_data(x_tr, x_val, self.cat_feats,
                                                  self.num_feats,self.one_hot)
 
-      param_results = self._eval_parameters(proc_x_tr, y_tr, proc_x_val, y_val)
+      param_results = self._fit_evaluate_model(proc_x_tr, y_tr, proc_x_val, y_val)
 
       # Hyperparameter results as row items and fold results as columns.
       fold_results = pd.concat([fold_results, pd.DataFrame(param_results)],
@@ -291,8 +265,8 @@ event-horizon" %(max(self.times)))
 
     return self.hyperparam_grid[best_params_idx]
 
-  def _eval_parameters(self, features_tr, outcomes_tr,
-                       features_val, outcomes_val):
+  def _fit_evaluate_model(self, features_tr, outcomes_tr,
+                          features_val, outcomes_val):
 
     """Train the model and evaluate model performance on validation set.
 
@@ -320,7 +294,7 @@ event-horizon" %(max(self.times)))
 
     """
 
-    # Cannot compute IBS for test set samples with time > follow-up time
+    # Cannot compute metrics for evaluation set samples with time > follow-up time
     max_follow_up = outcomes_tr.time.max()
     val_sample_idx = outcomes_val.time.values < max_follow_up
     outcomes_val = outcomes_val.loc[val_sample_idx]
@@ -337,10 +311,11 @@ event-horizon" %(max(self.times)))
 
       predictions_val = model.predict_survival(features_val, times)
       predictions_val = predictions_val[val_sample_idx]
+
       metric_val = survival_regression_metric(metric=self.metric,
-                                              outcomes_train=outcomes_tr,
+                                              outcomes=outcomes_val,
                                               predictions=predictions_val,
-                                              outcomes_test=outcomes_val,
+                                              outcomes_train=outcomes_tr,
                                               times=times)
       param_results.append(metric_val)
 
@@ -389,8 +364,8 @@ event-horizon" %(max(self.times)))
 
     return df_folds
 
-  def _process_data(self, features_tr, features_te, cat_feats,
-                    num_feats, one_hot=False):
+  def _process_data(self, features_tr, features_te=None, cat_feats=None,
+                    num_feats=None, one_hot=False):
 
     """Fit preprocessors to training set data and transform training
     set and test set data.
@@ -416,23 +391,23 @@ event-horizon" %(max(self.times)))
 
     """
 
-    features_tr = features_tr.copy()
-    features_te = features_te.copy()
-
     preprocessor = Preprocessor(cat_feat_strat='replace',
                                 num_feat_strat='median',
                                 scaling_strategy='standard',
                                 one_hot=one_hot)
     transformer = preprocessor.fit(features_tr, cat_feats=cat_feats,
                                    num_feats=num_feats, fill_value=-1)
-    features_tr = transformer.transform(features_tr)
-    features_te = transformer.transform(features_te)
-
-    return features_tr, features_te
+    features_tr = transformer.transform(features_tr.copy())
+    
+    if features_te is None:
+      return features_tr
+    else:
+      features_te = transformer.transform(features_te.copy())
+      return features_tr, features_te
 
   def _check_times(self, outcomes, times, folds):
 
-    """Verify times are appropriate for model evaluation.
+    """Verify times are within an appropriate range for model evaluation.
 
     Parameters
     -----------
@@ -453,8 +428,9 @@ event-horizon" %(max(self.times)))
 
     time_max, time_min = max(times), min(times)
     for fold in set(folds):
-      time_test = outcomes.loc[folds==fold, 'time']
       time_train = outcomes.loc[folds!=fold, 'time']
+      time_test = outcomes.loc[folds==fold, 'time']
+      time_test = time_test[time_test<time_train.max()]
 
       if time_test.min() > time_min:
         time_min = time_test.min()

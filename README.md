@@ -153,9 +153,9 @@ outcomes, features = load_dataset(dataset='SUPPORT')
 cat_feats = ['sex', 'income', 'race']
 num_feats = ['age', 'resp', 'glucose']
 
-from auton_survival.experiments import SurvivalCVRegressionCV
+from auton_survival.experiments import SurvivalRegressionCV
 # Instantiate an auton_survival Experiment 
-experiment = SurvivalCVRegressionCV(model='cph', num_folds=5, 
+experiment = SurvivalRegressionCV(model='cph', num_folds=5, 
                                     hyperparam_grid=hyperparam_grid)
 
 # Fit the `experiment` object with the specified Cox model.

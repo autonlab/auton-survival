@@ -25,6 +25,7 @@
 model performance."""
 
 from lifelines import KaplanMeierFitter, CoxPHFitter
+from lifelines.utils import qth_survival_time
 import pandas as pd
 import numpy as np
 from sksurv import metrics, util
@@ -34,7 +35,7 @@ from tqdm import tqdm
 import warnings
 
 def treatment_effect(metric, outcomes, treatment_indicator,
-                     weights=None, horizons=None, risks=None,
+                     weights=None, horizons=None, risk_levels=None,
                      interpolate=True, weights_clip=1e-2,
                      n_bootstrap=None, size_bootstrap=1.0,
                      random_seed=0):
@@ -62,10 +63,10 @@ def treatment_effect(metric, outcomes, treatment_indicator,
       Treatment assignment propensity scores, \( \widehat{\mathbb{P}}(A|X=x) \).
       If `None`, all weights are set to \( 0.5 \). Default is `None`.
   horizons : float or int or array of floats or ints, default=None
-      Event horizon(s) at which to compute the metric.
+      Time horizon(s) at which to compute the metric.
       Must be specified for metric 'restricted_mean' and 'survival_at'.
       For 'hazard_ratio' this is ignored.
-  risks : float or array of floats
+  risk_levels : float or array of floats
       The risk level (0-1) at which to compare times between treatment arms.
       Must be specified for metric 'tar'.
       Ignored for other metrics.
@@ -94,11 +95,11 @@ def treatment_effect(metric, outcomes, treatment_indicator,
 
   if metric in ['restricted_mean', 'survival_at']:
     assert horizons is not None, "Please specify Event Horizon"
-    assert risks is None, "Risks must be non for 'restricted_mean' and \
+    assert risk_levels is None, "Risks must be non for 'restricted_mean' and \
 'survival_at' metrics"
 
   if metric in ['tar']:
-    assert risks is not None, "Please specify risk level(s) at \
+    assert risk_levels is not None, "Please specify risk level(s) at \
 which to compare time-to-event."
     assert horizons is None, "Horizons must be none for 'tar' metric."
 
@@ -114,8 +115,8 @@ which to compare time-to-event."
   if isinstance(horizons, (int, float)):
     horizons = [horizons]
 
-  if isinstance(risks, (int, float)):
-    risks = [risks]
+  if isinstance(risk_levels, (int, float)):
+    risk_levels = [risk_levels]
 
   if isinstance(n_bootstrap, int):
     print('Bootstrapping... ', n_bootstrap,
@@ -149,7 +150,7 @@ which to compare time-to-event."
     return _metric(treated_outcomes,
                    control_outcomes,
                    horizons=horizons,
-                   risks=risks,
+                   risk_levels=risk_levels,
                    interpolate=interpolate,
                    treated_weights=iptw_weights[treatment_indicator],
                    control_weights=iptw_weights[~treatment_indicator])
@@ -157,15 +158,15 @@ which to compare time-to-event."
     return [_metric(treated_outcomes,
                     control_outcomes,
                     horizons=horizons,
-                    risks=risks,
+                    risk_levels=risk_levels,
                     interpolate=interpolate,
                     treated_weights=iptw_weights[treatment_indicator],
                     control_weights=iptw_weights[~treatment_indicator],
                     size_bootstrap=size_bootstrap,
                     random_seed=i) for i in range(n_bootstrap)]
 
-def survival_regression_metric(metric, outcomes_train, predictions,
-                               times, outcomes_test=None):
+def survival_regression_metric(metric, outcomes, predictions,
+                               times, outcomes_train=None):
   """Compute metrics to assess survival model performance.
 
   Parameters
@@ -178,16 +179,16 @@ def survival_regression_metric(metric, outcomes_train, predictions,
       - `auc`: cumulative dynamic area under the curve
       - `ctd` : concordance index inverse probability of censoring
                 weights (ipcw)
+  outcomes : pd.DataFrame
+      A pandas dataframe with rows corresponding to individual samples and
+      columns 'time' and 'event' for evaluation data.
   predictions: np.array
       A numpy array of survival time predictions for the samples.
-  outcomes_train : pd.DataFrame
-      A pandas dataframe with rows corresponding to individual samples and
-      columns 'time' and 'event' for test data.
-  outcomes_test : pd.DataFrame
-      A pandas dataframe with rows corresponding to individual samples and
-      columns 'time' and 'event' for training data.
   times: np.array
       The time points at which to compute metric value(s).
+  outcomes_train : pd.DataFrame
+      A pandas dataframe with rows corresponding to individual samples and
+      columns 'time' and 'event' for training data.
 
   Returns
   -----------
@@ -198,34 +199,33 @@ def survival_regression_metric(metric, outcomes_train, predictions,
   if isinstance(times, (float,int)):
     times = [times]
 
-  if outcomes_test is None:
-    outcomes_test = outcomes_train
+  if outcomes_train is None:
+    outcomes_train = outcomes
     warnings.warn("You are are evaluating model performance on the \
-same data used to train the model.")
+same data used to estimate the censoring distribution.")
 
   assert max(times) < outcomes_train.time.max(), "Times should \
-be within the range of training set times to avoid exterpolation."
-  assert max(times) < outcomes_test.time.max(), "Times \
-must be within the range of test set times."
+be within the range of event times to avoid exterpolation."
+  assert max(times) < outcomes.time.max(), "Times \
+must be within the range of event times."
 
   survival_train = util.Surv.from_dataframe('event', 'time', outcomes_train)
-  survival_test = util.Surv.from_dataframe('event', 'time', outcomes_test)
-  predictions_test = predictions
+  survival_test = util.Surv.from_dataframe('event', 'time', outcomes)
 
   if metric == 'brs':
     return metrics.brier_score(survival_train, survival_test,
-                               predictions_test, times)[-1]
+                               predictions, times)[-1]
   elif metric == 'ibs':
     return metrics.integrated_brier_score(survival_train, survival_test,
-                                          predictions_test, times)
+                                          predictions, times)
   elif metric == 'auc':
     return metrics.cumulative_dynamic_auc(survival_train, survival_test,
-                                            1-predictions_test, times)[0]
+                                            1-predictions, times)[0]
   elif metric == 'ctd':
     vals = []
     for i in range(len(times)):
       vals.append(metrics.concordance_index_ipcw(survival_train, survival_test,
-                                                 1-predictions_test[:,i],
+                                                 1-predictions[:,i],
                                                  tau=times[i])[0])
     return vals
 
@@ -342,14 +342,13 @@ set times must be within the range of training set follow-up times."
                                                       survival_test[idx],
                                                       predictions[idx],
                                                       times))
-        horizon_scores.append(score)
+        horizon_scores.append(np.array(score))
 
     if bootstrap is None:
-      return np.array(horizon_scores)
+      return horizon_scores
     else:
-      # Format scores exactly like "instantaneous" option w/ bootstrapping for consistency
-      return [np.array([j[i] for j in np.array(horizon_scores)])
-              for i in range(bootstrap)]
+      horizon_scores = np.transpose(horizon_scores)
+      return [np.array(i) for i in horizon_scores]
 
   else:
     raise NotImplementedError()
@@ -410,8 +409,6 @@ def _restricted_mean_diff(treated_outcomes, control_outcomes, horizons,
       The fraction of the population to sample for each bootstrap sample.
   random_seed: int, default=None
       Controls the reproducibility random sampling for bootstrapping.
-  kwargs : dict
-      Additional arguments for the Kaplan Meier estimator??
 
   Returns
   -----------
@@ -502,7 +499,7 @@ def _survival_at_diff(treated_outcomes, control_outcomes, horizons,
   return np.array(treatment_estimate-control_estimate)
 
 
-def _tar(treated_outcomes, control_outcomes, risks,
+def _tar(treated_outcomes, control_outcomes, risk_levels,
          treated_weights, control_weights, interpolate=True,
          size_bootstrap=1.0, random_seed=None, **kwargs):
   """Time at Risk (TaR) measures time-to-event at a specified level
@@ -516,7 +513,7 @@ def _tar(treated_outcomes, control_outcomes, risks,
   control_outcomes : pd.DataFrame
       A pandas dataframe with columns 'time' and 'event' for samples that
       did not receive a specific treatment.
-  risks : float or array of floats
+  risk_levels : float or array of floats
       The risk level (0-1) at which to compare times between treatment arms.
       Must be specified for metric 'tar'.
       Ignored for other metrics.
@@ -535,21 +532,6 @@ def _tar(treated_outcomes, control_outcomes, risks,
 
   """
 
-  # Assuming risk increases as time increases:
-  # Use linear interpolation and fsolve to estimate time at..
-  # user-specified risk
-  from scipy.optimize import fsolve
-  def interp_x(y, x, thres):
-    if len(y[y<thres])==0:
-      x1, y1 = 0, y[0]
-    else:
-      x1, y1 = x[y<thres][-1], y[y<thres][-1]
-    x2, y2 = x[y>thres][0], y[y>thres][0]
-    root = fsolve(func, x0=x1, args=(thres, x1, y1, x2, y2))[0]
-    return root
-  def func(x, y, x1, y1, x2, y2):
-    return y1 + (x-x1)*((y2-y1)/(x2-x1)) - y
-
   if random_seed is not None:
     treated_outcomes = treated_outcomes.sample(n=int(size_bootstrap*len(treated_outcomes)),
                                                weights=treated_weights,
@@ -565,28 +547,10 @@ def _tar(treated_outcomes, control_outcomes, risks,
   control_survival = KaplanMeierFitter().fit(control_outcomes['time'],
                                              control_outcomes['event'])
 
-  treated_horizons = np.linspace(treated_outcomes.time.min(),
-                        treated_outcomes.time.max(),
-                        round((treated_outcomes.time.max()-
-                               treated_outcomes.time.min())*20))
-  control_horizons = np.linspace(control_outcomes.time.min(),
-                        control_outcomes.time.max(),
-                        round((control_outcomes.time.max()-
-                               control_outcomes.time.min())*20))
-
-  treated_risk = 1-treated_survival.predict(treated_horizons,
-                                            interpolate).values
-  control_risk = 1-control_survival.predict(control_horizons,
-                                            interpolate).values
-
   tar_diff = []
-  for risk in risks:
-    if risk == 1:
-      tar_diff.append((treated_horizons[treated_risk==1] -
-                       control_horizons[control_risk==1])[0])
-    else:
-      treated_tar = interp_x(treated_risk, treated_horizons, risk)
-      control_tar = interp_x(control_risk, control_horizons, risk)
+  for risk_level in risk_levels:
+      treated_tar = treated_survival.percentile(1-risk_level)
+      control_tar = control_survival.percentile(1-risk_level)
       tar_diff.append(treated_tar - control_tar)
 
   return np.array(tar_diff)

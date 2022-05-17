@@ -421,12 +421,7 @@ class ClusteringPhenotyper(Phenotyper):
     assert self.fitted, "Phenotyper must be `fitted` before calling \
     `phenotype`."
 
-    if self.dim_red_method is not None:
-      features =  self.dim_red_model.transform(features)
-    if self.clustering_method == 'gmm':
-      return np.argmax(self.clustering_model.predict_proba(features), axis=1)
-    elif self.clustering_method == 'kmeans':
-      return np.argmax(self._predict_proba_kmeans(features), axis=1)
+    return np.argmax(self.predict_proba(features), axis=1)
 
   def fit_predict(self, features):
 
@@ -586,13 +581,7 @@ class SurvivalVirtualTwinsPhenotyper(Phenotyper):
 
     """
 
-    phenotype_preds=  self.pheno_model.predict(features)
-    preds_surv_greater = (phenotype_preds -  phenotype_preds.min()) / (phenotype_preds.max() - phenotype_preds.min())
-    preds_surv_less = 1 - preds_surv_greater
-    preds = np.array([[preds_surv_less[i], preds_surv_greater[i]]
-                      for i in range(len(features))])
-    
-    return np.argmax(preds, axis=1)
+    return np.argmax(self.predict_proba(features), axis=1)
 
   def fit_predict(self, features, outcomes, interventions, horizon):
 
