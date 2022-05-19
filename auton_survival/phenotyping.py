@@ -479,7 +479,7 @@ class SurvivalVirtualTwinsPhenotyper(Phenotyper):
     self.random_seed = random_seed
 
   def fit(self, features, outcomes, interventions, metric, 
-          horizon, cat_feats, num_feats):
+          horizon):
 
     """Fit a counterfactual model and regress the difference of the estimated
     counterfactual Restricted Mean Survival Time using a Random Forest regressor.
@@ -492,16 +492,19 @@ class SurvivalVirtualTwinsPhenotyper(Phenotyper):
     outcomes : pd.DataFrame
         A pandas dataframe with rows corresponding to individual samples
         and columns 'time' and 'event'.
-    treatment_indicator : np.array
+    interventions : np.array
         Boolean numpy array of treatment indicators. True means individual
         was assigned a specific treatment.
+    metric : str, default='ibs'
+        Metric used to evaluate model performance and tune hyperparameters.
+        Options include:
+        - 'auc': Dynamic area under the ROC curve
+        - 'brs' : Brier Score
+        - 'ibs' : Integrated Brier Score
+        - 'ctd' : Concordance Index
     horizon : np.float
         The event horizon at which to compute the counterfacutal RMST for
-        regression.
-    cat_feats: list
-        List of categorical features.
-    num_feats: list
-        List of numerical/continuous features. 
+        regression. 
 
     Returns
     -----------
@@ -512,8 +515,7 @@ class SurvivalVirtualTwinsPhenotyper(Phenotyper):
     cf_model = CounterfactualSurvivalRegressionCV(model=self.cf_method,
                                     hyperparam_grid=self.cf_hyperparams)
 
-    self.cf_model = cf_model.fit(features, outcomes, interventions,
-                                 metric, cat_feats, num_feats)
+    self.cf_model = cf_model.fit(features, outcomes, interventions, metric)
 
     times = np.unique(outcomes.time.values)
     cf_predictions = self.cf_model.predict_counterfactual_survival(features,

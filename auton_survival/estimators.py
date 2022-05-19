@@ -595,12 +595,12 @@ class SurvivalModel:
       assert weights_val is None, "Weights for validation data \
 must be None if validation data is not specified."
     
-      train_data = data.sample(frac=1-vsize, random_state=self.random_seed)
-      val_data = data[~data.index.isin(train_data.index)]
-      val_data = (val_data[features.columns], val_data[outcomes.columns])
+      data_train = data.sample(frac=1-vsize, random_state=self.random_seed)
+      data_val = data[~data.index.isin(data_train.index)]
     
     else:
-      train_data = data
+      data_train = data
+      data_val = val_data[0].join(val_data[1])
     
     if weights is not None:
       assert len(weights) == features.shape[0], "Size of passed weights \
@@ -608,38 +608,37 @@ must match size of training data."
       assert (weights>0.).any(), "All weights must be positive."
 
       weights = pd.Series(weights, index=data.index)
-      val_data = val_data[0].join(val_data[1])
 
-      if weights_val is None:
-        weights_train = weights[train_data.index]
-        weights_val = weights[val_data.index]
-
-      else:
-        assert weights_val is not None, "Validation set weights must be \
-specified."
-        assert len(weights_val) == val_data[0].shape[0], "Size of passed \
-weights_val must match size of validation data."
+      if weights_val is not None:
+        assert len(weights_val) == data_val[features.columns].shape[0], "Size \
+of passed weights_val must match size of validation data."
         assert (weights_val>0.).any(), "All weights_val must be positive."
 
         weights_train = weights
 
-      train_data_resampled = train_data.sample(weights = weights_train,
+      else:
+        assert val_data is None, "Validation weights must be specified if validation \
+data and training set weights are both specified."
+        weights_train = weights[data_train.index]
+        weights_val = weights[data_val.index]
+
+      data_train_resampled = data_train.sample(weights = weights_train,
                                                frac = resample_size,
                                                replace = True,
                                                random_state = self.random_seed)
 
-      val_data_resampled = val_data.sample(weights = weights_val,
+      data_val_resampled = data_val.sample(weights = weights_val,
                                            frac = resample_size,
                                            replace = True,
                                            random_state = self.random_seed)
 
-      features = train_data_resampled[features.columns]
-      outcomes = train_data_resampled[outcomes.columns]
+      features = data_train_resampled[features.columns]
+      outcomes = data_train_resampled[outcomes.columns]
 
-      val_data = (val_data_resampled[features.columns],
-                  val_data_resampled[outcomes.columns])
+      data_val = data_val_resampled
 
-    val_data = (val_data[0], val_data[1].time, val_data[1].event)
+    val_data = (data_val[features.columns], data_val[outcomes.columns].time, 
+                data_val[outcomes.columns].event)
         
     if self.model == 'cph':
       self._model = _fit_cph(features, outcomes,

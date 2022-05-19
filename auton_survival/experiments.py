@@ -100,8 +100,7 @@ class SurvivalRegressionCV:
     self.random_seed = random_seed
     self.hyperparam_grid = list(ParameterGrid(hyperparam_grid))
 
-  def fit(self, features, outcomes, metric='ibs', horizon=None,
-          cat_feats=None, num_feats=None, one_hot=False):
+  def fit(self, features, outcomes, metric='ibs', horizon=None):
 
     r"""Fits the survival regression model to the data in a cross-
     validation or nested cross-validation fashion.
@@ -124,12 +123,6 @@ class SurvivalRegressionCV:
     horizon : int or float, default=None
         Event-horizon at which to evaluate model performance.
         If None, then the maximum permissible event-time from the data is used.
-    cat_feats: list
-        List of categorical features.
-    num_feats: list
-        List of numerical/continuous features.
-    one_hot : bool, default=False
-        Whether to perform One-Hot encoding for categorical features.
 
     Returns
     -----------
@@ -138,9 +131,6 @@ class SurvivalRegressionCV:
     """
     
     self.metric = metric
-    self.cat_feats = cat_feats
-    self.num_feats = num_feats
-    self.one_hot = one_hot
     self.horizon = horizon
 
     if (horizon is None) & (metric not in ['auc', 'ctd', 'brs']):
@@ -153,16 +143,11 @@ performance".format(metric))
                                              self.num_folds,
                                              self.random_seed)
 
-    if self.num_nested_folds is None:
-      proc_x_tr = self._process_data(features_tr=features,
-                                     cat_feats=self.cat_feats,
-                                     num_feats=self.num_feats,
-                                     one_hot=self.one_hot)  
-
+    if self.num_nested_folds is None: 
       best_params = self._cv_select_parameters(features, outcomes, self.folds)
       model = SurvivalModel(self.model, self.random_seed, **best_params)
 
-      return model.fit(proc_x_tr, outcomes)
+      return model.fit(features, outcomes)
 
     else:
       return self._train_nested_cv_models(features, outcomes)
@@ -190,19 +175,14 @@ performance".format(metric))
     for fi, fold in enumerate(set(self.folds)):
       x_tr = features.copy().loc[self.folds!=fold]
       y_tr = outcomes.loc[self.folds!=fold]
-    
-      proc_x_tr = self._process_data(features_tr=x_tr,
-                                     cat_feats=self.cat_feats,
-                                     num_feats=self.num_feats,
-                                     one_hot=self.one_hot) 
 
       self.nested_folds = self._get_stratified_folds(y_tr, 'event',
                                                    self.num_nested_folds,
                                                    self.random_seed)
-      # Use unprocessed training set for nested CV.
+
       best_params = self._cv_select_parameters(x_tr, y_tr, self.nested_folds)
       model = SurvivalModel(self.model, self.random_seed, **best_params)
-      models[fi] = model.fit(proc_x_tr, y_tr)
+      models[fi] = model.fit(x_tr, y_tr)
 
     return models
 
@@ -248,10 +228,7 @@ event-horizon" %(max(self.times)))
       y_tr = outcomes.loc[folds!=fold]
       y_val = outcomes.loc[folds==fold]
 
-      proc_x_tr, proc_x_val = self._process_data(x_tr, x_val, self.cat_feats,
-                                                 self.num_feats,self.one_hot)
-
-      param_results = self._fit_evaluate_model(proc_x_tr, y_tr, proc_x_val, y_val)
+      param_results = self._fit_evaluate_model(x_tr, y_tr, x_val, y_val)
 
       # Hyperparameter results as row items and fold results as columns.
       fold_results = pd.concat([fold_results, pd.DataFrame(param_results)],
@@ -302,7 +279,7 @@ event-horizon" %(max(self.times)))
     if self.metric == 'ibs':
       times = self.times
     else:
-      times = self.times[-1]
+      times = [self.times[-1]]
 
     param_results = []
     for hyper_param in tqdm(self.hyperparam_grid):
@@ -363,47 +340,6 @@ event-horizon" %(max(self.times)))
     df_folds = df_folds.fold.values
 
     return df_folds
-
-  def _process_data(self, features_tr, features_te=None, cat_feats=None,
-                    num_feats=None, one_hot=False):
-
-    """Fit preprocessors to training set data and transform training
-    set and test set data.
-
-    Parameters
-    -----------
-    features_tr : pd.DataFrame
-        A pandas dataframe with rows corresponding to individual samples
-        and columns as covariates for the training set data.
-    features_te : pd.DataFrame
-        A pandas dataframe with rows corresponding to individual samples
-        and columns as covariates for the test set data.
-    cat_feats: list
-        List of categorical features.
-    num_feats: list
-        List of numerical/continuous features.
-    one_hot : bool, default=False
-        Whether to perform One-Hot encoding for categorical features.
-
-    Returns
-    -----------
-    Pandas dataframes of preprocessed training and test set data.
-
-    """
-
-    preprocessor = Preprocessor(cat_feat_strat='replace',
-                                num_feat_strat='median',
-                                scaling_strategy='standard',
-                                one_hot=one_hot)
-    transformer = preprocessor.fit(features_tr, cat_feats=cat_feats,
-                                   num_feats=num_feats, fill_value=-1)
-    features_tr = transformer.transform(features_tr.copy())
-    
-    if features_te is None:
-      return features_tr
-    else:
-      features_te = transformer.transform(features_te.copy())
-      return features_tr, features_te
 
   def _check_times(self, outcomes, times, folds):
 
@@ -513,8 +449,7 @@ class CounterfactualSurvivalRegressionCV:
                                                 random_seed=random_seed,
                                                 hyperparam_grid=hyperparam_grid)
 
-  def fit(self, features, outcomes, interventions,
-          metric, cat_feats, num_feats):
+  def fit(self, features, outcomes, interventions, metric):
 
     r"""Fits the Survival Regression Model to the data in a Cross
     Validation fashion.
@@ -542,13 +477,9 @@ class CounterfactualSurvivalRegressionCV:
 
     treated_model = self.treated_experiment.fit(features.loc[interventions==1],
                                                 outcomes.loc[interventions==1],
-                                                metric=metric,
-                                                cat_feats=cat_feats,
-                                                num_feats=num_feats)
+                                                metric=metric)
     control_model = self.control_experiment.fit(features.loc[interventions!=1],
                                                 outcomes.loc[interventions!=1],
-                                                metric=metric,
-                                                cat_feats=cat_feats,
-                                                num_feats=num_feats)
+                                                metric=metric)
 
     return CounterfactualSurvivalModel(treated_model, control_model)
