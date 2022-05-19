@@ -45,7 +45,7 @@ class DeepCMHETorch(torch.nn.Module):
 
   def __init__(self, k, g, inputdim, layers=None, gamma=100,
                smoothing_factor=1e-4, optimizer='Adam',
-               dropout=None):
+               dropout=0):
 
     super(DeepCMHETorch, self).__init__()
 
