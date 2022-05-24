@@ -98,7 +98,7 @@ model.fit(features, outcomes.time, outcomes.event)
 predictions = model.predict_risk(features, t=[8, 12, 16])
 ```
 
-### `auton_survival.estimators` [Demo Notebook](https://nbviewer.org/github/autonlab/auton-survival/blob/master/examples/Survival%20Regression%20with%20Auton-Survival.ipynb)</a>
+### `auton_survival.estimators` [\[Demo Notebook\]](https://nbviewer.org/github/autonlab/auton-survival/blob/master/examples/Survival%20Regression%20with%20Auton-Survival.ipynb)</a>
 
 This module provides a wrapper `auton_survival.estimators.SurvivalModel` to model
 survival datasets with standard survival (time-to-event) analysis methods.
@@ -120,7 +120,7 @@ model.fit(features, outcomes)
 predictions = model.predict_risk(features, times=[8, 12, 16])
 ```
 
-### `auton_survival.experiments` [Demo Notebook](https://nbviewer.org/github/autonlab/auton-survival/blob/master/examples/CV%20Survival%20Regression%20on%20SUPPORT%20Dataset.ipynb)</a>
+### `auton_survival.experiments` [\[Demo Notebook\]](https://nbviewer.org/github/autonlab/auton-survival/blob/master/examples/CV%20Survival%20Regression%20on%20SUPPORT%20Dataset.ipynb)</a>
 
 Modules to perform standard survival analysis experiments. This module
 provides a top-level interface to run `auton_survival` style experiments
@@ -157,7 +157,7 @@ model = experiment.fit(features, outcomes, metric='ibs',
 Phenotyping and Knowledge Discovery
 -----------------------------------
 
-### `auton_survival.phenotyping` [Demo Notebook](https://nbviewer.org/github/autonlab/auton-survival/blob/master/examples/Phenotyping%20Censored%20Time-to-Events.ipynb)</a>
+### `auton_survival.phenotyping` [\[Demo Notebook\]](https://nbviewer.org/github/autonlab/auton-survival/blob/master/examples/Phenotyping%20Censored%20Time-to-Events.ipynb)</a>
 
 `auton_survival.phenotyping` allows extraction of latent clusters or subgroups
 of patients that demonstrate similar outcomes. In the context of this package,
@@ -204,7 +204,7 @@ the `Deep Survival Machines` and `Deep Cox Mixtures` latent variable survival
 regression estimators using the `predict latent z` method. 
 
 ```python
-from auton_survival.models.dcm import DeepCoxMixtures [Demo Notebook]
+from auton_survival.models.dcm import DeepCoxMixtures [\[Demo Notebook\]]
 
 # Instantiate a DCM Model with 3 phenogroups and a single hidden layer with size 100.
 model = DeepCoxMixtures(k = 3, layers = [100])
@@ -272,9 +272,9 @@ score = survival_regression_metric(metric='brs', outcomes_train,
 ```
 
 - **Treatment Effect**: Used to compare treatment arms by computing the difference in the following metrics for treatment and control groups:
-    - Time at Risk (TaR)
-    - Risk at Time
-    - Restricted Mean Survival Time (RMST)
+    - **Time at Risk** (TaR)
+    - **Risk at Time**
+    - **Restricted Mean Survival Time** (RMST)
 
 ```python
 from auton_survival.metrics import survival_diff_metric
