@@ -37,10 +37,8 @@ counterfactual estimation, clustering and phenotyping and propensity adjusted ev
 #### 8. [Compatibility and Installation](#install)
 #### 9. [Contributing](#contrib)
 #### 10. [License](#license)
-<hr>
 
 <a id="what"></a>
-
 What is Survival Analysis?
 --------------------------
 
