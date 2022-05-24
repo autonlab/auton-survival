@@ -27,6 +27,8 @@ counterfactual estimation, clustering and phenotyping and propensity adjusted ev
 
 # Contents
 
+
+
 #### 1. [What is Survival Analysis?](#what) 
 #### 2. [The Auton Survival Package](#package) 
 #### 3. [Survival Regression](#regression)
@@ -49,7 +51,7 @@ survival distribution, \( P(T>t|X) \). As compared to typical
 regression problems, Survival Analysis differs in two major ways:
 
 * The Event distribution, \( T \) has positive support, 
-  \( T in [0, inf) \).
+  \( T in [0, \infty) \).
 * There is presence of censoring (ie. a large number of instances of data are
   lost to follow up.)
 
