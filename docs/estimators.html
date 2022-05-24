@@ -28,7 +28,13 @@ ga('create', 'G-TTD30SJCTB', 'auto'); ga('send', 'pageview');
 </header>
 <section id="section-intro">
 <p>Utilities to train survival regression models and estimate survival.</p>
-<div class="git-link-div"><a href="https://github.com/autonlab/auton-survival" class="git-link">Browse git</a></div>
+<div class="git-link-div"><a href="https://github.com/autonlab/DeepSurvivalMachines" class="git-link">Browse git</a></div>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
 </section>
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
@@ -39,14 +45,23 @@ ga('create', 'G-TTD30SJCTB', 'auto'); ga('send', 'pageview');
 </code></dt>
 <dd>
 <div class="desc"><p>Universal interface to train multiple different survival models.</p>
-<p>Choices include:</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>model</code></strong> :&ensp;<code>str</code></dt>
+<dd>
+<p>A string that determines the choice of the surival analysis model.
+Survival model choices include:</p>
 <ul>
-<li>'dsm' : Deep Survival Machines [3] model</li>
-<li>'dcph' : Deep Cox Mixtures [4] model</li>
-<li>'dcm' : Deep Cox Mixtures [4] model</li>
-<li>'rsf' : Random Survival Forests [1] model</li>
-<li>'cph' : Cox Proportional Hazards [2] model</li>
+<li><code>dsm</code> : Deep Survival Machines [3] model</li>
+<li><code>dcph</code> : Deep Cox Proportional Hazards [2] model</li>
+<li><code>dcm</code> : Deep Cox Mixtures [4] model</li>
+<li><code>rsf</code> : Random Survival Forests [1] model</li>
+<li><code>cph</code> : Cox Proportional Hazards [2] model</li>
 </ul>
+</dd>
+<dt><strong><code>random_seed</code></strong> :&ensp;<code>int</code></dt>
+<dd>Controls the reproducibility of called functions.</dd>
+</dl>
 <h2 id="references">References</h2>
 <p>[1] Hemant Ishwaran et al. Random survival forests.
 The annals of applied statistics, 2(3):841–860, 2008.</p>
@@ -58,11 +73,11 @@ representation learning for censored data with competing risks. 2020.</p>
 <p>[4] Nagpal, C., Yadlowsky, S., Rostamzadeh, N., and Heller, K. (2021c).
 Deep cox mixtures for survival regression.
 In Machine Learning for Healthcare Conference, pages 674–708. PMLR</p></div>
-<div class="git-link-div"><a href="https://github.com/autonlab/auton-survival" class="git-link">Browse git</a></div>
+<div class="git-link-div"><a href="https://github.com/autonlab/DeepSurvivalMachines" class="git-link">Browse git</a></div>
 <h3>Methods</h3>
 <dl>
 <dt id="auton_survival.estimators.SurvivalModel.fit"><code class="name flex">
-<span>def <span class="ident">fit</span></span>(<span>self, features, outcomes)</span>
+<span>def <span class="ident">fit</span></span>(<span>self, features, outcomes, vsize=0.15, val_data=None, weights=None, weights_val=None, resample_size=1.0)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>This method is used to train an instance of the survival model.</p>
@@ -73,13 +88,29 @@ In Machine Learning for Healthcare Conference, pages 674–708. PMLR</p></div>
 columns as covariates.</dd>
 <dt><strong><code>outcomes</code></strong> :&ensp;<code>pd.DataFrame</code></dt>
 <dd>a pandas dataframe with columns 'time' and 'event'.</dd>
+<dt><strong><code>vsize</code></strong> :&ensp;<code>float</code>, default=<code>0.15</code></dt>
+<dd>Amount of data to set aside as the validation set.
+Not applicable to 'rsf' and 'cph' models.</dd>
+<dt><strong><code>val_data</code></strong> :&ensp;<code>tuple</code></dt>
+<dd>A tuple of the validation dataset features and outcomes of 'time'
+and 'event'.
+If passed, vsize is ignored.
+Not applicable to 'rsf' and 'cph' models.</dd>
+<dt><strong><code>weights_train</code></strong> :&ensp;<code>list</code> or <code>np.array</code></dt>
+<dd>a list or numpy array of importance weights for each sample.</dd>
+<dt><strong><code>weights_val</code></strong> :&ensp;<code> list</code> or <code>np.array</code></dt>
+<dd>a list or numpy array of importance weights for each validation
+set sample.
+Ignored if val_data is None.</dd>
+<dt><strong><code>resample_size</code></strong> :&ensp;<code>float</code></dt>
+<dd>a float between 0 and 1 that controls the size of the resampled dataset.</dd>
 </dl>
 <h2 id="returns">Returns</h2>
 <dl>
 <dt><code>self</code></dt>
 <dd>Trained instance of a survival model.</dd>
 </dl></div>
-<div class="git-link-div"><a href="https://github.com/autonlab/auton-survival" class="git-link">Browse git</a></div>
+<div class="git-link-div"><a href="https://github.com/autonlab/DeepSurvivalMachines" class="git-link">Browse git</a></div>
 </dd>
 <dt id="auton_survival.estimators.SurvivalModel.predict_survival"><code class="name flex">
 <span>def <span class="ident">predict_survival</span></span>(<span>self, features, times)</span>
@@ -92,9 +123,16 @@ columns as covariates.</dd>
 <dd>a pandas dataframe with rows corresponding to individual samples
 and columns as covariates.</dd>
 <dt><strong><code>times</code></strong> :&ensp;<code>float</code> or <code>list</code></dt>
-<dd>a float or list of the times at which to compute the survival probability.</dd>
-</dl></div>
-<div class="git-link-div"><a href="https://github.com/autonlab/auton-survival" class="git-link">Browse git</a></div>
+<dd>a float or list of the times at which to compute the survival
+probability.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>np.array : An array</code> of <code>the survival probabilites at each</code></dt>
+<dd>&nbsp;</dd>
+</dl>
+<p>time point in times.</p></div>
+<div class="git-link-div"><a href="https://github.com/autonlab/DeepSurvivalMachines" class="git-link">Browse git</a></div>
 </dd>
 <dt id="auton_survival.estimators.SurvivalModel.predict_risk"><code class="name flex">
 <span>def <span class="ident">predict_risk</span></span>(<span>self, features, times)</span>
@@ -114,7 +152,7 @@ columns as covariates.</dd>
 <dt><code>np.array</code></dt>
 <dd>numpy array of the outcome risks at each time point in times.</dd>
 </dl></div>
-<div class="git-link-div"><a href="https://github.com/autonlab/auton-survival" class="git-link">Browse git</a></div>
+<div class="git-link-div"><a href="https://github.com/autonlab/DeepSurvivalMachines" class="git-link">Browse git</a></div>
 </dd>
 </dl>
 </dd>
@@ -123,26 +161,28 @@ columns as covariates.</dd>
 <span>(</span><span>treated_model, control_model)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Universal interface to train multiple differenct counterfactual survival models.</p></div>
-<div class="git-link-div"><a href="https://github.com/autonlab/auton-survival" class="git-link">Browse git</a></div>
+<div class="desc"><p>Universal interface to train multiple different counterfactual
+survival models.</p></div>
+<div class="git-link-div"><a href="https://github.com/autonlab/DeepSurvivalMachines" class="git-link">Browse git</a></div>
 <h3>Methods</h3>
 <dl>
-<dt id="auton_survival.estimators.CounterfactualSurvivalModel.predict_counterfactuals"><code class="name flex">
-<span>def <span class="ident">predict_counterfactuals</span></span>(<span>self, features, times)</span>
+<dt id="auton_survival.estimators.CounterfactualSurvivalModel.predict_counterfactual_survival"><code class="name flex">
+<span>def <span class="ident">predict_counterfactual_survival</span></span>(<span>self, features, times)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<div class="git-link-div"><a href="https://github.com/autonlab/auton-survival" class="git-link">Browse git</a></div>
+<div class="git-link-div"><a href="https://github.com/autonlab/DeepSurvivalMachines" class="git-link">Browse git</a></div>
+</dd>
+<dt id="auton_survival.estimators.CounterfactualSurvivalModel.predict_counterfactual_risk"><code class="name flex">
+<span>def <span class="ident">predict_counterfactual_risk</span></span>(<span>self, features, times)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<div class="git-link-div"><a href="https://github.com/autonlab/DeepSurvivalMachines" class="git-link">Browse git</a></div>
 </dd>
 </dl>
 </dd>
 </dl>
-</section>
-<section>
-</section>
-<section>
-</section>
-<section>
 </section>
 </article>
 <nav id="sidebar">
@@ -170,7 +210,8 @@ columns as covariates.</dd>
 <li>
 <h4><code><a title="auton_survival.estimators.CounterfactualSurvivalModel" href="#auton_survival.estimators.CounterfactualSurvivalModel">CounterfactualSurvivalModel</a></code></h4>
 <ul class="">
-<li><code><a title="auton_survival.estimators.CounterfactualSurvivalModel.predict_counterfactuals" href="#auton_survival.estimators.CounterfactualSurvivalModel.predict_counterfactuals">predict_counterfactuals</a></code></li>
+<li><code><a title="auton_survival.estimators.CounterfactualSurvivalModel.predict_counterfactual_survival" href="#auton_survival.estimators.CounterfactualSurvivalModel.predict_counterfactual_survival">predict_counterfactual_survival</a></code></li>
+<li><code><a title="auton_survival.estimators.CounterfactualSurvivalModel.predict_counterfactual_risk" href="#auton_survival.estimators.CounterfactualSurvivalModel.predict_counterfactual_risk">predict_counterfactual_risk</a></code></li>
 </ul>
 </li>
 </ul>

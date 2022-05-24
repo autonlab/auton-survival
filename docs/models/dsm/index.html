@@ -124,14 +124,55 @@ Healthcare (2021)</a></a></p>
   year={2022}
   }
 </code></pre>
-<div class="git-link-div"><a href="https://github.com/autonlab/auton-survival" class="git-link">Browse git</a></div>
+<div class="git-link-div"><a href="https://github.com/autonlab/DeepSurvivalMachines" class="git-link">Browse git</a></div>
+</section>
+<section>
+<h2 class="section-title" id="header-submodules">Sub-modules</h2>
+<dl>
+<dt><code class="name"><a title="auton_survival.models.dsm.datasets" href="datasets.html">auton_survival.models.dsm.datasets</a></code></dt>
+<dd>
+<div class="desc"><p>Utility functions to load standard datasets to train and evaluate the
+Deep Survival Machines models.</p></div>
+</dd>
+<dt><code class="name"><a title="auton_survival.models.dsm.dsm_torch" href="dsm_torch.html">auton_survival.models.dsm.dsm_torch</a></code></dt>
+<dd>
+<div class="desc"><p>Torch model definitons for the Deep Survival Machines model</p>
+<p>This includes definitons for the Torch Deep Survival Machines module.
+The main interface is the DeepSurvivalMachines class which inherits
+from torch.nn.Module.</p>
+<p>Note: NOT DESIGNED TO BE CALLED DIRECTLY!!!</p></div>
+</dd>
+<dt><code class="name"><a title="auton_survival.models.dsm.losses" href="losses.html">auton_survival.models.dsm.losses</a></code></dt>
+<dd>
+<div class="desc"><p>Loss function definitions for the Deep Survival Machines model</p>
+<p>In this module we define the various losses for the censored and uncensored
+instances of data corresponding to Weibull and LogNormal distributions.
+These losses are optimized when training DSM.</p>
+<div class="admonition todo">
+<p class="admonition-title">TODO</p>
+<p>Use torch.distributions</p>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>NOT DESIGNED TO BE CALLED DIRECTLY!!!</p>
+</div></div>
+</dd>
+<dt><code class="name"><a title="auton_survival.models.dsm.utilities" href="utilities.html">auton_survival.models.dsm.utilities</a></code></dt>
+<dd>
+<div class="desc"><p>Utility functions to train the Deep Survival Machines models</p></div>
+</dd>
+</dl>
+</section>
+<section>
+</section>
+<section>
 </section>
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
 <dt id="auton_survival.models.dsm.DeepSurvivalMachines"><code class="flex name class">
 <span>class <span class="ident">DeepSurvivalMachines</span></span>
-<span>(</span><span>k=3, layers=None, distribution='Weibull', temp=1000.0, discount=1.0)</span>
+<span>(</span><span>k=3, layers=None, distribution='Weibull', temp=1000.0, discount=1.0, random_seed=0)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>A Deep Survival Machines model.</p>
@@ -169,11 +210,11 @@ Default is 1.</dd>
 &gt;&gt;&gt; model = DeepSurvivalMachines()
 &gt;&gt;&gt; model.fit(x, t, e)
 </code></pre></div>
-<div class="git-link-div"><a href="https://github.com/autonlab/auton-survival" class="git-link">Browse git</a></div>
+<div class="git-link-div"><a href="https://github.com/autonlab/DeepSurvivalMachines" class="git-link">Browse git</a></div>
 </dd>
 <dt id="auton_survival.models.dsm.DeepRecurrentSurvivalMachines"><code class="flex name class">
 <span>class <span class="ident">DeepRecurrentSurvivalMachines</span></span>
-<span>(</span><span>k=3, layers=None, hidden=None, distribution='Weibull', temp=1000.0, discount=1.0, typ='LSTM')</span>
+<span>(</span><span>k=3, layers=None, hidden=None, distribution='Weibull', temp=1000.0, discount=1.0, typ='LSTM', random_seed=0)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>The Deep Recurrent Survival Machines model to handle data with
@@ -183,7 +224,7 @@ time-dependent covariates.</p>
 <p>[1] <a href="http://proceedings.mlr.press/v146/nagpal21a.html">
 Deep Parametric Time-to-Event Regression with Time-Varying Covariates
 AAAI Spring Symposium on Survival Prediction</a></p></div>
-<div class="git-link-div"><a href="https://github.com/autonlab/auton-survival" class="git-link">Browse git</a></div>
+<div class="git-link-div"><a href="https://github.com/autonlab/DeepSurvivalMachines" class="git-link">Browse git</a></div>
 </dd>
 <dt id="auton_survival.models.dsm.DeepConvolutionalSurvivalMachines"><code class="flex name class">
 <span>class <span class="ident">DeepConvolutionalSurvivalMachines</span></span>
@@ -192,7 +233,7 @@ AAAI Spring Symposium on Survival Prediction</a></p></div>
 <dd>
 <div class="desc"><p>The Deep Convolutional Survival Machines model to handle data with
 image-based covariates.</p></div>
-<div class="git-link-div"><a href="https://github.com/autonlab/auton-survival" class="git-link">Browse git</a></div>
+<div class="git-link-div"><a href="https://github.com/autonlab/DeepSurvivalMachines" class="git-link">Browse git</a></div>
 </dd>
 <dt id="auton_survival.models.dsm.DeepCNNRNNSurvivalMachines"><code class="flex name class">
 <span>class <span class="ident">DeepCNNRNNSurvivalMachines</span></span>
@@ -201,45 +242,9 @@ image-based covariates.</p></div>
 <dd>
 <div class="desc"><p>The Deep CNN-RNN Survival Machines model to handle data with
 moving image streams.</p></div>
-<div class="git-link-div"><a href="https://github.com/autonlab/auton-survival" class="git-link">Browse git</a></div>
+<div class="git-link-div"><a href="https://github.com/autonlab/DeepSurvivalMachines" class="git-link">Browse git</a></div>
 </dd>
 </dl>
-</section>
-<section>
-<h2 class="section-title" id="header-submodules">Sub-modules</h2>
-<dl>
-<dt><code class="name"><a title="auton_survival.models.dsm.dsm_torch" href="dsm_torch.html">auton_survival.models.dsm.dsm_torch</a></code></dt>
-<dd>
-<div class="desc"><p>Torch model definitons for the Deep Survival Machines model</p>
-<p>This includes definitons for the Torch Deep Survival Machines module.
-The main interface is the DeepSurvivalMachines class which inherits
-from torch.nn.Module.</p>
-<p>Note: NOT DESIGNED TO BE CALLED DIRECTLY!!!</p></div>
-</dd>
-<dt><code class="name"><a title="auton_survival.models.dsm.losses" href="losses.html">auton_survival.models.dsm.losses</a></code></dt>
-<dd>
-<div class="desc"><p>Loss function definitions for the Deep Survival Machines model</p>
-<p>In this module we define the various losses for the censored and uncensored
-instances of data corresponding to Weibull and LogNormal distributions.
-These losses are optimized when training DSM.</p>
-<div class="admonition todo">
-<p class="admonition-title">TODO</p>
-<p>Use torch.distributions</p>
-</div>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>NOT DESIGNED TO BE CALLED DIRECTLY!!!</p>
-</div></div>
-</dd>
-<dt><code class="name"><a title="auton_survival.models.dsm.utilities" href="utilities.html">auton_survival.models.dsm.utilities</a></code></dt>
-<dd>
-<div class="desc"><p>Utility functions to train the Deep Survival Machines models</p></div>
-</dd>
-</dl>
-</section>
-<section>
-</section>
-<section>
 </section>
 </article>
 <nav id="sidebar">
@@ -262,6 +267,7 @@ These losses are optimized when training DSM.</p>
 </li>
 <li><h3><a href="#header-submodules">Sub-modules</a></h3>
 <ul>
+<li><code><a title="auton_survival.models.dsm.datasets" href="datasets.html">auton_survival.models.dsm.datasets</a></code></li>
 <li><code><a title="auton_survival.models.dsm.dsm_torch" href="dsm_torch.html">auton_survival.models.dsm.dsm_torch</a></code></li>
 <li><code><a title="auton_survival.models.dsm.losses" href="losses.html">auton_survival.models.dsm.losses</a></code></li>
 <li><code><a title="auton_survival.models.dsm.utilities" href="utilities.html">auton_survival.models.dsm.utilities</a></code></li>

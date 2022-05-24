@@ -28,14 +28,31 @@ ga('create', 'G-TTD30SJCTB', 'auto'); ga('send', 'pageview');
 </header>
 <section id="section-intro">
 <p>Deep Cox Proportional Hazards Model</p>
-<div class="git-link-div"><a href="https://github.com/autonlab/auton-survival" class="git-link">Browse git</a></div>
+<div class="git-link-div"><a href="https://github.com/autonlab/DeepSurvivalMachines" class="git-link">Browse git</a></div>
+</section>
+<section>
+<h2 class="section-title" id="header-submodules">Sub-modules</h2>
+<dl>
+<dt><code class="name"><a title="auton_survival.models.cph.dcph_torch" href="dcph_torch.html">auton_survival.models.cph.dcph_torch</a></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt><code class="name"><a title="auton_survival.models.cph.dcph_utilities" href="dcph_utilities.html">auton_survival.models.cph.dcph_utilities</a></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</section>
+<section>
+</section>
+<section>
 </section>
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
 <dt id="auton_survival.models.cph.DeepCoxPH"><code class="flex name class">
 <span>class <span class="ident">DeepCoxPH</span></span>
-<span>(</span><span>layers=None)</span>
+<span>(</span><span>layers=None, random_seed=0)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>A Deep Cox Proportional Hazards model.</p>
@@ -57,17 +74,19 @@ A neural network model for survival data. Statistics in medicine (1995)</a></p>
 <dt><strong><code>layers</code></strong> :&ensp;<code>list</code></dt>
 <dd>A list of integers consisting of the number of neurons in each
 hidden layer.</dd>
+<dt><strong><code>random_seed</code></strong> :&ensp;<code>int</code></dt>
+<dd>Controls the reproducibility of called functions.</dd>
 </dl>
 <h2 id="example">Example</h2>
 <pre><code class="language-python-repl">&gt;&gt;&gt; from auton_survival import DeepCoxPH
 &gt;&gt;&gt; model = DeepCoxPH()
 &gt;&gt;&gt; model.fit(x, t, e)
 </code></pre></div>
-<div class="git-link-div"><a href="https://github.com/autonlab/auton-survival" class="git-link">Browse git</a></div>
+<div class="git-link-div"><a href="https://github.com/autonlab/DeepSurvivalMachines" class="git-link">Browse git</a></div>
 <h3>Methods</h3>
 <dl>
 <dt id="auton_survival.models.cph.DeepCoxPH.fit"><code class="name flex">
-<span>def <span class="ident">fit</span></span>(<span>self, x, t, e, vsize=0.15, val_data=None, iters=1, learning_rate=0.001, batch_size=100, optimizer='Adam', random_state=100)</span>
+<span>def <span class="ident">fit</span></span>(<span>self, x, t, e, vsize=0.15, val_data=None, iters=1, learning_rate=0.001, batch_size=100, optimizer='Adam')</span>
 </code></dt>
 <dd>
 <div class="desc"><p>This method is used to train an instance of the DSM model.</p>
@@ -94,17 +113,15 @@ specifies the size of each mini-batch.</dd>
 <dt><strong><code>optimizer</code></strong> :&ensp;<code>str</code></dt>
 <dd>The choice of the gradient based optimization method. One of
 'Adam', 'RMSProp' or 'SGD'.</dd>
-<dt><strong><code>random_state</code></strong> :&ensp;<code>float</code></dt>
-<dd>random seed that determines how the validation set is chosen.</dd>
 </dl></div>
-<div class="git-link-div"><a href="https://github.com/autonlab/auton-survival" class="git-link">Browse git</a></div>
+<div class="git-link-div"><a href="https://github.com/autonlab/DeepSurvivalMachines" class="git-link">Browse git</a></div>
 </dd>
 <dt id="auton_survival.models.cph.DeepCoxPH.predict_risk"><code class="name flex">
 <span>def <span class="ident">predict_risk</span></span>(<span>self, x, t=None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<div class="git-link-div"><a href="https://github.com/autonlab/auton-survival" class="git-link">Browse git</a></div>
+<div class="git-link-div"><a href="https://github.com/autonlab/DeepSurvivalMachines" class="git-link">Browse git</a></div>
 </dd>
 <dt id="auton_survival.models.cph.DeepCoxPH.predict_survival"><code class="name flex">
 <span>def <span class="ident">predict_survival</span></span>(<span>self, x, t=None)</span>
@@ -125,13 +142,13 @@ to be computed</dd>
 <dt><code>np.array</code></dt>
 <dd>numpy array of the survival probabilites at each time in t.</dd>
 </dl></div>
-<div class="git-link-div"><a href="https://github.com/autonlab/auton-survival" class="git-link">Browse git</a></div>
+<div class="git-link-div"><a href="https://github.com/autonlab/DeepSurvivalMachines" class="git-link">Browse git</a></div>
 </dd>
 </dl>
 </dd>
 <dt id="auton_survival.models.cph.DeepRecurrentCoxPH"><code class="flex name class">
 <span>class <span class="ident">DeepRecurrentCoxPH</span></span>
-<span>(</span><span>layers=None, hidden=None, typ='LSTM')</span>
+<span>(</span><span>layers=None, hidden=None, typ='LSTM', random_seed=0)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>A deep recurrent Cox PH model.</p>
@@ -146,17 +163,21 @@ Predicting Heart Failure Patient Mortality. NAACL (2021)</a></p>
 <dt><strong><code>layers</code></strong> :&ensp;<code>list</code></dt>
 <dd>A list of integers consisting of the number of neurons in each
 hidden layer.</dd>
+<dt><strong><code>random_seed</code></strong> :&ensp;<code>int</code></dt>
+<dd>&nbsp;</dd>
 </dl>
-<h2 id="example">Example</h2>
+<p>Controls the reproducibility of called functions.
+Example</p>
+<hr>
 <pre><code class="language-python-repl">&gt;&gt;&gt; from dsm.contrib import DeepRecurrentCoxPH
 &gt;&gt;&gt; model = DeepRecurrentCoxPH()
 &gt;&gt;&gt; model.fit(x, t, e)
 </code></pre></div>
-<div class="git-link-div"><a href="https://github.com/autonlab/auton-survival" class="git-link">Browse git</a></div>
+<div class="git-link-div"><a href="https://github.com/autonlab/DeepSurvivalMachines" class="git-link">Browse git</a></div>
 <h3>Methods</h3>
 <dl>
 <dt id="auton_survival.models.cph.DeepRecurrentCoxPH.fit"><code class="name flex">
-<span>def <span class="ident">fit</span></span>(<span>self, x, t, e, vsize=0.15, val_data=None, iters=1, learning_rate=0.001, batch_size=100, optimizer='Adam', random_state=100)</span>
+<span>def <span class="ident">fit</span></span>(<span>self, x, t, e, vsize=0.15, val_data=None, iters=1, learning_rate=0.001, batch_size=100, optimizer='Adam')</span>
 </code></dt>
 <dd>
 <p class="inheritance">
@@ -187,8 +208,6 @@ specifies the size of each mini-batch.</dd>
 <dt><strong><code>optimizer</code></strong> :&ensp;<code>str</code></dt>
 <dd>The choice of the gradient based optimization method. One of
 'Adam', 'RMSProp' or 'SGD'.</dd>
-<dt><strong><code>random_state</code></strong> :&ensp;<code>float</code></dt>
-<dd>random seed that determines how the validation set is chosen.</dd>
 </dl></div>
 </dd>
 <dt id="auton_survival.models.cph.DeepRecurrentCoxPH.predict_survival"><code class="name flex">
@@ -218,23 +237,6 @@ to be computed</dd>
 </dl>
 </dd>
 </dl>
-</section>
-<section>
-<h2 class="section-title" id="header-submodules">Sub-modules</h2>
-<dl>
-<dt><code class="name"><a title="auton_survival.models.cph.dcph_torch" href="dcph_torch.html">auton_survival.models.cph.dcph_torch</a></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt><code class="name"><a title="auton_survival.models.cph.dcph_utilities" href="dcph_utilities.html">auton_survival.models.cph.dcph_utilities</a></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-</dl>
-</section>
-<section>
-</section>
-<section>
 </section>
 </article>
 <nav id="sidebar">

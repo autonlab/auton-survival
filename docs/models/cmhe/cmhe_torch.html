@@ -27,14 +27,20 @@ ga('create', 'G-TTD30SJCTB', 'auto'); ga('send', 'pageview');
 <h1 class="title">Module <code>auton_survival.models.cmhe.cmhe_torch</code></h1>
 </header>
 <section id="section-intro">
-<div class="git-link-div"><a href="https://github.com/autonlab/auton-survival" class="git-link">Browse git</a></div>
+<div class="git-link-div"><a href="https://github.com/autonlab/DeepSurvivalMachines" class="git-link">Browse git</a></div>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
 </section>
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
 <dt id="auton_survival.models.cmhe.cmhe_torch.DeepCMHETorch"><code class="flex name class">
 <span>class <span class="ident">DeepCMHETorch</span></span>
-<span>(</span><span>k, g, inputdim, layers=None, optimizer='Adam')</span>
+<span>(</span><span>k, g, inputdim, layers=None, gamma=100, smoothing_factor=0.0001, optimizer='Adam')</span>
 </code></dt>
 <dd>
 <div class="desc"><p>PyTorch model definition of the Cox Mixture with Hereogenous Effects Model.</p>
@@ -45,7 +51,7 @@ subgroup Z=k; the PH assumptions are assumed to hold and the baseline
 hazard rates is determined non-parametrically using an spline-interpolated
 Breslow's estimator.</p>
 <p>Initializes internal Module state, shared by both nn.Module and ScriptModule.</p></div>
-<div class="git-link-div"><a href="https://github.com/autonlab/auton-survival" class="git-link">Browse git</a></div>
+<div class="git-link-div"><a href="https://github.com/autonlab/DeepSurvivalMachines" class="git-link">Browse git</a></div>
 <h3>Class variables</h3>
 <dl>
 <dt id="auton_survival.models.cmhe.cmhe_torch.DeepCMHETorch.dump_patches"><code class="name">var <span class="ident">dump_patches</span> : bool</code></dt>
@@ -64,17 +70,11 @@ Breslow's estimator.</p>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<div class="git-link-div"><a href="https://github.com/autonlab/auton-survival" class="git-link">Browse git</a></div>
+<div class="git-link-div"><a href="https://github.com/autonlab/DeepSurvivalMachines" class="git-link">Browse git</a></div>
 </dd>
 </dl>
 </dd>
 </dl>
-</section>
-<section>
-</section>
-<section>
-</section>
-<section>
 </section>
 </article>
 <nav id="sidebar">
