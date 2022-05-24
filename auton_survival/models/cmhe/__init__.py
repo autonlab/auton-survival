@@ -82,6 +82,8 @@ from .cmhe_torch import DeepCMHETorch
 from .cmhe_utilities import train_cmhe, predict_survival
 from .cmhe_utilities import predict_latent_phi, predict_latent_z
 
+from auton_survival.utils import _dataframe_to_array
+
 
 class DeepCoxMixturesHeterogenousEffects:
   """A Deep Cox Mixtures with Heterogenous Effects model.
@@ -139,13 +141,20 @@ class DeepCoxMixturesHeterogenousEffects:
     print("Hidden Layers:", self.layers)
 
   def _preprocess_test_data(self, x, a=None):
+    x = _dataframe_to_array(x)
     if a is not None:
+      a = _dataframe_to_array(a)
       return torch.from_numpy(x).float(), torch.from_numpy(a).float()
     else:
       return torch.from_numpy(x).float()
 
   def _preprocess_training_data(self, x, t, e, a, vsize, val_data,
                                 random_seed):
+
+    x = _dataframe_to_array(x)
+    t = _dataframe_to_array(t)
+    e = _dataframe_to_array(e)
+    a = _dataframe_to_array(a)
 
     idx = list(range(x.shape[0]))
 
@@ -172,6 +181,11 @@ class DeepCoxMixturesHeterogenousEffects:
     else:
 
       x_vl, t_vl, e_vl, a_vl = val_data
+
+      x_vl = _dataframe_to_array(x_vl)
+      t_vl = _dataframe_to_array(t_vl)
+      e_vl = _dataframe_to_array(e_vl)
+      a_vl = _dataframe_to_array(a_vl)
 
       x_vl = torch.from_numpy(x_vl).float()
       t_vl = torch.from_numpy(t_vl).float()

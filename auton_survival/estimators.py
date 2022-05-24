@@ -55,7 +55,7 @@ def _get_valid_idx(n, size, random_seed):
 
   return vidx
 
-def _fit_dcm(features, outcomes, random_seed, **hyperparams):
+def _fit_dcm(features, outcomes, val_data, random_seed, **hyperparams):
 
   r"""Fit the Deep Cox Mixtures (DCM) [1] model to a given dataset.
 
@@ -76,6 +76,9 @@ def _fit_dcm(features, outcomes, random_seed, **hyperparams):
       and columns as covariates.
   outcomes : pd.DataFrame
       A pandas dataframe with columns 'time' and 'event'.
+  val_data : tuple
+      A tuple of the validation dataset features and outcomes of
+      'time' and 'event'.
   random_seed : int
       Controls the rproduecibility of fitted estimators.
   hyperparams : Optional arguments
@@ -100,10 +103,10 @@ def _fit_dcm(features, outcomes, random_seed, **hyperparams):
 
   from .models.dcm import DeepCoxMixtures
 
-  k = hyperparams.get("k", 3) 
+  k = hyperparams.get("k", 3)
   layers = hyperparams.get("layers", [100])
-  batch_size = hyperparams.get("batch_size", 128)
-  learning_rate = hyperparams.get("learning_rate", 1e-3)
+  bs = hyperparams.get("batch_size", 128)
+  lr = hyperparams.get("learning_rate", 1e-3)
   epochs = hyperparams.get("epochs", 50)
   smoothing_factor = hyperparams.get("smoothing_factor", 1e-4)
   gamma = hyperparams.get("gamma", 10)
@@ -113,68 +116,13 @@ def _fit_dcm(features, outcomes, random_seed, **hyperparams):
                           gamma=gamma,
                           smoothing_factor=smoothing_factor,
                           random_seed=random_seed)
-  model.fit(features.values, outcomes.time.values, outcomes.event.values,
-            iters=epochs, batch_size=batch_size, learning_rate=learning_rate)
+  model.fit(x=features, t=outcomes.time, e=outcomes.event,
+            val_data=val_data, iters=epochs, batch_size=bs,
+            learning_rate=lr)
 
   return model
 
-  # if len(layers): model = DeepCoxMixture(k=k, inputdim=features.shape[1], hidden=layers[0])
-  # else: model = CoxMixture(k=k, inputdim=features.shape[1])
-
-  # x = torch.from_numpy(features.values.astype('float32'))
-  # t = torch.from_numpy(outcomes['time'].values.astype('float32'))
-  # e = torch.from_numpy(outcomes['event'].values.astype('float32'))
-
-  # vidx = _get_valid_idx(x.shape[0], 0.15, random_seed)
-
-  # train_data = (x[~vidx], t[~vidx], e[~vidx])
-  # val_data = (x[vidx], t[vidx], e[vidx])
-
-  # (model, breslow_splines, unique_times) = train(model,
-  #                                                train_data,
-  #                                                val_data, 
-  #                                                epochs=epochs,
-  #                                                lr=lr, bs=bs,
-  #                                                use_posteriors=True,
-  #                                                patience=5,
-  #                                                return_losses=False,
-  #                                                smoothing_factor=smoothing_factor)
-
-  #return (model, breslow_splines, unique_times)
-
-# THIS IS 1 OF 2 _PREDICT_DCM FUNCTIONS HERE BUT THIS ONE THROWS A BUG SO I USE _PREDICT_DCM FUNCTION BELOW
-# def _predict_dcm(model, features, times):
-
-#   """Predict survival probabilities at specified time(s) using the
-#   Deep Cox Mixtures model.
-
-#   Parameters
-#   -----------
-#   model : Trained instance of the Deep Cox Mixtures model.
-#   features : pd.DataFrame
-#       A pandas dataframe with rows corresponding to individual
-#       samples and columns as covariates.
-#   times: float or list
-#       A float or list of the times at which to compute
-#       the survival probability.
-
-#   Returns
-#   -----------
-#   np.array : An array of the survival probabilites at each
-#   time point in times.
-
-#   """
-
-#   #raise NotImplementedError()
-
-#   survival_predictions = model.predict_survival(features, times)
-#   if len(times)>1:
-#     survival_predictions = pd.DataFrame(survival_predictions, columns=times).T
-#     return __interpolate_missing_times(survival_predictions, times)
-#   else:
-#     return survival_predictions
-
-def _fit_dcph(features, outcomes, random_seed, **hyperparams):
+def _fit_dcph(features, outcomes, val_data, random_seed, **hyperparams):
 
   """Fit a Deep Cox Proportional Hazards Model/Farragi Simon Network [1,2]
    model to a given dataset.
@@ -194,6 +142,9 @@ def _fit_dcph(features, outcomes, random_seed, **hyperparams):
       and columns as covariates.
   outcomes : pd.DataFrame
       A pandas dataframe with columns 'time' and 'event'.
+  val_data : tuple
+      A tuple of the validation dataset features and outcomes of
+      'time' and 'event'.
   random_seed : int
       Controls the reproducibility of called functions.
   hyperparams : Optional arguments
@@ -202,7 +153,7 @@ def _fit_dcph(features, outcomes, random_seed, **hyperparams):
           A list consisting of the number of neurons in each hidden layer.
       - 'learning rate' : float, default=1e-3
           Learning rate for the 'Adam' optimizer.
-      - 'bs' : int, default=100
+      - 'batch_size' : int, default=100
           Learning is performed on mini-batches of input data.
           This parameter specifies the size of each mini-batch.
       - 'epochs' : int, default=50
@@ -216,66 +167,17 @@ def _fit_dcph(features, outcomes, random_seed, **hyperparams):
   from .models.cph import DeepCoxPH
 
   layers = hyperparams.get("layers", [100])
-  learning_rate = hyperparams.get("learning_rate", 1e-3)
-  bs = hyperparams.get("bs", 100)
+  lr = hyperparams.get("learning_rate", 1e-3)
+  bs = hyperparams.get("batch_size", 128)
   epochs = hyperparams.get("epochs", 50)
 
   model = DeepCoxPH(layers=layers, random_seed=random_seed)
 
-  model.fit(features.values, outcomes.time.values, outcomes.event.values,
-            iters=epochs, learning_rate=learning_rate, batch_size=bs,
-            optimizer="Adam")
+  model.fit(x=features, t=outcomes.time, e=outcomes.event,
+            val_data=val_data, iters=epochs, batch_size=bs,
+            learning_rate=lr)
 
   return model
-
-  #raise NotImplementedError()
-  # import torch
-  # import torchtuples as ttup
-
-  # from pycox.models import CoxPH
-
-  # torch.manual_seed(random_seed)
-  # np.random.seed(random_seed)
-
-  # layers = hyperparams.get('layers', [100])
-  # lr = hyperparams.get('lr', 1e-3)
-  # bs = hyperparams.get('bs', 100)
-  # epochs = hyperparams.get('epochs', 50)
-  # activation = hyperparams.get('activation', 'relu')
-
-  # if activation == 'relu': activation = torch.nn.ReLU
-  # elif activation == 'relu6': activation = torch.nn.ReLU6
-  # elif activation == 'tanh': activation = torch.nn.Tanh
-  # else: raise NotImplementedError("Activation function not implemented")
-
-  # x = features.values.astype('float32')
-  # t = outcomes['time'].values.astype('float32')
-  # e = outcomes['event'].values.astype('bool')
-
-  # in_features = x.shape[1]
-  # out_features = 1
-  # batch_norm = False
-  # dropout = 0.0
-
-  # net = ttup.practical.MLPVanilla(in_features, layers,
-  #                                 out_features, batch_norm, dropout,
-  #                                 activation=activation,
-  #                                 output_bias=False)
-
-  # model = CoxPH(net, torch.optim.Adam)
-
-  # vidx = _get_valid_idx(x.shape[0], 0.15, random_seed)
-
-  # y_train, y_val = (t[~vidx], e[~vidx]), (t[vidx], e[vidx])
-  # val_data = x[vidx], y_val
-
-  # callbacks = [ttup.callbacks.EarlyStopping()]
-  # model.fit(x[~vidx], y_train, bs, epochs, callbacks, True,
-  #           val_data=val_data,
-  #           val_batch_size=bs)
-  # model.compute_baseline_hazards()
-
-  # return model
 
 def __interpolate_missing_times(survival_predictions, times):
   """Interpolate survival probabilities at missing time points.
@@ -328,7 +230,7 @@ def _predict_dcph(model, features, times):
 
   return model.predict_survival(x=features.values, t=times)
 
-def _fit_cph(features, outcomes, random_seed, **hyperparams):
+def _fit_cph(features, outcomes, val_data, random_seed, **hyperparams):
   """Fit a linear Cox Proportional Hazards model to a given dataset.
 
   Parameters
@@ -338,6 +240,9 @@ def _fit_cph(features, outcomes, random_seed, **hyperparams):
       columns as covariates.
   outcomes : pd.DataFrame
       A pandas dataframe with columns 'time' and 'event'.
+  val_data : tuple
+      A tuple of the validation dataset features and outcomes of
+      'time' and 'event'.
   random_seed : int
       Controls the reproducibility of called functions.
   hyperparams : Optional arguments
@@ -360,7 +265,7 @@ def _fit_cph(features, outcomes, random_seed, **hyperparams):
                                               duration_col='time',
                                               event_col='event')
 
-def _fit_rsf(features, outcomes, random_seed, **hyperparams):
+def _fit_rsf(features, outcomes, val_data, random_seed, **hyperparams):
 
   """Fit the Random Survival Forests (RSF) [1] model to a given dataset.
   RSF is an extension of Random Forests to the survival settings where
@@ -375,10 +280,13 @@ def _fit_rsf(features, outcomes, random_seed, **hyperparams):
   Parameters
   -----------
   features : pd.DataFrame
-      A pandas dataframe with rows corresponding to individual samples and 
+      A pandas dataframe with rows corresponding to individual samples and
       columns as covariates.
   outcomes : pd.DataFrame
       A pandas dataframe with columns 'time' and 'event'.
+  val_data : tuple
+      A tuple of the validation dataset features and outcomes of
+      'time' and 'event'.
   random_seed : int
       Controls the reproducibility of called functions.
   hyperparams : Optional arguments
@@ -416,7 +324,7 @@ def _fit_rsf(features, outcomes, random_seed, **hyperparams):
   return rsf
 
 
-def _fit_dsm(features, outcomes, random_seed, **hyperparams):
+def _fit_dsm(features, outcomes, val_data, random_seed, **hyperparams):
 
   """Fit the Deep Survival Machines (DSM) [1] model to a given dataset.
 
@@ -438,19 +346,27 @@ def _fit_dsm(features, outcomes, random_seed, **hyperparams):
       columns as covariates.
   outcomes : pd.DataFrame
       A pandas dataframe with columns 'time' and 'event'.
+  val_data : tuple
+      A tuple of the validation dataset features and outcomes of
+      'time' and 'event'.
   random_seed : int
       Controls the reproducibility of called functions.
   hyperparams : Optional arguments
       Options include:
       - 'layers' : list
           A list of integers describing the dimensionality of each hidden layer.
-      - 'iters' : int, default=10
-          The maximum number of training iterations on the training dataset.
       - 'distribution' : str, default='Weibull'
           Choice of the underlying survival distributions.
           Options include: 'Weibull' and 'LogNormal'.
       - 'temperature' : float, default=1.0
           The value with which to rescale the logits for the gate.
+      - `batch_size` : int, default=100
+          Learning is performed on mini-batches of input data. This parameter
+          specifies the size of each mini-batch.
+      - `learning_rate` : float, default=1e-3
+          Learning rate for the 'Adam' optimizer.
+      - `epochs` : int, default=1
+          Number of complete passes through the training data.
 
   Returns
   -----------
@@ -462,19 +378,19 @@ def _fit_dsm(features, outcomes, random_seed, **hyperparams):
 
   k = hyperparams.get("k", 3)
   layers = hyperparams.get("layers", [100])
-  iters = hyperparams.get("iters", 10)
+  epochs = hyperparams.get("iters", 10)
   distribution = hyperparams.get("distribution", "Weibull")
   temperature = hyperparams.get("temperature", 1.0)
+  lr = hyperparams.get("learning_rate", 1e-3)
+  bs = hyperparams.get("batch_size", 128)
 
   model = DeepSurvivalMachines(k=k, layers=layers,
                                distribution=distribution,
                                temp=temperature,
                                random_seed=random_seed)
 
-  model.fit(features.values,
-            outcomes['time'].values,
-            outcomes['event'].values,
-            iters=iters)
+  model.fit(x=features, t=outcomes.time, e=outcomes.event, val_data=val_data,
+            iters=epochs, learning_rate=lr, batch_size=bs)
 
   return model
 
@@ -637,25 +553,34 @@ class SurvivalModel:
     self.random_seed = random_seed
     self.fitted = False
 
-  def fit(self, features, outcomes,
-          weights=None, resample_size=1.0):
+  def fit(self, features, outcomes, vsize=0.15, val_data=None,
+          weights=None, weights_val=None, resample_size=1.0):
 
     """This method is used to train an instance of the survival model.
 
     Parameters
     -----------
-    features: pd.DataFrame
+    features : pd.DataFrame
         a pandas dataframe with rows corresponding to individual samples and
         columns as covariates.
     outcomes : pd.DataFrame
         a pandas dataframe with columns 'time' and 'event'.
-    weights: list or np.array
+    vsize : float, default=0.15
+        Amount of data to set aside as the validation set.
+        Not applicable to 'rsf' and 'cph' models.
+    val_data : tuple
+        A tuple of the validation dataset features and outcomes of 'time'
+        and 'event'.
+        If passed, vsize is ignored.
+        Not applicable to 'rsf' and 'cph' models.
+    weights_train : list or np.array
         a list or numpy array of importance weights for each sample.
-    resample_size: float
+    weights_val :  list or np.array
+        a list or numpy array of importance weights for each validation
+        set sample.
+        Ignored if val_data is None.
+    resample_size : float
         a float between 0 and 1 that controls the size of the resampled dataset.
-    weights_clip: float
-        a float that controls the minimum and maximum importance weight.
-        (To reduce estimator variance.)
 
     Returns
     --------
@@ -664,38 +589,83 @@ class SurvivalModel:
 
     """
 
+    data = features.join(outcomes)
+    
+    if val_data is None:
+      assert weights_val is None, "Weights for validation data \
+must be None if validation data is not specified."
+    
+      data_train = data.sample(frac=1-vsize, random_state=self.random_seed)
+      data_val = data[~data.index.isin(data_train.index)]
+    
+    else:
+      data_train = data
+      data_val = val_data[0].join(val_data[1])
+    
     if weights is not None:
       assert len(weights) == features.shape[0], "Size of passed weights \
-      must match size of training data."
+must match size of training data."
       assert (weights>0.).any(), "All weights must be positive."
-      # assert ((weights>0.0)&(weights<=1.0)).all(), "Weights must be in the range (0,1]."
-      # weights[weights>(1-weights_clip)] = 1-weights_clip
-      # weights[weights<(weights_clip)] = weights_clip
 
-      data = features.join(outcomes)
-      data_resampled = data.sample(weights = weights,
-                                   frac = resample_size,
-                                   replace = True,
-                                   random_state = self.random_seed)
-      features = data_resampled[features.columns]
-      outcomes = data_resampled[outcomes.columns]
+      weights = pd.Series(weights, index=data.index)
 
+      if weights_val is not None:
+        assert len(weights_val) == data_val[features.columns].shape[0], "Size \
+of passed weights_val must match size of validation data."
+        assert (weights_val>0.).any(), "All weights_val must be positive."
+
+        weights_train = weights
+
+      else:
+        assert val_data is None, "Validation weights must be specified if validation \
+data and training set weights are both specified."
+        weights_train = weights[data_train.index]
+        weights_val = weights[data_val.index]
+
+      data_train_resampled = data_train.sample(weights = weights_train,
+                                               frac = resample_size,
+                                               replace = True,
+                                               random_state = self.random_seed)
+
+      data_val_resampled = data_val.sample(weights = weights_val,
+                                           frac = resample_size,
+                                           replace = True,
+                                           random_state = self.random_seed)
+
+      features = data_train_resampled[features.columns]
+      outcomes = data_train_resampled[outcomes.columns]
+
+      data_val = data_val_resampled
+
+    val_data = (data_val[features.columns], data_val[outcomes.columns].time, 
+                data_val[outcomes.columns].event)
+        
     if self.model == 'cph':
-      self._model = _fit_cph(features, outcomes, self.random_seed, 
+      self._model = _fit_cph(features, outcomes,
+                             val_data, self.random_seed,
                              **self.hyperparams)
     elif self.model == 'rsf':
-      self._model = _fit_rsf(features, outcomes, self.random_seed, 
+      self._model = _fit_rsf(features, outcomes,
+                             val_data, self.random_seed,
                              **self.hyperparams)
     elif self.model == 'dsm':
-      self._model = _fit_dsm(features, outcomes, self.random_seed, 
+      self._model = _fit_dsm(features, outcomes,
+                             val_data,
+                             self.random_seed,
                              **self.hyperparams)
     elif self.model == 'dcph':
-      self._model = _fit_dcph(features, outcomes, self.random_seed, 
+      self._model = _fit_dcph(features, outcomes,
+                              val_data,
+                              self.random_seed,
                               **self.hyperparams)
     elif self.model == 'dcm':
-      self._model = _fit_dcm(features, outcomes, self.random_seed, 
+      self._model = _fit_dcm(features, outcomes,
+                             val_data,
+                             self.random_seed,
                              **self.hyperparams)
-    else : raise NotImplementedError()
+
+    else:
+      raise NotImplementedError()
 
     self.fitted = True
     return self
@@ -710,7 +680,7 @@ class SurvivalModel:
         a pandas dataframe with rows corresponding to individual samples
         and columns as covariates.
     times : float or list
-        a float or list of the times at which to compute the survival 
+        a float or list of the times at which to compute the survival
         probability.
 
     Returns
@@ -771,14 +741,14 @@ class CounterfactualSurvivalModel:
 
   def predict_counterfactual_survival(self, features, times):
 
-    control_outcomes = self.control_model.predict_survival(features, times)
     treated_outcomes = self.treated_model.predict_survival(features, times)
+    control_outcomes = self.control_model.predict_survival(features, times)
 
     return treated_outcomes, control_outcomes
 
   def predict_counterfactual_risk(self, features, times):
 
-    control_outcomes = self.control_model.predict_risk(features, times)
     treated_outcomes = self.treated_model.predict_risk(features, times)
+    control_outcomes = self.control_model.predict_risk(features, times)
 
     return treated_outcomes, control_outcomes
