@@ -27,29 +27,17 @@ counterfactual estimation, clustering and phenotyping and propensity adjusted ev
 
 # Contents
 
-
-### 1. [What is Survival Analysis?](#what) 
-
-### 2. [The Auton Survival Package](#package) 
-       
-### 3. [Survival Regression](#regression)
-
-### 4. [Phenotyping and Knowledge Discovery](#phenotyping)
-
-### 5. [Evaluation and Reporting](#evaluation)
-
-### 6. [Dataset Loading and Preprocessing](#preprocess)
-
-### 7. [Citing and References](#ref)
-
-### 8. [Compatibility and Installation](#install)
-
-### 9. [Contributing](#contrib)
-
-### 10. [License](#license)
+#### 1. [What is Survival Analysis?](#what) 
+#### 2. [The Auton Survival Package](#package) 
+#### 3. [Survival Regression](#regression)
+#### 4. [Phenotyping and Knowledge Discovery](#phenotyping)
+#### 5. [Evaluation and Reporting](#evaluation)
+#### 6. [Dataset Loading and Preprocessing](#preprocess)
+#### 7. [Citing and References](#ref)
+#### 8. [Compatibility and Installation](#install)
+#### 9. [Contributing](#contrib)
+#### 10. [License](#license)
 <hr>
-
-<br>
 
 <a id="what"></a>
 
