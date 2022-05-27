@@ -174,6 +174,9 @@ def m_step(model, optimizer, x, t, e, a, log_likelihoods, typ='soft'):
 
   optimizer.zero_grad()
   loss = q_function(model, x, t, e, a, log_likelihoods, typ)
+  gate_regularization_loss = (model.phi_gate.weight**2).sum()
+  gate_regularization_loss += (model.z_gate.weight**2).sum()
+  loss += (model.gate_l2_penalty)*gate_regularization_loss
   loss.backward()
   optimizer.step()
 
