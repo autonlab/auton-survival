@@ -221,8 +221,8 @@ user/themes/auton/images/AutonLogo.png">
 
 """
 
-from dsm.dsm_api import DeepSurvivalMachines
-from dsm.dsm_api import DeepConvolutionalSurvivalMachines
-from dsm.dsm_api import DeepRecurrentSurvivalMachines
-from dsm.dsm_api import DeepCNNRNNSurvivalMachines
+from auton_survival.models.dsm import DeepSurvivalMachines
+from auton_survival.models.dsm import DeepConvolutionalSurvivalMachines
+from auton_survival.models.dsm import DeepRecurrentSurvivalMachines
+from auton_survival.models.dsm import DeepCNNRNNSurvivalMachines
 from dsm.contrib.dcm.dcm_api import DeepCoxMixtures

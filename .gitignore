@@ -1,0 +1,6 @@
+*~
+.idea/
+*.pyc
+*.ipynb
+activate
+**/.ipynb_checkpoints
