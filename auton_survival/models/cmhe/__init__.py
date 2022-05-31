@@ -109,6 +109,9 @@ class DeepCoxMixturesHeterogenousEffects:
   layers: list
       A list of integers consisting of the number of neurons in each
       hidden layer.
+  gate_l2_penalty: float
+      Strength of the l2 penalty term for the gate layers.
+      Higher means stronger regularization. 
   random_seed: int
       Controls the reproducibility of called functions.
 
@@ -122,6 +125,7 @@ class DeepCoxMixturesHeterogenousEffects:
 
   def __init__(self, k, g, layers=None, gamma=100,
                smoothing_factor=1e-4,
+               gate_l2_penalty=1e-4,
                random_seed=0):
 
     self.k = k
@@ -130,6 +134,7 @@ class DeepCoxMixturesHeterogenousEffects:
     self.fitted = False
     self.gamma = gamma
     self.smoothing_factor = smoothing_factor
+    self.gate_l2_penalty = gate_l2_penalty
     self.random_seed = random_seed
 
   def __call__(self):
@@ -205,6 +210,7 @@ class DeepCoxMixturesHeterogenousEffects:
                          layers=self.layers,
                          gamma=self.gamma,
                          smoothing_factor=self.smoothing_factor,
+                         gate_l2_penalty=self.gate_l2_penalty,
                          optimizer=optimizer)
 
   def fit(self, x, t, e, a, vsize=0.15, val_data=None,
