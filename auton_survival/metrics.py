@@ -206,7 +206,7 @@ same data used to estimate the censoring distribution.")
 
   assert max(times) < outcomes_train.time.max(), "Times should \
 be within the range of event times to avoid exterpolation."
-  assert max(times) < outcomes.time.max(), "Times \
+  assert max(times) <= outcomes.time.max(), "Times \
 must be within the range of event times."
 
   survival_train = util.Surv.from_dataframe('event', 'time', outcomes_train)
