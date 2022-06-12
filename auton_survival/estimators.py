@@ -378,7 +378,7 @@ def _fit_dsm(features, outcomes, val_data, random_seed, **hyperparams):
 
   k = hyperparams.get("k", 3)
   layers = hyperparams.get("layers", [100])
-  epochs = hyperparams.get("iters", 10)
+  epochs = hyperparams.get("iters", 50)
   distribution = hyperparams.get("distribution", "Weibull")
   temperature = hyperparams.get("temperature", 1.0)
   lr = hyperparams.get("learning_rate", 1e-3)
