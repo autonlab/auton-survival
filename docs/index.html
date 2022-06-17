@@ -35,100 +35,251 @@ ga('create', 'G-TTD30SJCTB', 'auto'); ga('send', 'pageview');
 <a href="https://opensource.org/licenses/MIT"><img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-yellow.svg"></a>
 &nbsp;&nbsp;&nbsp;
 <a href="https://github.com/autonlab/auton-survival"><img alt="GitHub Repo stars" src="https://img.shields.io/github/stars/autonlab/auton-survival?style=social"></a></p>
-<p>Python package <code><a title="auton_survival" href="#auton_survival">auton_survival</a></code> provides a flexible API for various problems
-in survival analysis, including regression, counterfactual estimation,
-and phenotyping.</p>
+<p><br></p>
+<h2 id="the-auton-survival-package">The <code>auton-survival</code> Package</h2>
+<p>The python package <code>auton-survival</code> is repository of reusable utilities for projects
+involving censored Time-to-Event Data. <code>auton-survival</code> provides a flexible APIs
+allowing rapid experimentation including dataset preprocessing, regression,
+counterfactual estimation, clustering and phenotyping and propensity adjusted evaluation.</p>
+<p><strong>For complete details on</strong> <code>auton-survival</code> <strong>see</strong>: </p>
+<h3>• <a href="https://www.cs.cmu.edu/~chiragn/papers/auton_survival.pdf">White Paper</a> &nbsp;&nbsp; • <a href="https://autonlab.github.io/auton-survival/">Documentation</a> &nbsp;&nbsp; • <a href="https://nbviewer.org/github/autonlab/auton-survival/tree/master/examples/">Demo Notebooks</a></h3>
+<p><a id="what"></a></p>
 <h2 id="what-is-survival-analysis">What is Survival Analysis?</h2>
 <p><strong>Survival Analysis</strong> involves estimating when an event of interest, <span><span class="MathJax_Preview"> T </span><script type="math/tex"> T </script></span>
 would take places given some features or covariates <span><span class="MathJax_Preview"> X </span><script type="math/tex"> X </script></span>. In statistics
 and ML these scenarious are modelled as regression to estimate the conditional
-survival distribution, <span><span class="MathJax_Preview"> \mathbb{P}(T&gt;t|X) </span><script type="math/tex"> \mathbb{P}(T>t|X) </script></span>. As compared to typical
+survival distribution, <span><span class="MathJax_Preview"> P(T&gt;t|X) </span><script type="math/tex"> P(T>t|X) </script></span>. As compared to typical
 regression problems, Survival Analysis differs in two major ways:</p>
 <ul>
-<li>The Event distribution, <span><span class="MathJax_Preview"> T </span><script type="math/tex"> T </script></span> has positive support ie.
-<span><span class="MathJax_Preview"> T \in [0, \infty) </span><script type="math/tex"> T \in [0, \infty) </script></span>.</li>
-<li>There is presence of censoring ie. a large number of instances of data are
-lost to follow up.</li>
+<li>The Event distribution, <span><span class="MathJax_Preview"> T </span><script type="math/tex"> T </script></span> has positive support,
+<span><span class="MathJax_Preview"> T in [0, inf) </span><script type="math/tex"> T in [0, inf) </script></span>.</li>
+<li>There is presence of censoring (ie. a large number of instances of data are
+lost to follow up.)</li>
 </ul>
-<h2 id="the-auton-survival-package">The Auton Survival Package</h2>
+<p><a id="package"></a></p>
+<h2 id="the-auton-survival-package_1">The Auton Survival Package</h2>
 <p>The package <code>auton_survival</code> is repository of reusable utilities for projects
 involving censored Time-to-Event Data. <code><a title="auton_survival" href="#auton_survival">auton_survival</a></code> allows rapid
 experimentation including dataset preprocessing, regression, counterfactual
-estimation, clustering and phenotyping and propnsity adjusted evaluation.</p>
+estimation, clustering and phenotyping and propensity-adjusted evaluation.</p>
+<p><a id="regression"></a></p>
 <h2 id="survival-regression">Survival Regression</h2>
-<p>Currently supported Survival Models are:</p>
-<h3 id="deepsurvivalmachines"><code><a title="auton_survival.models.dsm.DeepSurvivalMachines" href="models/dsm/index.html#auton_survival.models.dsm.DeepSurvivalMachines">DeepSurvivalMachines</a></code></h3>
-<h3 id="deepcoxmixtures"><code><a title="auton_survival.models.dcm.DeepCoxMixtures" href="models/dcm/index.html#auton_survival.models.dcm.DeepCoxMixtures">DeepCoxMixtures</a></code></h3>
-<h3 id="deepcoxph"><code><a title="auton_survival.models.cph.DeepCoxPH" href="models/cph/index.html#auton_survival.models.cph.DeepCoxPH">DeepCoxPH</a></code></h3>
-<h3 id="auton_survivalestimators"><code><a title="auton_survival.estimators" href="estimators.html">auton_survival.estimators</a></code></h3>
-<p>This module provids a wrapper to model survival datasets with standard
-survival (time-to-event) analysis methods. The use of the wrapper allows
-a simple standard interface for multiple different survival regression methods.</p>
-<p><code><a title="auton_survival.estimators" href="estimators.html">auton_survival.estimators</a></code> also provides convenient wrappers around other popular
-python survival analysis packages to experiment with the following
-survival regression estimators</p>
+<h3 id="auton_survivalmodels"><code><a title="auton_survival.models" href="models/index.html">auton_survival.models</a></code></h3>
+<p>Currently supported Survival Models include:</p>
 <ul>
-<li>Random Survival Forests (<code>pysurvival</code>):</li>
-<li>Weibull Accelerated Failure Time (<code>lifelines</code>) :</li>
+<li><code><a title="auton_survival.models.dsm.DeepSurvivalMachines" href="models/dsm/index.html#auton_survival.models.dsm.DeepSurvivalMachines">DeepSurvivalMachines</a></code></li>
+<li><code><a title="auton_survival.models.dcm.DeepCoxMixtures" href="models/dcm/index.html#auton_survival.models.dcm.DeepCoxMixtures">DeepCoxMixtures</a></code></li>
+<li><code><a title="auton_survival.models.cph.DeepCoxPH" href="models/cph/index.html#auton_survival.models.cph.DeepCoxPH">DeepCoxPH</a></code></li>
+<li><code><a title="auton_survival.models.cmhe.DeepCoxMixturesHeterogenousEffects" href="models/cmhe/index.html#auton_survival.models.cmhe.DeepCoxMixturesHeterogenousEffects">DeepCoxMixturesHeterogenousEffects</a></code></li>
 </ul>
-<h3 id="auton_survivalexperiments"><code><a title="auton_survival.experiments" href="experiments.html">auton_survival.experiments</a></code></h3>
+<p>Training a Deep Cox Proportional Hazards Model with <code>auton-survival</code>:</p>
+<pre><code class="language-python">from auton_survival import datasets, preprocessing, models 
+
+# Load the SUPPORT Dataset
+outcomes, features = datasets.load_dataset(&quot;SUPPORT&quot;)
+
+# Preprocess (Impute and Scale) the features
+features = preprocessing.Preprocessor().fit_transform(features)
+
+# Train a Deep Cox Proportional Hazards (DCPH) model
+model = models.cph.DeepCoxPH(layers=[100])
+model.fit(features, outcomes.time, outcomes.event)
+
+# Predict risk at specific time horizons.
+predictions = model.predict_risk(features, t=[8, 12, 16])
+</code></pre>
+<h3 id="auton_survivalestimators-demo-notebook"><code><a title="auton_survival.estimators" href="estimators.html">auton_survival.estimators</a></code> <a href="https://nbviewer.org/github/autonlab/auton-survival/blob/master/examples/Survival%20Regression%20with%20Auton-Survival.ipynb">[Demo Notebook]</a></a></h3>
+<p>This module provides a wrapper <code><a title="auton_survival.estimators.SurvivalModel" href="estimators.html#auton_survival.estimators.SurvivalModel">SurvivalModel</a></code> to model
+survival datasets with standard survival (time-to-event) analysis methods.
+The use of the wrapper allows a simple standard interface for multiple different
+survival regression methods.</p>
+<p><code><a title="auton_survival.estimators" href="estimators.html">auton_survival.estimators</a></code> also provides convenient wrappers around other popular
+python survival analysis packages to experiment with Random Survival Forests and
+Weibull Accelerated Failure Time regression models.</p>
+<pre><code class="language-python">from auton_survival import estimators
+
+# Train a Deep Survival Machines model using the SurvivalModel class.
+model = estimators.SurvivalModel(model='dsm')
+model.fit(features, outcomes)
+
+# Predict risk at time horizons.
+predictions = model.predict_risk(features, times=[8, 12, 16])
+</code></pre>
+<h3 id="auton_survivalexperiments-demo-notebook"><code><a title="auton_survival.experiments" href="experiments.html">auton_survival.experiments</a></code> <a href="https://nbviewer.org/github/autonlab/auton-survival/blob/master/examples/CV%20Survival%20Regression%20on%20SUPPORT%20Dataset.ipynb">[Demo Notebook]</a></a></h3>
 <p>Modules to perform standard survival analysis experiments. This module
 provides a top-level interface to run <code><a title="auton_survival" href="#auton_survival">auton_survival</a></code> style experiments
-of survival analysis, involving cross-validation style experiments with
-multiple different survival analysis models at different horizons of
-event times.</p>
-<p>The module further eases evaluation by automatically computing the
-<em>censoring adjusted</em> estimates of the Metrics of interest, like
-<strong>Time Dependent Concordance Index</strong> and <strong>Brier Score</strong> with <strong>IPCW</strong>
+of survival analysis, involving options for cross-validation and
+nested cross-validation style experiments with multiple different survival
+analysis models.</p>
+<p>The module supports multiple model peroformance evaluation metrics and further
+eases evaluation by automatically computing the <em>censoring adjusted</em> estimates,
+such as <strong>Time Dependent Concordance Index</strong> and <strong>Brier Score</strong> with <strong>IPCW</strong>
 adjustment.</p>
-<pre><code class="language-python"># auton_survival Style Cross Validation Experiment.
-from auton_survival import datasets
-features, outcomes = datasets.load_topcat()
+<pre><code class="language-python"># auton_survival cross-validation experiment.
+from auton_survival.datasets import load_dataset
 
-from auton_survival.experiments import SurvivalCVRegressionExperiment
+outcomes, features = load_dataset(dataset='SUPPORT')
+cat_feats = ['sex', 'income', 'race']
+num_feats = ['age', 'resp', 'glucose']
 
-# instantiate an auton_survival Experiment by
-# specifying the features and outcomes to use.
-experiment = SurvivalCVRegressionExperiment(features, outcomes)
+from auton_survival.experiments import SurvivalRegressionCV
+# Instantiate an auton_survival Experiment 
+experiment = SurvivalRegressionCV(model='cph', num_folds=5, 
+                                    hyperparam_grid=hyperparam_grid)
 
-# Fit the `experiment` object with a Cox Model
-experiment.fit(model='cph')
+# Fit the `experiment` object with the specified Cox model.
+model = experiment.fit(features, outcomes, metric='ibs',
+                       cat_feats=cat_feats, num_feats=num_feats)
 
-# Evaluate the performance at time=1 year horizon.
-scores = experiment.evaluate(time=1.)
-
-print(scores)
 </code></pre>
+<p><a id="phenotyping"></a></p>
 <h2 id="phenotyping-and-knowledge-discovery">Phenotyping And Knowledge Discovery</h2>
-<h3 id="auton_survivalphenotyping"><code><a title="auton_survival.phenotyping" href="phenotyping.html">auton_survival.phenotyping</a></code></h3>
+<h3 id="auton_survivalphenotyping-demo-notebook"><code><a title="auton_survival.phenotyping" href="phenotyping.html">auton_survival.phenotyping</a></code> <a href="https://nbviewer.org/github/autonlab/auton-survival/blob/master/examples/Phenotyping%20Censored%20Time-to-Events.ipynb">[Demo Notebook]</a></a></h3>
 <p><code><a title="auton_survival.phenotyping" href="phenotyping.html">auton_survival.phenotyping</a></code> allows extraction of latent clusters or subgroups
 of patients that demonstrate similar outcomes. In the context of this package,
 we refer to this task as <strong>phenotyping</strong>. <code><a title="auton_survival.phenotyping" href="phenotyping.html">auton_survival.phenotyping</a></code> allows:</p>
 <ul>
-<li>
-<p><strong>Unsupervised Phenotyping</strong>: Involves first performing dimensionality
-reduction on the inpute covariates <span><span class="MathJax_Preview"> x </span><script type="math/tex"> x </script></span> followed by the use of a clustering
-algorithm on this representation.</p>
-</li>
-<li>
-<p><strong>Factual Phenotyping</strong>: Involves the use of structured latent variable
-models, <code><a title="auton_survival.models.dcm.DeepCoxMixtures" href="models/dcm/index.html#auton_survival.models.dcm.DeepCoxMixtures">DeepCoxMixtures</a></code> or
-<code><a title="auton_survival.models.dsm.DeepSurvivalMachines" href="models/dsm/index.html#auton_survival.models.dsm.DeepSurvivalMachines">DeepSurvivalMachines</a></code> to recover phenogroups that
-demonstrate differential observed survival rates.</p>
-</li>
-<li>
-<p><strong>Counterfactual Phenotyping</strong>: Involves learning phenotypes that demonstrate
+<li><strong>Intersectional Phenotyping</strong>: Recovers groups, or phenotypes, of individuals
+over exhaustive combinations of user-specified categorical and numerical features. </li>
+</ul>
+<pre><code class="language-python">from auton_survival.phenotyping import IntersectionalPhenotyper
+
+# ’ca’ is cancer status. ’age’ is binned into two quantiles.
+phenotyper = IntersectionalPhenotyper(num_vars_quantiles=(0, .5, 1.0),
+cat_vars=['ca'], num_vars=['age'])
+phenotypes = phenotyper.fit_predict(features)
+</code></pre>
+<ul>
+<li><strong>Unsupervised Phenotyping</strong>: Identifies groups of individuals based on structured
+similarity in the fature space by first performing dimensionality reduction of the
+input covariates, followed by clustering. The estimated probability of an individual
+to belong to a latent group is computed as the distance to the cluster normalized by
+the sum of distance to other clusters.</li>
+</ul>
+<pre><code class="language-python">from auton_survival.phenotyping import ClusteringPhenotyper
+
+# Dimensionality reduction using Principal Component Analysis (PCA) to 8 dimensions.
+dim_red_method, = 'pca', 
+# We use a Gaussian Mixture Model (GMM) with 3 components and diagonal covariance.
+clustering_method, n_clusters = 'gmm', 
+
+# Initialize the phenotyper with the above hyperparameters.
+phenotyper = ClusteringPhenotyper(clustering_method=clustering_method,
+                                  dim_red_method=dim_red_method,
+                                  n_components=n_components,
+                                  n_clusters=n_clusters)
+# Fit and infer the phenogroups.
+phenotypes = phenotyper.fit_predict(features)
+</code></pre>
+<ul>
+<li><strong>Supervised Phenotyping</strong>: Identifies latent groups of individuals with similar
+survival outcomes. This approach can be performed as a direct consequence of training
+the <code>Deep Survival Machines</code> and <code>Deep Cox Mixtures</code> latent variable survival
+regression estimators using the <code>predict latent z</code> method. </li>
+</ul>
+<pre><code class="language-python">from auton_survival.models.dcm import DeepCoxMixtures [\[Demo Notebook\]]
+
+# Instantiate a DCM Model with 3 phenogroups and a single hidden layer with size 100.
+model = DeepCoxMixtures(k = 3, layers = [100])
+model.fit(features, outcomes.time, outcomes.event, iters = 100, learning_rate = 1e-4)
+
+# Infer the latent Phenotpyes
+latent_z_prob = model.predict_latent_z(features)
+phenotypings = latent_z_prob.argmax(axis=1)
+</code></pre>
+<ul>
+<li><strong>Counterfactual Phenotyping</strong>: Identifies groups of individuals that demonstrate
 heterogenous treatment effects. That is, the learnt phenogroups have differential
 response to a specific intervention. Relies on the specially designed
-<code><a title="auton_survival.models.cmhe.DeepCoxMixturesHeterogenousEffects" href="models/cmhe/index.html#auton_survival.models.cmhe.DeepCoxMixturesHeterogenousEffects">DeepCoxMixturesHeterogenousEffects</a></code> latent variable model.</p>
+<code><a title="auton_survival.models.cmhe.DeepCoxMixturesHeterogenousEffects" href="models/cmhe/index.html#auton_survival.models.cmhe.DeepCoxMixturesHeterogenousEffects">DeepCoxMixturesHeterogenousEffects</a></code> latent variable model.</li>
+</ul>
+<pre><code class="language-python"># Instantiate the CMHE model
+model = DeepCoxMixturesHeterogenousEffects(random_seed=random_seed, k=k, g=g, layers=layers)
+
+model = model.fit(features, outcomes.time, outcomes.event, intervention)
+zeta_probs = model.predict_latent_phi(x_tr)
+zeta = np.argmax(zeta_probs, axis=1)
+</code></pre>
+<ul>
+<li><strong>Virtual Twins Phenotyping</strong>: Phenotyper that estimates the potential outcomes under treatment and
+control using a counterfactual Deep Cox Proportional Hazards model,
+followed by regressing the difference of the estimated counterfactual
+Restricted Mean Survival Times using a Random Forest regressor.</li>
+</ul>
+<pre><code class="language-python">from auton_survival.phenotyping import SurvivalVirtualTwins
+
+# Instantiate the Survival Virtual Twins
+model = SurvivalVirtualTwins(horizon=365)
+# Infer the estimated counterfactual phenotype probability.
+phenotypes = model.fit_predict(features, outcomes.time, outcomes.event, interventions)
+</code></pre>
+<p><a id="evaluation"></a></p>
+<h2 id="evaluation-and-reporting">Evaluation And Reporting</h2>
+<h3 id="auton_survivalmetrics"><code><a title="auton_survival.metrics" href="metrics.html">auton_survival.metrics</a></code></h3>
+<p>Helper functions to generate standard reports for common Survival Analysis tasks with support for bootstrapped confidence intervals.</p>
+<ul>
+<li><strong>Regression Metric</strong>: Metrics for survival model performance evaluation:<ul>
+<li>Brier Score </li>
+<li>Integrated Brier Score</li>
+<li>Area under the Receiver Operating Characteristic (ROC) Curve</li>
+<li>Concordance Index</li>
+</ul>
 </li>
 </ul>
+<pre><code class="language-python">from auton_survival.metrics import survival_regression_metric
+
+# Infer event-free survival probability from model
+predictions = model.predict_survival(features, times)
+# Compute Brier Score, Integrated Brier Score
+# Area Under ROC Curve and Time Dependent Concordance Index
+metrics = ['brs', 'ibs', 'auc', 'ctd']
+score = survival_regression_metric(metric='brs', outcomes_train, 
+                                   outcomes_test, predictions_test,
+                                   times=times)
+</code></pre>
+<ul>
+<li><strong>Treatment Effect</strong>: Used to compare treatment arms by computing the difference in the following metrics for treatment and control groups:<ul>
+<li><strong>Time at Risk</strong> (TaR)</li>
+<li><strong>Risk at Time</strong></li>
+<li><strong>Restricted Mean Survival Time</strong> (RMST)</li>
+</ul>
+</li>
+</ul>
+<pre><code class="language-python">from auton_survival.metrics import survival_diff_metric
+
+# Compute the difference in RMST, Risk at Time, and TaR between treatment and control groups
+metrics = ['restricted_mean', 'survival_at', 'tar']
+effect = survival_diff_metric(metric='restricted_mean', outcomes=outcomes
+                              treatment_indicator=treatment_indicator, 
+                              weights=None, horizon=120, n_bootstrap=500)
+</code></pre>
+<ul>
+<li><strong>Phenotype Purity</strong>: Used to measure a phenotyper’s ability to extract subgroups, or phenogroups, with differential survival rates by fitting a Kaplan-Meier estimator within each phenogroup followed by estimating the Brier Score or Integrated Brier Score within each phenogroup.</li>
+</ul>
+<pre><code class="language-python">from auton_survival.metrics import phenotype_purity
+
+# Measure phenotype purity using the Brier Score at event horizons of 1, 2 and 5 years.
+phenotype_purity(phenotypes, outcomes, strategy='instantaneous', 
+                 time=[365,730,1825])
+# Measure phenotype purity using the Integrated Brier score at an event horizon of 5 years.
+phenotype_purity(phenotypes, outcomes, strategy='integrated', time=1825)
+</code></pre>
+<h3 id="auton_survivalreporting"><code><a title="auton_survival.reporting" href="reporting.html">auton_survival.reporting</a></code></h3>
+<p>Helper functions to generate plots for Survival Analysis tasks.</p>
+<pre><code class="language-python"># Plot separate Kaplan Meier survival estimates for phenogroups.
+auton_survival.reporting.plot_kaplanmeier(outcomes, groups=phenotypes)
+
+# Plot separate Nelson-Aalen estimates for phenogroups.
+auton_survival.reporting.plot_nelsonaalen(outcomes, groups=phenotypes)
+</code></pre>
+<p><a id="preprocess"></a></p>
 <h2 id="dataset-loading-and-preprocessing">Dataset Loading And Preprocessing</h2>
-<p>Helper functions to load and prerocsss various time-to-event data like the
+<p>Helper functions to load and preprocess various time-to-event data like the
 popular <code>SUPPORT</code>, <code>FRAMINGHAM</code> and <code>PBC</code> dataset for survival analysis.</p>
 <h3 id="auton_survivaldatasets"><code><a title="auton_survival.datasets" href="datasets.html">auton_survival.datasets</a></code></h3>
 <pre><code class="language-python"># Load the SUPPORT Dataset
-from auton_survival import dataset
+from auton_survival.datasets import load_dataset
+datasets = ['SUPPORT', 'PBC', 'FRAMINGHAM', 'MNIST', 'SYNTHETIC']
 features, outcomes = datasets.load_dataset('SUPPORT')
 </code></pre>
 <h3 id="auton_survivalpreprocessing"><code><a title="auton_survival.preprocessing" href="preprocessing.html">auton_survival.preprocessing</a></code></h3>
@@ -143,21 +294,28 @@ features, outcomes = datasets.load_topcat()
 
 from auton_survival.preprocessing import Preprocessing
 features = Preprocessor().fit_transform(features,
-                                        cat_feats=['GENDER', 'ETHNICITY', 'SMOKE'],
-                                        num_feats=['height', 'weight'])
+                    cat_feats=['GENDER', 'ETHNICITY', 'SMOKE'],
+                    num_feats=['height', 'weight'])
 
-# The `cat_feats` and `num_feats` lists would contain all the categorical and
-# numerical features in the dataset.
+# The `cat_feats` and `num_feats` lists would contain all the categorical and numerical features in the dataset.
 
 </code></pre>
-<h2 id="evaluation-and-reporting">Evaluation And Reporting</h2>
-<h3 id="auton_survivalmetrics"><code><a title="auton_survival.metrics" href="metrics.html">auton_survival.metrics</a></code></h3>
-<p>Helper functions to generate standard reports for common Survival Analysis tasks.</p>
+<p><a id="ref"></a></p>
 <h2 id="citing-and-references">Citing And References</h2>
-<p>Please cite the following papers if you are using the <code><a title="auton_survival" href="#auton_survival">auton_survival</a></code> package.</p>
-<p>[1] <a href="https://arxiv.org/abs/2003.01176">Deep Survival Machines:
+<p><strong>Please cite the following paper if you use the <code>auton-survival</code> package:</strong></p>
+<p>[1] <a href="https://arxiv.org/abs/2204.07276">auton-survival:
+an Open-Source Package for Regression, Counterfactual Estimation, Evaluation and Phenotyping with Censored Time-to-Event Data. arXiv (2022)</a></a></p>
+<pre><code>  @article{auton-survival,
+  title={auton-survival: an Open-Source Package for Regression, Counterfactual Estimation, Evaluation and Phenotyping with Censored Time-to-Event Data},
+  author={Nagpal, Chirag and Potosnak, Willa and Dubrawski, Artur},
+  year={2022},
+  publisher={arXiv}
+  }
+</code></pre>
+<p><strong>Additionally, <code>auton-survival</code> implements the following methodologies:</strong></p>
+<p>[2] <a href="https://arxiv.org/abs/2003.01176">Deep Survival Machines:
 Fully Parametric Survival Regression and
-Representation Learning for Censored Data with Competing Risks."
+Representation Learning for Censored Data with Competing Risks.
 IEEE Journal of Biomedical and Health Informatics (2021)</a></a></p>
 <pre><code>  @article{nagpal2021dsm,
   title={Deep survival machines: Fully parametric survival regression and representation learning for censored data with competing risks},
@@ -170,7 +328,7 @@ IEEE Journal of Biomedical and Health Informatics (2021)</a></a></p>
   publisher={IEEE}
   }
 </code></pre>
-<p>[2] <a href="http://proceedings.mlr.press/v146/nagpal21a.html">Deep Parametric Time-to-Event Regression with Time-Varying Covariates. AAAI
+<p>[3] <a href="http://proceedings.mlr.press/v146/nagpal21a.html">Deep Parametric Time-to-Event Regression with Time-Varying Covariates. AAAI
 Spring Symposium (2021)</a></a></p>
 <pre><code>  @InProceedings{pmlr-v146-nagpal21a,
   title={Deep Parametric Time-to-Event Regression with Time-Varying Covariates},
@@ -180,7 +338,7 @@ Spring Symposium (2021)</a></a></p>
   publisher={PMLR},
   }
 </code></pre>
-<p>[3] <a href="https://arxiv.org/abs/2101.06536">Deep Cox Mixtures for Survival Regression. Conference on Machine Learning for
+<p>[4] <a href="https://arxiv.org/abs/2101.06536">Deep Cox Mixtures for Survival Regression. Conference on Machine Learning for
 Healthcare (2021)</a></a></p>
 <pre><code>  @inproceedings{nagpal2021dcm,
   title={Deep Cox mixtures for survival regression},
@@ -191,7 +349,7 @@ Healthcare (2021)</a></a></p>
   organization={PMLR}
   }
 </code></pre>
-<p>[4] <a href="https://arxiv.org/abs/2202.11089">Counterfactual Phenotyping with Censored Time-to-Events (2022)</a></a></p>
+<p>[5] <a href="https://arxiv.org/abs/2202.11089">Counterfactual Phenotyping with Censored Time-to-Events (2022)</a></a></p>
 <pre><code>  @article{nagpal2022counterfactual,
   title={Counterfactual Phenotyping with Censored Time-to-Events},
   author={Nagpal, Chirag and Goswami, Mononito and Dufendach, Keith and Dubrawski, Artur},
@@ -199,16 +357,19 @@ Healthcare (2021)</a></a></p>
   year={2022}
   }
 </code></pre>
-<h2 id="installation">Installation</h2>
-<pre><code class="language-console">foo@bar:~$ git clone https://github.com/autonlab/auton_survival
-foo@bar:~$ pip install -r requirements.txt
-</code></pre>
-<h2 id="compatibility">Compatibility</h2>
+<p><a id="install"></a></p>
+<h2 id="compatibility-and-installation">Compatibility And Installation</h2>
 <p><code><a title="auton_survival" href="#auton_survival">auton_survival</a></code> requires <code>python</code> 3.5+ and <code>pytorch</code> 1.1+.</p>
 <p>To evaluate performance using standard metrics
 <code><a title="auton_survival" href="#auton_survival">auton_survival</a></code> requires <code>scikit-survival</code>.</p>
+<p>To install <code><a title="auton_survival" href="#auton_survival">auton_survival</a></code>, clone the following git repository:</p>
+<pre><code class="language-console">foo@bar:~$ git clone https://github.com/autonlab/auton-survival.git
+foo@bar:~$ pip install -r requirements.txt
+</code></pre>
+<p><a id="contrib"></a></p>
 <h2 id="contributing">Contributing</h2>
-<p><code><a title="auton_survival" href="#auton_survival">auton_survival</a></code> is <a href="https://github.com/autonlab/auton-survival">on GitHub</a>. Bug reports and pull requests are welcome.</p>
+<p><code><a title="auton_survival" href="#auton_survival">auton_survival</a></code> is <a href="https://github.com/autonlab/auton-survival.git">on GitHub</a>. Bug reports and pull requests are welcome.</p>
+<p><a id="license"></a></p>
 <h2 id="license">License</h2>
 <p>MIT License</p>
 <p>Copyright (c) 2022 Carnegie Mellon University, <a href="http://autonlab.org">Auton Lab</a></p>
@@ -227,15 +388,11 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.</p>
-<p><img style="float: right;" height="150px" src="https://www.cmu.edu/brand/\
-downloads/assets/images/wordmarks-600x600-min.jpg">
-<img style="float: right;padding-top:30px" height="110px"
-src="https://www.cs.cmu.edu/~chiragn/auton_logo.png"></p>
+<p><img align="right" height ="120px" src="https://www.cs.cmu.edu/~chiragn/cmu_logo.jpeg">
+<img align="right" height ="110px" src="https://www.cs.cmu.edu/~chiragn/auton_logo.png"> </p>
 <p><br><br><br><br><br>
 <br><br><br><br><br></p>
-<div class="git-link-div"><a href="https://github.com/autonlab/auton-survival" class="git-link">Browse git</a></div>
-</section>
-<section>
+<div class="git-link-div"><a href="https://github.com/autonlab/DeepSurvivalMachines" class="git-link">Browse git</a></div>
 </section>
 <section>
 <h2 class="section-title" id="header-submodules">Sub-modules</h2>
@@ -245,25 +402,18 @@ src="https://www.cs.cmu.edu/~chiragn/auton_logo.png"></p>
 <div class="desc"><p>Utility functions to load standard datasets to train and evaluate the
 Deep Survival Machines models.</p></div>
 </dd>
-<dt><code class="name"><a title="auton_survival.datasets_biolincc" href="datasets_biolincc.html">auton_survival.datasets_biolincc</a></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
 <dt><code class="name"><a title="auton_survival.estimators" href="estimators.html">auton_survival.estimators</a></code></dt>
 <dd>
 <div class="desc"><p>Utilities to train survival regression models and estimate survival.</p></div>
 </dd>
 <dt><code class="name"><a title="auton_survival.experiments" href="experiments.html">auton_survival.experiments</a></code></dt>
 <dd>
-<div class="desc"></div>
-</dd>
-<dt><code class="name"><a title="auton_survival.explainers" href="explainers.html">auton_survival.explainers</a></code></dt>
-<dd>
-<div class="desc"></div>
+<div class="desc"><p>Utilities to perform cross-validation.</p></div>
 </dd>
 <dt><code class="name"><a title="auton_survival.metrics" href="metrics.html">auton_survival.metrics</a></code></dt>
 <dd>
-<div class="desc"><p>Tools to compute metrics used to assess survival outcomes and survival model performance.</p></div>
+<div class="desc"><p>Tools to compute metrics used to assess survival outcomes and survival
+model performance.</p></div>
 </dd>
 <dt><code class="name"><a title="auton_survival.models" href="models/index.html">auton_survival.models</a></code></dt>
 <dd>
@@ -292,24 +442,30 @@ characteristics.</p></div>
 </section>
 <section>
 </section>
+<section>
+</section>
 </article>
 <nav id="sidebar">
 <img src="https://ndownloader.figshare.com/files/34052981">
 <h1>Index</h1>
 <div class="toc">
 <ul>
+<li><a href="#the-auton-survival-package">The auton-survival Package</a></li>
 <li><a href="#what-is-survival-analysis">What is Survival Analysis?</a></li>
-<li><a href="#the-auton-survival-package">The Auton Survival Package</a></li>
+<li><a href="#the-auton-survival-package_1">The Auton Survival Package</a></li>
 <li><a href="#survival-regression">Survival Regression</a><ul>
-<li><a href="#auton_survivalmodelsdsmdeepsurvivalmachines">auton_survival.models.dsm.DeepSurvivalMachines</a></li>
-<li><a href="#auton_survivalmodelsdcmdeepcoxmixtures">auton_survival.models.dcm.DeepCoxMixtures</a></li>
-<li><a href="#auton_survivalmodelscphdeepcoxph">auton_survival.models.cph.DeepCoxPH</a></li>
-<li><a href="#auton_survivalestimators">auton_survival.estimators</a></li>
-<li><a href="#auton_survivalexperiments">auton_survival.experiments</a></li>
+<li><a href="#auton_survivalmodels">auton_survival.models</a></li>
+<li><a href="#auton_survivalestimators-demo-notebook">auton_survival.estimators [Demo Notebook]</a></li>
+<li><a href="#auton_survivalexperiments-demo-notebook">auton_survival.experiments [Demo Notebook]</a></li>
 </ul>
 </li>
 <li><a href="#phenotyping-and-knowledge-discovery">Phenotyping and Knowledge Discovery</a><ul>
-<li><a href="#auton_survivalphenotyping">auton_survival.phenotyping</a></li>
+<li><a href="#auton_survivalphenotyping-demo-notebook">auton_survival.phenotyping [Demo Notebook]</a></li>
+</ul>
+</li>
+<li><a href="#evaluation-and-reporting">Evaluation and Reporting</a><ul>
+<li><a href="#auton_survivalmetrics">auton_survival.metrics</a></li>
+<li><a href="#auton_survivalreporting">auton_survival.reporting</a></li>
 </ul>
 </li>
 <li><a href="#dataset-loading-and-preprocessing">Dataset Loading and Preprocessing</a><ul>
@@ -317,13 +473,8 @@ characteristics.</p></div>
 <li><a href="#auton_survivalpreprocessing">auton_survival.preprocessing</a></li>
 </ul>
 </li>
-<li><a href="#evaluation-and-reporting">Evaluation and Reporting</a><ul>
-<li><a href="#auton_survivalmetrics">auton_survival.metrics</a></li>
-</ul>
-</li>
 <li><a href="#citing-and-references">Citing and References</a></li>
-<li><a href="#installation">Installation</a></li>
-<li><a href="#compatibility">Compatibility</a></li>
+<li><a href="#compatibility-and-installation">Compatibility and Installation</a></li>
 <li><a href="#contributing">Contributing</a></li>
 <li><a href="#license">License</a></li>
 </ul>
@@ -332,10 +483,8 @@ characteristics.</p></div>
 <li><h3><a href="#header-submodules">Sub-modules</a></h3>
 <ul>
 <li><code><a title="auton_survival.datasets" href="datasets.html">auton_survival.datasets</a></code></li>
-<li><code><a title="auton_survival.datasets_biolincc" href="datasets_biolincc.html">auton_survival.datasets_biolincc</a></code></li>
 <li><code><a title="auton_survival.estimators" href="estimators.html">auton_survival.estimators</a></code></li>
 <li><code><a title="auton_survival.experiments" href="experiments.html">auton_survival.experiments</a></code></li>
-<li><code><a title="auton_survival.explainers" href="explainers.html">auton_survival.explainers</a></code></li>
 <li><code><a title="auton_survival.metrics" href="metrics.html">auton_survival.metrics</a></code></li>
 <li><code><a title="auton_survival.models" href="models/index.html">auton_survival.models</a></code></li>
 <li><code><a title="auton_survival.phenotyping" href="phenotyping.html">auton_survival.phenotyping</a></code></li>

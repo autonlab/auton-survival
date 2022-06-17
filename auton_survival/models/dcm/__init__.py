@@ -56,6 +56,8 @@ import numpy as np
 from .dcm_torch import DeepCoxMixturesTorch
 from .dcm_utilities import train_dcm, predict_survival, predict_latent_z
 
+from auton_survival.utils import _dataframe_to_array
+
 
 class DeepCoxMixtures:
   """A Deep Cox Mixture model.
@@ -112,9 +114,14 @@ class DeepCoxMixtures:
     print("Hidden Layers:", self.layers)
 
   def _preprocess_test_data(self, x):
+    x = _dataframe_to_array(x)
     return torch.from_numpy(x).float()
 
   def _preprocess_training_data(self, x, t, e, vsize, val_data, random_seed):
+
+    x = _dataframe_to_array(x)
+    t = _dataframe_to_array(t)
+    e = _dataframe_to_array(e)
 
     idx = list(range(x.shape[0]))
     np.random.seed(random_seed)
@@ -137,6 +144,10 @@ class DeepCoxMixtures:
     else:
 
       x_val, t_val, e_val = val_data
+
+      x_val = _dataframe_to_array(x_val)
+      t_val = _dataframe_to_array(t_val)
+      e_val = _dataframe_to_array(e_val)
 
       x_val = torch.from_numpy(x_val).float()
       t_val = torch.from_numpy(t_val).float()

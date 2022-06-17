@@ -82,6 +82,8 @@ from .cmhe_torch import DeepCMHETorch
 from .cmhe_utilities import train_cmhe, predict_survival
 from .cmhe_utilities import predict_latent_phi, predict_latent_z
 
+from auton_survival.utils import _dataframe_to_array
+
 
 class DeepCoxMixturesHeterogenousEffects:
   """A Deep Cox Mixtures with Heterogenous Effects model.
@@ -107,6 +109,9 @@ class DeepCoxMixturesHeterogenousEffects:
   layers: list
       A list of integers consisting of the number of neurons in each
       hidden layer.
+  gate_l2_penalty: float
+      Strength of the l2 penalty term for the gate layers.
+      Higher means stronger regularization. 
   random_seed: int
       Controls the reproducibility of called functions.
 
@@ -120,6 +125,7 @@ class DeepCoxMixturesHeterogenousEffects:
 
   def __init__(self, k, g, layers=None, gamma=100,
                smoothing_factor=1e-4,
+               gate_l2_penalty=1e-4,
                random_seed=0):
 
     self.k = k
@@ -128,6 +134,7 @@ class DeepCoxMixturesHeterogenousEffects:
     self.fitted = False
     self.gamma = gamma
     self.smoothing_factor = smoothing_factor
+    self.gate_l2_penalty = gate_l2_penalty
     self.random_seed = random_seed
 
   def __call__(self):
@@ -139,13 +146,20 @@ class DeepCoxMixturesHeterogenousEffects:
     print("Hidden Layers:", self.layers)
 
   def _preprocess_test_data(self, x, a=None):
+    x = _dataframe_to_array(x)
     if a is not None:
+      a = _dataframe_to_array(a)
       return torch.from_numpy(x).float(), torch.from_numpy(a).float()
     else:
       return torch.from_numpy(x).float()
 
   def _preprocess_training_data(self, x, t, e, a, vsize, val_data,
                                 random_seed):
+
+    x = _dataframe_to_array(x)
+    t = _dataframe_to_array(t)
+    e = _dataframe_to_array(e)
+    a = _dataframe_to_array(a)
 
     idx = list(range(x.shape[0]))
 
@@ -173,6 +187,11 @@ class DeepCoxMixturesHeterogenousEffects:
 
       x_vl, t_vl, e_vl, a_vl = val_data
 
+      x_vl = _dataframe_to_array(x_vl)
+      t_vl = _dataframe_to_array(t_vl)
+      e_vl = _dataframe_to_array(e_vl)
+      a_vl = _dataframe_to_array(a_vl)
+
       x_vl = torch.from_numpy(x_vl).float()
       t_vl = torch.from_numpy(t_vl).float()
       e_vl = torch.from_numpy(e_vl).float()
@@ -191,6 +210,7 @@ class DeepCoxMixturesHeterogenousEffects:
                          layers=self.layers,
                          gamma=self.gamma,
                          smoothing_factor=self.smoothing_factor,
+                         gate_l2_penalty=self.gate_l2_penalty,
                          optimizer=optimizer)
 
   def fit(self, x, t, e, a, vsize=0.15, val_data=None,

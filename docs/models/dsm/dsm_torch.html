@@ -32,7 +32,68 @@ ga('create', 'G-TTD30SJCTB', 'auto'); ga('send', 'pageview');
 The main interface is the DeepSurvivalMachines class which inherits
 from torch.nn.Module.</p>
 <p>Note: NOT DESIGNED TO BE CALLED DIRECTLY!!!</p>
-<div class="git-link-div"><a href="https://github.com/autonlab/auton-survival" class="git-link">Browse git</a></div>
+<div class="git-link-div"><a href="https://github.com/autonlab/DeepSurvivalMachines" class="git-link">Browse git</a></div>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="auton_survival.models.dsm.dsm_torch.create_representation"><code class="name flex">
+<span>def <span class="ident">create_representation</span></span>(<span>inputdim, layers, activation, bias=False)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper function to generate the representation function for DSM.</p>
+<p>Deep Survival Machines learns a representation (\ Phi(X) ) for the input
+data. This representation is parameterized using a Non Linear Multilayer
+Perceptron (<code>torch.nn.Module</code>). This is a helper function designed to
+instantiate the representation for Deep Survival Machines.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Not designed to be used directly.</p>
+</div>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>inputdim</code></strong> :&ensp;<code>int</code></dt>
+<dd>Dimensionality of the input features.</dd>
+<dt><strong><code>layers</code></strong> :&ensp;<code>list</code></dt>
+<dd>A list consisting of the number of neurons in each hidden layer.</dd>
+<dt><strong><code>activation</code></strong> :&ensp;<code>str</code></dt>
+<dd>Choice of activation function: One of 'ReLU6', 'ReLU' or 'SeLU'.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>an MLP with torch.nn.Module with the specfied structure.</p></div>
+<div class="git-link-div"><a href="https://github.com/autonlab/DeepSurvivalMachines" class="git-link">Browse git</a></div>
+</dd>
+<dt id="auton_survival.models.dsm.dsm_torch.create_conv_representation"><code class="name flex">
+<span>def <span class="ident">create_conv_representation</span></span>(<span>inputdim, hidden, typ='ConvNet', add_linear=True)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Helper function to generate the representation function for DSM.</p>
+<p>Deep Survival Machines learns a representation (\ Phi(X) ) for the input
+data. This representation is parameterized using a Convolutional Neural
+Network (<code>torch.nn.Module</code>). This is a helper function designed to
+instantiate the representation for Deep Survival Machines.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Not designed to be used directly.</p>
+</div>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>inputdim</code></strong> :&ensp;<code>tuple</code></dt>
+<dd>Dimensionality of the input image.</dd>
+<dt><strong><code>hidden</code></strong> :&ensp;<code>int</code></dt>
+<dd>The number of neurons in each hidden layer.</dd>
+<dt><strong><code>typ</code></strong> :&ensp;<code>str</code></dt>
+<dd>Choice of convolutional neural network: One of 'ConvNet'</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>an ConvNet with torch.nn.Module with the specfied structure.</p></div>
+<div class="git-link-div"><a href="https://github.com/autonlab/DeepSurvivalMachines" class="git-link">Browse git</a></div>
+</dd>
+</dl>
 </section>
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
@@ -52,7 +113,7 @@ keeps track and computes gradients for them.</p>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
 <p>Not designed to be used directly.
-Please use the API inferface <code>dsm.dsm_api.DeepSurvivalMachines</code> !!!</p>
+Please use the API inferface <code>dsm.DeepSurvivalMachines</code> !!!</p>
 </div>
 <h2 id="parameters">Parameters</h2>
 <dl>
@@ -83,7 +144,7 @@ from the uncensored instances.
 Default is 1.</dd>
 </dl>
 <p>Initializes internal Module state, shared by both nn.Module and ScriptModule.</p></div>
-<div class="git-link-div"><a href="https://github.com/autonlab/auton-survival" class="git-link">Browse git</a></div>
+<div class="git-link-div"><a href="https://github.com/autonlab/DeepSurvivalMachines" class="git-link">Browse git</a></div>
 <h3>Methods</h3>
 <dl>
 <dt id="auton_survival.models.dsm.dsm_torch.DeepSurvivalMachinesTorch.forward"><code class="name flex">
@@ -94,14 +155,14 @@ Default is 1.</dd>
 <h2 id="args">Args</h2>
 <p>x:
 a torch.tensor of the input features.</p></div>
-<div class="git-link-div"><a href="https://github.com/autonlab/auton-survival" class="git-link">Browse git</a></div>
+<div class="git-link-div"><a href="https://github.com/autonlab/DeepSurvivalMachines" class="git-link">Browse git</a></div>
 </dd>
 <dt id="auton_survival.models.dsm.dsm_torch.DeepSurvivalMachinesTorch.get_shape_scale"><code class="name flex">
 <span>def <span class="ident">get_shape_scale</span></span>(<span>self, risk='1')</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<div class="git-link-div"><a href="https://github.com/autonlab/auton-survival" class="git-link">Browse git</a></div>
+<div class="git-link-div"><a href="https://github.com/autonlab/DeepSurvivalMachines" class="git-link">Browse git</a></div>
 </dd>
 </dl>
 </dd>
@@ -120,7 +181,7 @@ torch automatically keeps track and computes gradients for them.</p>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
 <p>Not designed to be used directly.
-Please use the API inferface <code>dsm.dsm_api.DeepRecurrentSurvivalMachines</code>!!</p>
+Please use the API inferface <code>dsm.DeepRecurrentSurvivalMachines</code>!!</p>
 </div>
 <h2 id="parameters">Parameters</h2>
 <dl>
@@ -148,7 +209,7 @@ from the uncensored instances.
 Default is 1.</dd>
 </dl>
 <p>Initializes internal Module state, shared by both nn.Module and ScriptModule.</p></div>
-<div class="git-link-div"><a href="https://github.com/autonlab/auton-survival" class="git-link">Browse git</a></div>
+<div class="git-link-div"><a href="https://github.com/autonlab/DeepSurvivalMachines" class="git-link">Browse git</a></div>
 <h3>Methods</h3>
 <dl>
 <dt id="auton_survival.models.dsm.dsm_torch.DeepRecurrentSurvivalMachinesTorch.forward"><code class="name flex">
@@ -162,14 +223,14 @@ DSM loss functions.</p>
 <h2 id="args">Args</h2>
 <p>x:
 a torch.tensor of the input features.</p></div>
-<div class="git-link-div"><a href="https://github.com/autonlab/auton-survival" class="git-link">Browse git</a></div>
+<div class="git-link-div"><a href="https://github.com/autonlab/DeepSurvivalMachines" class="git-link">Browse git</a></div>
 </dd>
 <dt id="auton_survival.models.dsm.dsm_torch.DeepRecurrentSurvivalMachinesTorch.get_shape_scale"><code class="name flex">
 <span>def <span class="ident">get_shape_scale</span></span>(<span>self, risk='1')</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<div class="git-link-div"><a href="https://github.com/autonlab/auton-survival" class="git-link">Browse git</a></div>
+<div class="git-link-div"><a href="https://github.com/autonlab/DeepSurvivalMachines" class="git-link">Browse git</a></div>
 </dd>
 </dl>
 </dd>
@@ -189,7 +250,7 @@ torch automatically keeps track and computes gradients for them.</p>
 <p class="admonition-title">Warning</p>
 <p>Not designed to be used directly.
 Please use the API inferface
-<code>dsm.dsm_api.DeepConvolutionalSurvivalMachines</code>!!</p>
+<code>dsm.DeepConvolutionalSurvivalMachines</code>!!</p>
 </div>
 <h2 id="parameters">Parameters</h2>
 <dl>
@@ -214,7 +275,7 @@ from the uncensored instances.
 Default is 1.</dd>
 </dl>
 <p>Initializes internal Module state, shared by both nn.Module and ScriptModule.</p></div>
-<div class="git-link-div"><a href="https://github.com/autonlab/auton-survival" class="git-link">Browse git</a></div>
+<div class="git-link-div"><a href="https://github.com/autonlab/DeepSurvivalMachines" class="git-link">Browse git</a></div>
 <h3>Class variables</h3>
 <dl>
 <dt id="auton_survival.models.dsm.dsm_torch.DeepConvolutionalSurvivalMachinesTorch.dump_patches"><code class="name">var <span class="ident">dump_patches</span> : bool</code></dt>
@@ -248,14 +309,14 @@ Default is 1.</dd>
 <h2 id="args">Args</h2>
 <p>x:
 a torch.tensor of the input features.</p></div>
-<div class="git-link-div"><a href="https://github.com/autonlab/auton-survival" class="git-link">Browse git</a></div>
+<div class="git-link-div"><a href="https://github.com/autonlab/DeepSurvivalMachines" class="git-link">Browse git</a></div>
 </dd>
 <dt id="auton_survival.models.dsm.dsm_torch.DeepConvolutionalSurvivalMachinesTorch.get_shape_scale"><code class="name flex">
 <span>def <span class="ident">get_shape_scale</span></span>(<span>self, risk='1')</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<div class="git-link-div"><a href="https://github.com/autonlab/auton-survival" class="git-link">Browse git</a></div>
+<div class="git-link-div"><a href="https://github.com/autonlab/DeepSurvivalMachines" class="git-link">Browse git</a></div>
 </dd>
 </dl>
 </dd>
@@ -274,7 +335,7 @@ torch automatically keeps track and computes gradients for them.</p>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
 <p>Not designed to be used directly.
-Please use the API inferface <code>dsm.dsm_api.DeepCNNRNNSurvivalMachines</code>!!</p>
+Please use the API inferface <code>dsm.DeepCNNRNNSurvivalMachines</code>!!</p>
 </div>
 <h2 id="parameters">Parameters</h2>
 <dl>
@@ -302,7 +363,7 @@ from the uncensored instances.
 Default is 1.</dd>
 </dl>
 <p>Initializes internal Module state, shared by both nn.Module and ScriptModule.</p></div>
-<div class="git-link-div"><a href="https://github.com/autonlab/auton-survival" class="git-link">Browse git</a></div>
+<div class="git-link-div"><a href="https://github.com/autonlab/DeepSurvivalMachines" class="git-link">Browse git</a></div>
 <h3>Class variables</h3>
 <dl>
 <dt id="auton_survival.models.dsm.dsm_torch.DeepCNNRNNSurvivalMachinesTorch.dump_patches"><code class="name">var <span class="ident">dump_patches</span> : bool</code></dt>
@@ -335,77 +396,16 @@ DSM loss functions.</p>
 <h2 id="args">Args</h2>
 <p>x:
 a torch.tensor of the input features.</p></div>
-<div class="git-link-div"><a href="https://github.com/autonlab/auton-survival" class="git-link">Browse git</a></div>
+<div class="git-link-div"><a href="https://github.com/autonlab/DeepSurvivalMachines" class="git-link">Browse git</a></div>
 </dd>
 <dt id="auton_survival.models.dsm.dsm_torch.DeepCNNRNNSurvivalMachinesTorch.get_shape_scale"><code class="name flex">
 <span>def <span class="ident">get_shape_scale</span></span>(<span>self, risk='1')</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<div class="git-link-div"><a href="https://github.com/autonlab/auton-survival" class="git-link">Browse git</a></div>
+<div class="git-link-div"><a href="https://github.com/autonlab/DeepSurvivalMachines" class="git-link">Browse git</a></div>
 </dd>
 </dl>
-</dd>
-</dl>
-</section>
-<section>
-</section>
-<section>
-</section>
-<section>
-<h2 class="section-title" id="header-functions">Functions</h2>
-<dl>
-<dt id="auton_survival.models.dsm.dsm_torch.create_representation"><code class="name flex">
-<span>def <span class="ident">create_representation</span></span>(<span>inputdim, layers, activation, bias=False)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Helper function to generate the representation function for DSM.</p>
-<p>Deep Survival Machines learns a representation (\ Phi(X) ) for the input
-data. This representation is parameterized using a Non Linear Multilayer
-Perceptron (<code>torch.nn.Module</code>). This is a helper function designed to
-instantiate the representation for Deep Survival Machines.</p>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>Not designed to be used directly.</p>
-</div>
-<h2 id="parameters">Parameters</h2>
-<dl>
-<dt><strong><code>inputdim</code></strong> :&ensp;<code>int</code></dt>
-<dd>Dimensionality of the input features.</dd>
-<dt><strong><code>layers</code></strong> :&ensp;<code>list</code></dt>
-<dd>A list consisting of the number of neurons in each hidden layer.</dd>
-<dt><strong><code>activation</code></strong> :&ensp;<code>str</code></dt>
-<dd>Choice of activation function: One of 'ReLU6', 'ReLU' or 'SeLU'.</dd>
-</dl>
-<h2 id="returns">Returns</h2>
-<p>an MLP with torch.nn.Module with the specfied structure.</p></div>
-<div class="git-link-div"><a href="https://github.com/autonlab/auton-survival" class="git-link">Browse git</a></div>
-</dd>
-<dt id="auton_survival.models.dsm.dsm_torch.create_conv_representation"><code class="name flex">
-<span>def <span class="ident">create_conv_representation</span></span>(<span>inputdim, hidden, typ='ConvNet', add_linear=True)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Helper function to generate the representation function for DSM.</p>
-<p>Deep Survival Machines learns a representation (\ Phi(X) ) for the input
-data. This representation is parameterized using a Convolutional Neural
-Network (<code>torch.nn.Module</code>). This is a helper function designed to
-instantiate the representation for Deep Survival Machines.</p>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>Not designed to be used directly.</p>
-</div>
-<h2 id="parameters">Parameters</h2>
-<dl>
-<dt><strong><code>inputdim</code></strong> :&ensp;<code>tuple</code></dt>
-<dd>Dimensionality of the input image.</dd>
-<dt><strong><code>hidden</code></strong> :&ensp;<code>int</code></dt>
-<dd>The number of neurons in each hidden layer.</dd>
-<dt><strong><code>typ</code></strong> :&ensp;<code>str</code></dt>
-<dd>Choice of convolutional neural network: One of 'ConvNet'</dd>
-</dl>
-<h2 id="returns">Returns</h2>
-<p>an ConvNet with torch.nn.Module with the specfied structure.</p></div>
-<div class="git-link-div"><a href="https://github.com/autonlab/auton-survival" class="git-link">Browse git</a></div>
 </dd>
 </dl>
 </section>

@@ -27,7 +27,13 @@ ga('create', 'G-TTD30SJCTB', 'auto'); ga('send', 'pageview');
 <h1 class="title">Module <code>auton_survival.preprocessing</code></h1>
 </header>
 <section id="section-intro">
-<div class="git-link-div"><a href="https://github.com/autonlab/auton-survival" class="git-link">Browse git</a></div>
+<div class="git-link-div"><a href="https://github.com/autonlab/DeepSurvivalMachines" class="git-link">Browse git</a></div>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
 </section>
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
@@ -68,7 +74,7 @@ One of <code>'mean'</code>, <code>'median'</code>, <code>'knn'</code>, <code>'mi
 <dd>Strategy for handling remaining columns.
 One of <code>'ignore'</code>, <code>'drop'</code>. Default is <code>drop</code>.</dd>
 </dl></div>
-<div class="git-link-div"><a href="https://github.com/autonlab/auton-survival" class="git-link">Browse git</a></div>
+<div class="git-link-div"><a href="https://github.com/autonlab/DeepSurvivalMachines" class="git-link">Browse git</a></div>
 <h3>Methods</h3>
 <dl>
 <dt id="auton_survival.preprocessing.Imputer.fit"><code class="name flex">
@@ -76,14 +82,14 @@ One of <code>'ignore'</code>, <code>'drop'</code>. Default is <code>drop</code>.
 </code></dt>
 <dd>
 <div class="desc"></div>
-<div class="git-link-div"><a href="https://github.com/autonlab/auton-survival" class="git-link">Browse git</a></div>
+<div class="git-link-div"><a href="https://github.com/autonlab/DeepSurvivalMachines" class="git-link">Browse git</a></div>
 </dd>
 <dt id="auton_survival.preprocessing.Imputer.transform"><code class="name flex">
 <span>def <span class="ident">transform</span></span>(<span>self, data)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<div class="git-link-div"><a href="https://github.com/autonlab/auton-survival" class="git-link">Browse git</a></div>
+<div class="git-link-div"><a href="https://github.com/autonlab/DeepSurvivalMachines" class="git-link">Browse git</a></div>
 </dd>
 <dt id="auton_survival.preprocessing.Imputer.fit_transform"><code class="name flex">
 <span>def <span class="ident">fit_transform</span></span>(<span>self, data, cat_feats, num_feats, fill_value=-1, n_neighbors=5, **kwargs)</span>
@@ -110,7 +116,7 @@ One of <code>'ignore'</code>, <code>'drop'</code>. Default is <code>drop</code>.
 <dt><code>pandas.DataFrame</code></dt>
 <dd>Imputed dataset.</dd>
 </dl></div>
-<div class="git-link-div"><a href="https://github.com/autonlab/auton-survival" class="git-link">Browse git</a></div>
+<div class="git-link-div"><a href="https://github.com/autonlab/DeepSurvivalMachines" class="git-link">Browse git</a></div>
 </dd>
 </dl>
 </dd>
@@ -133,14 +139,49 @@ One of <code>'ignore'</code>, <code>'drop'</code>. Default is <code>drop</code>.
 One of <code>'standard'</code>, <code>'minmax'</code>, <code>'none'</code>.
 Default is <code>standard</code>.</dd>
 </dl></div>
-<div class="git-link-div"><a href="https://github.com/autonlab/auton-survival" class="git-link">Browse git</a></div>
+<div class="git-link-div"><a href="https://github.com/autonlab/DeepSurvivalMachines" class="git-link">Browse git</a></div>
 <h3>Methods</h3>
 <dl>
-<dt id="auton_survival.preprocessing.Scaler.fit_transform"><code class="name flex">
-<span>def <span class="ident">fit_transform</span></span>(<span>self, data, feats=[])</span>
+<dt id="auton_survival.preprocessing.Scaler.fit"><code class="name flex">
+<span>def <span class="ident">fit</span></span>(<span>self, data, num_feats=None)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Scales dataset using the scaling strategy.</p>
+<div class="desc"><p>Fits scaler to dataset using scaling strategy.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>data</code></strong> :&ensp;<code>pandas.DataFrame</code></dt>
+<dd>Dataframe to be scaled.</dd>
+<dt><strong><code>feats</code></strong> :&ensp;<code>list</code></dt>
+<dd>List of numerical/continuous features to be scaled.
+<strong>NOTE</strong>: if left empty, all features are interpreted as numerical.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>Fitted instance of scaler.</p></div>
+<div class="git-link-div"><a href="https://github.com/autonlab/DeepSurvivalMachines" class="git-link">Browse git</a></div>
+</dd>
+<dt id="auton_survival.preprocessing.Scaler.transform"><code class="name flex">
+<span>def <span class="ident">transform</span></span>(<span>self, data)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Scales data using scaling strategy.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>data</code></strong> :&ensp;<code>pandas.DataFrame</code></dt>
+<dd>Dataframe to be scaled.</dd>
+<dt><strong><code>feats</code></strong> :&ensp;<code>list</code></dt>
+<dd>List of numerical/continuous features to be scaled.
+<strong>NOTE</strong>: if left empty, all features are interpreted as numerical.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>Fitted instance of scaler.</p></div>
+<div class="git-link-div"><a href="https://github.com/autonlab/DeepSurvivalMachines" class="git-link">Browse git</a></div>
+</dd>
+<dt id="auton_survival.preprocessing.Scaler.fit_transform"><code class="name flex">
+<span>def <span class="ident">fit_transform</span></span>(<span>self, data, num_feats=[])</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Fits a scaler and rescales a dataset using a standard rescaling
+strategy.</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
 <dt><strong><code>data</code></strong> :&ensp;<code>pandas.DataFrame</code></dt>
@@ -154,13 +195,13 @@ Default is <code>standard</code>.</dd>
 <dt><code>pandas.DataFrame</code></dt>
 <dd>Scaled dataset.</dd>
 </dl></div>
-<div class="git-link-div"><a href="https://github.com/autonlab/auton-survival" class="git-link">Browse git</a></div>
+<div class="git-link-div"><a href="https://github.com/autonlab/DeepSurvivalMachines" class="git-link">Browse git</a></div>
 </dd>
 </dl>
 </dd>
 <dt id="auton_survival.preprocessing.Preprocessor"><code class="flex name class">
 <span>class <span class="ident">Preprocessor</span></span>
-<span>(</span><span>cat_feat_strat='ignore', num_feat_strat='mean', scaling_strategy='standard', remaining='drop')</span>
+<span>(</span><span>cat_feat_strat='ignore', num_feat_strat='mean', scaling_strategy='standard', one_hot=True, remaining='drop')</span>
 </code></dt>
 <dd>
 <div class="desc"><p>A composite transform involving both scaling and preprocessing.</p>
@@ -172,14 +213,30 @@ Default is <code>standard</code>.</dd>
 <dd>Strategy for imputing numerical/continuous features.</dd>
 <dt><strong><code>scaling_strategy</code></strong> :&ensp;<code>str</code></dt>
 <dd>Strategy to use for scaling numerical/continuous data.</dd>
+<dt><strong><code>one_hot</code></strong> :&ensp;<code>bool</code></dt>
+<dd>Whether to apply one hot encoding to the data.</dd>
 <dt><strong><code>remaining</code></strong> :&ensp;<code>str</code></dt>
 <dd>Strategy for handling remaining columns.</dd>
 </dl></div>
-<div class="git-link-div"><a href="https://github.com/autonlab/auton-survival" class="git-link">Browse git</a></div>
+<div class="git-link-div"><a href="https://github.com/autonlab/DeepSurvivalMachines" class="git-link">Browse git</a></div>
 <h3>Methods</h3>
 <dl>
+<dt id="auton_survival.preprocessing.Preprocessor.fit"><code class="name flex">
+<span>def <span class="ident">fit</span></span>(<span>self, data, cat_feats, num_feats, fill_value=-1, n_neighbors=5, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Fit imputer and scaler to dataset.</p></div>
+<div class="git-link-div"><a href="https://github.com/autonlab/DeepSurvivalMachines" class="git-link">Browse git</a></div>
+</dd>
+<dt id="auton_survival.preprocessing.Preprocessor.transform"><code class="name flex">
+<span>def <span class="ident">transform</span></span>(<span>self, data)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Impute and scale the dataset.</p></div>
+<div class="git-link-div"><a href="https://github.com/autonlab/DeepSurvivalMachines" class="git-link">Browse git</a></div>
+</dd>
 <dt id="auton_survival.preprocessing.Preprocessor.fit_transform"><code class="name flex">
-<span>def <span class="ident">fit_transform</span></span>(<span>self, data, cat_feats, num_feats, one_hot=True, fill_value=-1, n_neighbors=5, **kwargs)</span>
+<span>def <span class="ident">fit_transform</span></span>(<span>self, data, cat_feats, num_feats, fill_value=-1, n_neighbors=5, **kwargs)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Imputes and scales dataset.</p>
@@ -203,17 +260,11 @@ Default is <code>standard</code>.</dd>
 <h2 id="returns">Returns:</h2>
 <pre><code>pandas.DataFrame: Imputed and scaled dataset.
 </code></pre></div>
-<div class="git-link-div"><a href="https://github.com/autonlab/auton-survival" class="git-link">Browse git</a></div>
+<div class="git-link-div"><a href="https://github.com/autonlab/DeepSurvivalMachines" class="git-link">Browse git</a></div>
 </dd>
 </dl>
 </dd>
 </dl>
-</section>
-<section>
-</section>
-<section>
-</section>
-<section>
 </section>
 </article>
 <nav id="sidebar">
@@ -241,12 +292,16 @@ Default is <code>standard</code>.</dd>
 <li>
 <h4><code><a title="auton_survival.preprocessing.Scaler" href="#auton_survival.preprocessing.Scaler">Scaler</a></code></h4>
 <ul class="">
+<li><code><a title="auton_survival.preprocessing.Scaler.fit" href="#auton_survival.preprocessing.Scaler.fit">fit</a></code></li>
+<li><code><a title="auton_survival.preprocessing.Scaler.transform" href="#auton_survival.preprocessing.Scaler.transform">transform</a></code></li>
 <li><code><a title="auton_survival.preprocessing.Scaler.fit_transform" href="#auton_survival.preprocessing.Scaler.fit_transform">fit_transform</a></code></li>
 </ul>
 </li>
 <li>
 <h4><code><a title="auton_survival.preprocessing.Preprocessor" href="#auton_survival.preprocessing.Preprocessor">Preprocessor</a></code></h4>
 <ul class="">
+<li><code><a title="auton_survival.preprocessing.Preprocessor.fit" href="#auton_survival.preprocessing.Preprocessor.fit">fit</a></code></li>
+<li><code><a title="auton_survival.preprocessing.Preprocessor.transform" href="#auton_survival.preprocessing.Preprocessor.transform">transform</a></code></li>
 <li><code><a title="auton_survival.preprocessing.Preprocessor.fit_transform" href="#auton_survival.preprocessing.Preprocessor.fit_transform">fit_transform</a></code></li>
 </ul>
 </li>
