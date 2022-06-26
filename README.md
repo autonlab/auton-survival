@@ -12,7 +12,6 @@
 
 <br>
 
-
 The `auton-survival` Package
 ---------------------------
 
@@ -54,6 +53,8 @@ regression problems, Survival Analysis differs in two major ways:
   \( T in [0, \infty) \).
 * There is presence of censoring (ie. a large number of instances of data are
   lost to follow up.)
+
+<p align="center"><img src="https://ndownloader.figshare.com/files/36038024" width=60% /></p>
 
 <a id="package"></a>
 
@@ -97,6 +98,10 @@ model.fit(features, outcomes.time, outcomes.event)
 # Predict risk at specific time horizons.
 predictions = model.predict_risk(features, t=[8, 12, 16])
 ```
+
+<p align="center"><img src="https://ndownloader.figshare.com/files/36038027" width=60% /></p>
+
+
 
 ### `auton_survival.estimators` [\[Demo Notebook\]](https://nbviewer.org/github/autonlab/auton-survival/blob/master/examples/Survival%20Regression%20with%20Auton-Survival.ipynb)</a>
 
