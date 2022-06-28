@@ -227,6 +227,8 @@ response to a specific intervention. Relies on the specially designed
 `auton_survival.models.cmhe.DeepCoxMixturesHeterogenousEffects` latent variable model.
 
 ```python
+from auton_survival.models.cmhe DeepCoxMixturesHeterogenousEffects
+
 # Instantiate the CMHE model
 model = DeepCoxMixturesHeterogenousEffects(random_seed=random_seed, k=k, g=g, layers=layers)
 
@@ -250,8 +252,8 @@ phenotypes = model.fit_predict(features, outcomes.time, outcomes.event, interven
 ```
 
 DAG representations of the unsupervised, supervised, and counterfactual probabilitic
-phenotypers in auton-survival are shown in the below figure. X represents the
-covariates, T the time-to-event and Z is the phenotype to be inferred.
+phenotypers in auton-survival are shown in the below figure. *X* represents the
+covariates, *T* the time-to-event and *Z* is the phenotype to be inferred.
 
 <p align="center"><img src="https://ndownloader.figshare.com/files/36056648" width=60%></p>
 
@@ -285,9 +287,9 @@ score = survival_regression_metric(metric='brs', outcomes_train,
 ```
 
 - **Treatment Effect**: Used to compare treatment arms by computing the difference in the following metrics for treatment and control groups:
-    - **Time at Risk** (TaR) (left)
+    - **Time at Risk (TaR)** (left)
     - **Risk at Time** (center)
-    - **Restricted Mean Survival Time** (RMST) (right)
+    - **Restricted Mean Survival Time (RMST)** (right)
     
 <p align="center">
 <img src="https://ndownloader.figshare.com/files/36056507" width=30%>
