@@ -166,7 +166,8 @@ Phenotyping and Knowledge Discovery
 
 `auton_survival.phenotyping` allows extraction of latent clusters or subgroups
 of patients that demonstrate similar outcomes. In the context of this package,
-we refer to this task as **phenotyping**. `auton_survival.phenotyping` allows:
+we refer to this task as **phenotyping**. `auton_survival.phenotyping` provides
+the following phenotyping utilities:
 
 - **Intersectional Phenotyping**: Recovers groups, or phenotypes, of individuals 
 over exhaustive combinations of user-specified categorical and numerical features. 
@@ -226,6 +227,8 @@ response to a specific intervention. Relies on the specially designed
 `auton_survival.models.cmhe.DeepCoxMixturesHeterogenousEffects` latent variable model.
 
 ```python
+from auton_survival.models.cmhe DeepCoxMixturesHeterogenousEffects
+
 # Instantiate the CMHE model
 model = DeepCoxMixturesHeterogenousEffects(random_seed=random_seed, k=k, g=g, layers=layers)
 
@@ -247,6 +250,13 @@ model = SurvivalVirtualTwins(horizon=365)
 # Infer the estimated counterfactual phenotype probability.
 phenotypes = model.fit_predict(features, outcomes.time, outcomes.event, interventions)
 ```
+
+DAG representations of the unsupervised, supervised, and counterfactual probabilitic
+phenotypers in auton-survival are shown in the below figure. *X* represents the
+covariates, *T* the time-to-event and *Z* is the phenotype to be inferred.
+
+<p align="center"><img src="https://ndownloader.figshare.com/files/36056648" width=60%></p>
+
 
 <a id="evaluation"></a>
 
@@ -277,9 +287,14 @@ score = survival_regression_metric(metric='brs', outcomes_train,
 ```
 
 - **Treatment Effect**: Used to compare treatment arms by computing the difference in the following metrics for treatment and control groups:
-    - **Time at Risk** (TaR)
-    - **Risk at Time**
-    - **Restricted Mean Survival Time** (RMST)
+    - **Time at Risk (TaR)** (left)
+    - **Risk at Time** (center)
+    - **Restricted Mean Survival Time (RMST)** (right)
+    
+<p align="center">
+<img src="https://ndownloader.figshare.com/files/36056507" width=30%>
+<img src="https://ndownloader.figshare.com/files/36056534" width=30%>
+<img src="https://ndownloader.figshare.com/files/36056546" width=30%></p>
 
 ```python
 from auton_survival.metrics import survival_diff_metric
