@@ -176,7 +176,7 @@ class SurvivalRegressionCV:
                                            predictions=predictions,
                                            times=horizons,
                                            outcomes_train=outcomes.loc[self.folds!=fold])
-        fold_scores.append(score)
+        fold_scores.append(np.mean(score))
       hyper_param_scores.append(np.mean(fold_scores)) 
 
     if self.metric in ['ibs', 'brs']:
