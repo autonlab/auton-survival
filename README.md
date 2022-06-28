@@ -253,7 +253,7 @@ DAG representations of the unsupervised, supervised, and counterfactual probabil
 phenotypers in auton-survival are shown in the below figure. X represents the
 covariates, T the time-to-event and Z is the phenotype to be inferred.
 
-<img align="center" src="https://ndownloader.figshare.com/files/36056648" width=60%>
+<p align="center"><img src="https://ndownloader.figshare.com/files/36056648" width=60%></p>
 
 
 <a id="evaluation"></a>
@@ -290,9 +290,9 @@ score = survival_regression_metric(metric='brs', outcomes_train,
     - **Restricted Mean Survival Time** (RMST) (right)
     
 <p align="center">
-<img src="https://ndownloader.figshare.com/files/36056507" width=40%>
-<img src="https://ndownloader.figshare.com/files/36056534" width=40%>
-<img src="https://ndownloader.figshare.com/files/36056546" width=40%></p>
+<img src="https://ndownloader.figshare.com/files/36056507" width=30%>
+<img src="https://ndownloader.figshare.com/files/36056534" width=30%>
+<img src="https://ndownloader.figshare.com/files/36056546" width=30%></p>
 
 ```python
 from auton_survival.metrics import survival_diff_metric
