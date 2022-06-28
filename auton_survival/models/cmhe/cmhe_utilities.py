@@ -362,7 +362,6 @@ def predict_latent_z(model, x):
 def predict_latent_phi(model, x):
 
   model, _ = model
-
   x = model.embedding(x)
 
   p_phi_gate = torch.nn.Softmax(dim=1)(model.phi_gate(x)).detach().numpy()

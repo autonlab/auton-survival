@@ -38,9 +38,13 @@ class DeepCMHETorch(torch.nn.Module):
 
   def _init_dcmhe_layers(self, lastdim):
 
-    self.expert = torch.nn.Linear(lastdim, self.k, bias=False)
-    self.z_gate = torch.nn.Linear(lastdim, self.k, bias=False)
-    self.phi_gate = torch.nn.Linear(lastdim, self.g, bias=False)
+
+    self.expert = IdentifiableLinear(lastdim, self.k, bias=False)
+    self.z_gate = IdentifiableLinear(lastdim, self.k, bias=False)
+    self.phi_gate = IdentifiableLinear(lastdim, self.g, bias=False)
+    # self.expert = torch.nn.Linear(lastdim, self.k, bias=False)
+    # self.z_gate = torch.nn.Linear(lastdim, self.k, bias=False)
+    # self.phi_gate = torch.nn.Linear(lastdim, self.g, bias=False)
     self.omega = torch.nn.Parameter(torch.rand(self.g)-0.5)
 
   def __init__(self, k, g, inputdim, layers=None, gamma=100,
@@ -96,3 +100,34 @@ class DeepCMHETorch(torch.nn.Module):
         logp_joint_hrs[:, i, j] = log_hrs[:, i] + (j!=2)*a*self.omega[j]
 
     return logp_jointlatent_gate, logp_joint_hrs
+
+class IdentifiableLinear(torch.nn.Module):
+
+  """
+  Softmax and LogSoftmax with K classes in pytorch are over specfied and lead to
+  issues of mis-identifiability. This class is a wrapper for linear layers that 
+  are correctly specified with K-1 columns. The output of this layer for the Kth
+  class is all zeros. This allows direct application of pytorch.nn.LogSoftmax
+  and pytorch.nn.Softmax.
+  """
+
+  def __init__(self, in_features, out_features, bias=True):
+  
+    super(IdentifiableLinear, self).__init__()
+
+    assert out_features>0; "Output features must be greater than 0"
+
+    self.out_features = out_features
+    self.in_features = in_features
+    self.linear = torch.nn.Linear(in_features, max(out_features-1, 1), bias=bias)
+
+  @property
+  def weight(self):
+    return self.linear.weight
+
+  def forward(self, x):
+    if self.out_features == 1:
+      return self.linear(x).reshape(-1, 1)
+    else:
+      zeros = torch.zeros(len(x), 1, device=x.device)
+      return torch.cat([self.linear(x), zeros], dim=1)
