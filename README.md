@@ -55,6 +55,8 @@ regression problems, Survival Analysis differs in two major ways:
   lost to follow up.)
 
 <p align="center"><img src="https://ndownloader.figshare.com/files/36038024" width=60% /></p>
+<p align="center"><b>Figure 1. Illustration of Censoring</b></p>
+
 
 <a id="package"></a>
 
@@ -100,6 +102,7 @@ predictions = model.predict_risk(features, t=[8, 12, 16])
 ```
 
 <p align="center"><img src="https://ndownloader.figshare.com/files/36038027" width=60% /></p>
+<p align="center"><b>Figure 2. Violation of the Proportional Hazards Assumption</b></p>
 
 
 
@@ -255,7 +258,9 @@ DAG representations of the unsupervised, supervised, and counterfactual probabil
 phenotypers in auton-survival are shown in the below figure. *X* represents the
 covariates, *T* the time-to-event and *Z* is the phenotype to be inferred.
 
+<p align="center">A. Unsupervised Phenotyping &nbsp;&nbsp; B. Supervised Phenotyping &nbsp;&nbsp; C. Counterfactual Phenotyping</p>
 <p align="center"><img src="https://ndownloader.figshare.com/files/36056648" width=60%></p>
+<p align="center"><b>Figure 3. DAG Representations of the Phenotypers in <code>auton-survival</code></b></p>
 
 
 <a id="evaluation"></a>
@@ -290,11 +295,13 @@ score = survival_regression_metric(metric='brs', outcomes_train,
     - **Time at Risk (TaR)** (left)
     - **Risk at Time** (center)
     - **Restricted Mean Survival Time (RMST)** (right)
-    
+ 
+<p align="center">A. Time at Risk &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; B. Risk at Time &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; C. RMST</p>
 <p align="center">
 <img src="https://ndownloader.figshare.com/files/36056507" width=30%>
 <img src="https://ndownloader.figshare.com/files/36056534" width=30%>
 <img src="https://ndownloader.figshare.com/files/36056546" width=30%></p>
+<p align="center"><b>Figure 4. Graphical representation of the Treatment Effect Metrics</b></p>
 
 ```python
 from auton_survival.metrics import survival_diff_metric
