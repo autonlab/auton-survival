@@ -210,7 +210,7 @@ the `Deep Survival Machines` and `Deep Cox Mixtures` latent variable survival
 regression estimators using the `predict latent z` method. 
 
 ```python
-from auton_survival.models.dcm import DeepCoxMixtures [\[Demo Notebook\]]
+from auton_survival.models.dcm import DeepCoxMixtures
 
 # Instantiate a DCM Model with 3 phenogroups and a single hidden layer with size 100.
 model = DeepCoxMixtures(k = 3, layers = [100])
