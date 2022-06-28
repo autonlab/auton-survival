@@ -55,6 +55,8 @@ regression problems, Survival Analysis differs in two major ways:
   lost to follow up.)
 
 <p align="center"><img src="https://ndownloader.figshare.com/files/36038024" width=60% /></p>
+<p align="center"><b>Figure 1. Illustration of Censoring</b></p>
+
 
 <a id="package"></a>
 
@@ -100,6 +102,7 @@ predictions = model.predict_risk(features, t=[8, 12, 16])
 ```
 
 <p align="center"><img src="https://ndownloader.figshare.com/files/36038027" width=60% /></p>
+<p align="center"><b>Figure 2. Violation of the Proportional Hazards Assumption</b></p>
 
 
 
@@ -166,7 +169,8 @@ Phenotyping and Knowledge Discovery
 
 `auton_survival.phenotyping` allows extraction of latent clusters or subgroups
 of patients that demonstrate similar outcomes. In the context of this package,
-we refer to this task as **phenotyping**. `auton_survival.phenotyping` allows:
+we refer to this task as **phenotyping**. `auton_survival.phenotyping` provides
+the following phenotyping utilities:
 
 - **Intersectional Phenotyping**: Recovers groups, or phenotypes, of individuals 
 over exhaustive combinations of user-specified categorical and numerical features. 
@@ -209,7 +213,7 @@ the `Deep Survival Machines` and `Deep Cox Mixtures` latent variable survival
 regression estimators using the `predict latent z` method. 
 
 ```python
-from auton_survival.models.dcm import DeepCoxMixtures [\[Demo Notebook\]]
+from auton_survival.models.dcm import DeepCoxMixtures
 
 # Instantiate a DCM Model with 3 phenogroups and a single hidden layer with size 100.
 model = DeepCoxMixtures(k = 3, layers = [100])
@@ -226,6 +230,8 @@ response to a specific intervention. Relies on the specially designed
 `auton_survival.models.cmhe.DeepCoxMixturesHeterogenousEffects` latent variable model.
 
 ```python
+from auton_survival.models.cmhe DeepCoxMixturesHeterogenousEffects
+
 # Instantiate the CMHE model
 model = DeepCoxMixturesHeterogenousEffects(random_seed=random_seed, k=k, g=g, layers=layers)
 
@@ -247,6 +253,15 @@ model = SurvivalVirtualTwins(horizon=365)
 # Infer the estimated counterfactual phenotype probability.
 phenotypes = model.fit_predict(features, outcomes.time, outcomes.event, interventions)
 ```
+
+DAG representations of the unsupervised, supervised, and counterfactual probabilitic
+phenotypers in auton-survival are shown in the below figure. *X* represents the
+covariates, *T* the time-to-event and *Z* is the phenotype to be inferred.
+
+<p align="center">A. Unsupervised Phenotyping &nbsp;&nbsp; B. Supervised Phenotyping &nbsp;&nbsp; C. Counterfactual Phenotyping</p>
+<p align="center"><img src="https://ndownloader.figshare.com/files/36056648" width=60%></p>
+<p align="center"><b>Figure 3. DAG Representations of the Phenotypers in <code>auton-survival</code></b></p>
+
 
 <a id="evaluation"></a>
 
@@ -277,9 +292,16 @@ score = survival_regression_metric(metric='brs', outcomes_train,
 ```
 
 - **Treatment Effect**: Used to compare treatment arms by computing the difference in the following metrics for treatment and control groups:
-    - **Time at Risk** (TaR)
-    - **Risk at Time**
-    - **Restricted Mean Survival Time** (RMST)
+    - **Time at Risk (TaR)** (left)
+    - **Risk at Time** (center)
+    - **Restricted Mean Survival Time (RMST)** (right)
+ 
+<p align="center">A. Time at Risk &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; B. Risk at Time &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; C. RMST</p>
+<p align="center">
+<img src="https://ndownloader.figshare.com/files/36056507" width=30%>
+<img src="https://ndownloader.figshare.com/files/36056534" width=30%>
+<img src="https://ndownloader.figshare.com/files/36056546" width=30%></p>
+<p align="center"><b>Figure 4. Graphical representation of the Treatment Effect Metrics</b></p>
 
 ```python
 from auton_survival.metrics import survival_diff_metric
