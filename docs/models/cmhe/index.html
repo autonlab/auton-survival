@@ -67,7 +67,7 @@ C. Nagpal, M. Goswami, K. Dufendach, A. Dubrawski</a></p>
 &gt;&gt;&gt; # estimate the treatment effect phenogroups
 &gt;&gt;&gt; model.predict_latent_phi(x)
 </code></pre>
-<div class="git-link-div"><a href="https://github.com/autonlab/DeepSurvivalMachines" class="git-link">Browse git</a></div>
+<div class="git-link-div"><a href="https://github.com/autonlab/auton-survival" class="git-link">Browse git</a></div>
 </section>
 <section>
 <h2 class="section-title" id="header-submodules">Sub-modules</h2>
@@ -123,7 +123,7 @@ Higher means stronger regularization.</dd>
 &gt;&gt;&gt; model = DeepCoxMixturesHeterogenousEffects(k=2, g=3)
 &gt;&gt;&gt; model.fit(x, t, e, a)
 </code></pre></div>
-<div class="git-link-div"><a href="https://github.com/autonlab/DeepSurvivalMachines" class="git-link">Browse git</a></div>
+<div class="git-link-div"><a href="https://github.com/autonlab/auton-survival" class="git-link">Browse git</a></div>
 <h3>Methods</h3>
 <dl>
 <dt id="auton_survival.models.cmhe.DeepCoxMixturesHeterogenousEffects.fit"><code class="name flex">
@@ -158,14 +158,14 @@ specifies the size of each mini-batch.</dd>
 <dd>The choice of the gradient based optimization method. One of
 'Adam', 'RMSProp' or 'SGD'.</dd>
 </dl></div>
-<div class="git-link-div"><a href="https://github.com/autonlab/DeepSurvivalMachines" class="git-link">Browse git</a></div>
+<div class="git-link-div"><a href="https://github.com/autonlab/auton-survival" class="git-link">Browse git</a></div>
 </dd>
 <dt id="auton_survival.models.cmhe.DeepCoxMixturesHeterogenousEffects.predict_risk"><code class="name flex">
 <span>def <span class="ident">predict_risk</span></span>(<span>self, x, a, t=None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<div class="git-link-div"><a href="https://github.com/autonlab/DeepSurvivalMachines" class="git-link">Browse git</a></div>
+<div class="git-link-div"><a href="https://github.com/autonlab/auton-survival" class="git-link">Browse git</a></div>
 </dd>
 <dt id="auton_survival.models.cmhe.DeepCoxMixturesHeterogenousEffects.predict_survival"><code class="name flex">
 <span>def <span class="ident">predict_survival</span></span>(<span>self, x, a, t=None)</span>
@@ -188,21 +188,21 @@ to be computed</dd>
 <dt><code>np.array</code></dt>
 <dd>numpy array of the survival probabilites at each time in t.</dd>
 </dl></div>
-<div class="git-link-div"><a href="https://github.com/autonlab/DeepSurvivalMachines" class="git-link">Browse git</a></div>
+<div class="git-link-div"><a href="https://github.com/autonlab/auton-survival" class="git-link">Browse git</a></div>
 </dd>
 <dt id="auton_survival.models.cmhe.DeepCoxMixturesHeterogenousEffects.predict_latent_z"><code class="name flex">
 <span>def <span class="ident">predict_latent_z</span></span>(<span>self, x)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Returns the estimated latent base survival group <span><span class="MathJax_Preview"> z </span><script type="math/tex"> z </script></span> given the confounders <span><span class="MathJax_Preview"> x </span><script type="math/tex"> x </script></span>.</p></div>
-<div class="git-link-div"><a href="https://github.com/autonlab/DeepSurvivalMachines" class="git-link">Browse git</a></div>
+<div class="git-link-div"><a href="https://github.com/autonlab/auton-survival" class="git-link">Browse git</a></div>
 </dd>
 <dt id="auton_survival.models.cmhe.DeepCoxMixturesHeterogenousEffects.predict_latent_phi"><code class="name flex">
 <span>def <span class="ident">predict_latent_phi</span></span>(<span>self, x)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Returns the estimated latent treatment effect group <span><span class="MathJax_Preview"> \phi </span><script type="math/tex"> \phi </script></span> given the confounders <span><span class="MathJax_Preview"> x </span><script type="math/tex"> x </script></span>.</p></div>
-<div class="git-link-div"><a href="https://github.com/autonlab/DeepSurvivalMachines" class="git-link">Browse git</a></div>
+<div class="git-link-div"><a href="https://github.com/autonlab/auton-survival" class="git-link">Browse git</a></div>
 </dd>
 </dl>
 </dd>
