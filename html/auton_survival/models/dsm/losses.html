@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.9.2" />
-<title>auton_survival.models.cmhe.cmhe_torch API documentation</title>
-<meta name="description" content="" />
+<title>auton_survival.models.dsm.losses API documentation</title>
+<meta name="description" content="Loss function definitions for the Deep Survival Machines model …" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
 <link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
@@ -24,9 +24,21 @@ ga('create', 'G-TTD30SJCTB', 'auto'); ga('send', 'pageview');
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>auton_survival.models.cmhe.cmhe_torch</code></h1>
+<h1 class="title">Module <code>auton_survival.models.dsm.losses</code></h1>
 </header>
 <section id="section-intro">
+<p>Loss function definitions for the Deep Survival Machines model</p>
+<p>In this module we define the various losses for the censored and uncensored
+instances of data corresponding to Weibull and LogNormal distributions.
+These losses are optimized when training DSM.</p>
+<div class="admonition todo">
+<p class="admonition-title">TODO</p>
+<p>Use torch.distributions</p>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>NOT DESIGNED TO BE CALLED DIRECTLY!!!</p>
+</div>
 <div class="git-link-div"><a href="https://github.com/autonlab/DeepSurvivalMachines" class="git-link">Browse git</a></div>
 </section>
 <section>
@@ -34,89 +46,46 @@ ga('create', 'G-TTD30SJCTB', 'auto'); ga('send', 'pageview');
 <section>
 </section>
 <section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="auton_survival.models.dsm.losses.unconditional_loss"><code class="name flex">
+<span>def <span class="ident">unconditional_loss</span></span>(<span>model, t, e, risk='1')</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<div class="git-link-div"><a href="https://github.com/autonlab/DeepSurvivalMachines" class="git-link">Browse git</a></div>
+</dd>
+<dt id="auton_survival.models.dsm.losses.conditional_loss"><code class="name flex">
+<span>def <span class="ident">conditional_loss</span></span>(<span>model, x, t, e, elbo=True, risk='1')</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<div class="git-link-div"><a href="https://github.com/autonlab/DeepSurvivalMachines" class="git-link">Browse git</a></div>
+</dd>
+<dt id="auton_survival.models.dsm.losses.predict_mean"><code class="name flex">
+<span>def <span class="ident">predict_mean</span></span>(<span>model, x, risk='1')</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<div class="git-link-div"><a href="https://github.com/autonlab/DeepSurvivalMachines" class="git-link">Browse git</a></div>
+</dd>
+<dt id="auton_survival.models.dsm.losses.predict_pdf"><code class="name flex">
+<span>def <span class="ident">predict_pdf</span></span>(<span>model, x, t_horizon, risk='1')</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<div class="git-link-div"><a href="https://github.com/autonlab/DeepSurvivalMachines" class="git-link">Browse git</a></div>
+</dd>
+<dt id="auton_survival.models.dsm.losses.predict_cdf"><code class="name flex">
+<span>def <span class="ident">predict_cdf</span></span>(<span>model, x, t_horizon, risk='1')</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<div class="git-link-div"><a href="https://github.com/autonlab/DeepSurvivalMachines" class="git-link">Browse git</a></div>
+</dd>
+</dl>
 </section>
 <section>
-<h2 class="section-title" id="header-classes">Classes</h2>
-<dl>
-<dt id="auton_survival.models.cmhe.cmhe_torch.DeepCMHETorch"><code class="flex name class">
-<span>class <span class="ident">DeepCMHETorch</span></span>
-<span>(</span><span>k, g, inputdim, layers=None, gamma=100, smoothing_factor=0.0001, gate_l2_penalty=0.0001, optimizer='Adam')</span>
-</code></dt>
-<dd>
-<div class="desc"><p>PyTorch model definition of the Cox Mixture with Hereogenous Effects Model.</p>
-<p>Cox Mixtures with Heterogenous Effects involves the assuming that the
-base survival rates are independent of the treatment effect.
-of the individual to be a mixture of K Cox Models. Conditioned on each
-subgroup Z=k; the PH assumptions are assumed to hold and the baseline
-hazard rates is determined non-parametrically using an spline-interpolated
-Breslow's estimator.</p>
-<p>Initializes internal Module state, shared by both nn.Module and ScriptModule.</p></div>
-<div class="git-link-div"><a href="https://github.com/autonlab/DeepSurvivalMachines" class="git-link">Browse git</a></div>
-<h3>Class variables</h3>
-<dl>
-<dt id="auton_survival.models.cmhe.cmhe_torch.DeepCMHETorch.dump_patches"><code class="name">var <span class="ident">dump_patches</span> : bool</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt id="auton_survival.models.cmhe.cmhe_torch.DeepCMHETorch.training"><code class="name">var <span class="ident">training</span> : bool</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-</dl>
-<h3>Methods</h3>
-<dl>
-<dt id="auton_survival.models.cmhe.cmhe_torch.DeepCMHETorch.forward"><code class="name flex">
-<span>def <span class="ident">forward</span></span>(<span>self, x, a) ‑> Callable[..., Any]</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<div class="git-link-div"><a href="https://github.com/autonlab/DeepSurvivalMachines" class="git-link">Browse git</a></div>
-</dd>
-</dl>
-</dd>
-<dt id="auton_survival.models.cmhe.cmhe_torch.IdentifiableLinear"><code class="flex name class">
-<span>class <span class="ident">IdentifiableLinear</span></span>
-<span>(</span><span>in_features, out_features, bias=True)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Softmax and LogSoftmax with K classes in pytorch are over specfied and lead to
-issues of mis-identifiability. This class is a wrapper for linear layers that
-are correctly specified with K-1 columns. The output of this layer for the Kth
-class is all zeros. This allows direct application of pytorch.nn.LogSoftmax
-and pytorch.nn.Softmax.</p>
-<p>Initializes internal Module state, shared by both nn.Module and ScriptModule.</p></div>
-<div class="git-link-div"><a href="https://github.com/autonlab/DeepSurvivalMachines" class="git-link">Browse git</a></div>
-<h3>Class variables</h3>
-<dl>
-<dt id="auton_survival.models.cmhe.cmhe_torch.IdentifiableLinear.dump_patches"><code class="name">var <span class="ident">dump_patches</span> : bool</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt id="auton_survival.models.cmhe.cmhe_torch.IdentifiableLinear.training"><code class="name">var <span class="ident">training</span> : bool</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-</dl>
-<h3>Instance variables</h3>
-<dl>
-<dt id="auton_survival.models.cmhe.cmhe_torch.IdentifiableLinear.weight"><code class="name">var <span class="ident">weight</span></code></dt>
-<dd>
-<div class="desc"></div>
-<div class="git-link-div"><a href="https://github.com/autonlab/DeepSurvivalMachines" class="git-link">Browse git</a></div>
-</dd>
-</dl>
-<h3>Methods</h3>
-<dl>
-<dt id="auton_survival.models.cmhe.cmhe_torch.IdentifiableLinear.forward"><code class="name flex">
-<span>def <span class="ident">forward</span></span>(<span>self, x) ‑> Callable[..., Any]</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<div class="git-link-div"><a href="https://github.com/autonlab/DeepSurvivalMachines" class="git-link">Browse git</a></div>
-</dd>
-</dl>
-</dd>
-</dl>
 </section>
 </article>
 <nav id="sidebar">
@@ -128,28 +97,16 @@ and pytorch.nn.Softmax.</p>
 <ul id="index">
 <li><h3>Super-module</h3>
 <ul>
-<li><code><a title="auton_survival.models.cmhe" href="index.html">auton_survival.models.cmhe</a></code></li>
+<li><code><a title="auton_survival.models.dsm" href="index.html">auton_survival.models.dsm</a></code></li>
 </ul>
 </li>
-<li><h3><a href="#header-classes">Classes</a></h3>
-<ul>
-<li>
-<h4><code><a title="auton_survival.models.cmhe.cmhe_torch.DeepCMHETorch" href="#auton_survival.models.cmhe.cmhe_torch.DeepCMHETorch">DeepCMHETorch</a></code></h4>
+<li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
-<li><code><a title="auton_survival.models.cmhe.cmhe_torch.DeepCMHETorch.forward" href="#auton_survival.models.cmhe.cmhe_torch.DeepCMHETorch.forward">forward</a></code></li>
-<li><code><a title="auton_survival.models.cmhe.cmhe_torch.DeepCMHETorch.dump_patches" href="#auton_survival.models.cmhe.cmhe_torch.DeepCMHETorch.dump_patches">dump_patches</a></code></li>
-<li><code><a title="auton_survival.models.cmhe.cmhe_torch.DeepCMHETorch.training" href="#auton_survival.models.cmhe.cmhe_torch.DeepCMHETorch.training">training</a></code></li>
-</ul>
-</li>
-<li>
-<h4><code><a title="auton_survival.models.cmhe.cmhe_torch.IdentifiableLinear" href="#auton_survival.models.cmhe.cmhe_torch.IdentifiableLinear">IdentifiableLinear</a></code></h4>
-<ul class="">
-<li><code><a title="auton_survival.models.cmhe.cmhe_torch.IdentifiableLinear.forward" href="#auton_survival.models.cmhe.cmhe_torch.IdentifiableLinear.forward">forward</a></code></li>
-<li><code><a title="auton_survival.models.cmhe.cmhe_torch.IdentifiableLinear.weight" href="#auton_survival.models.cmhe.cmhe_torch.IdentifiableLinear.weight">weight</a></code></li>
-<li><code><a title="auton_survival.models.cmhe.cmhe_torch.IdentifiableLinear.dump_patches" href="#auton_survival.models.cmhe.cmhe_torch.IdentifiableLinear.dump_patches">dump_patches</a></code></li>
-<li><code><a title="auton_survival.models.cmhe.cmhe_torch.IdentifiableLinear.training" href="#auton_survival.models.cmhe.cmhe_torch.IdentifiableLinear.training">training</a></code></li>
-</ul>
-</li>
+<li><code><a title="auton_survival.models.dsm.losses.unconditional_loss" href="#auton_survival.models.dsm.losses.unconditional_loss">unconditional_loss</a></code></li>
+<li><code><a title="auton_survival.models.dsm.losses.conditional_loss" href="#auton_survival.models.dsm.losses.conditional_loss">conditional_loss</a></code></li>
+<li><code><a title="auton_survival.models.dsm.losses.predict_mean" href="#auton_survival.models.dsm.losses.predict_mean">predict_mean</a></code></li>
+<li><code><a title="auton_survival.models.dsm.losses.predict_pdf" href="#auton_survival.models.dsm.losses.predict_pdf">predict_pdf</a></code></li>
+<li><code><a title="auton_survival.models.dsm.losses.predict_cdf" href="#auton_survival.models.dsm.losses.predict_cdf">predict_cdf</a></code></li>
 </ul>
 </li>
 </ul>
