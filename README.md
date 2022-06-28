@@ -12,7 +12,6 @@
 
 <br>
 
-
 The `auton-survival` Package
 ---------------------------
 
@@ -54,6 +53,8 @@ regression problems, Survival Analysis differs in two major ways:
   \( T in [0, \infty) \).
 * There is presence of censoring (ie. a large number of instances of data are
   lost to follow up.)
+
+<p align="center"><img src="https://ndownloader.figshare.com/files/36038024" width=60% /></p>
 
 <a id="package"></a>
 
@@ -97,6 +98,10 @@ model.fit(features, outcomes.time, outcomes.event)
 # Predict risk at specific time horizons.
 predictions = model.predict_risk(features, t=[8, 12, 16])
 ```
+
+<p align="center"><img src="https://ndownloader.figshare.com/files/36038027" width=60% /></p>
+
+
 
 ### `auton_survival.estimators` [\[Demo Notebook\]](https://nbviewer.org/github/autonlab/auton-survival/blob/master/examples/Survival%20Regression%20with%20Auton-Survival.ipynb)</a>
 
@@ -370,7 +375,45 @@ an Open-Source Package for Regression, Counterfactual Estimation, Evaluation and
 
 **Additionally, `auton-survival` implements the following methodologies:**
 
-[2] [Deep Survival Machines:
+[2] [Counterfactual Phenotyping with Censored Time-to-Events (2022)](https://arxiv.org/abs/2202.11089)</a>
+
+```
+  @article{nagpal2022counterfactual,
+  title={Counterfactual Phenotyping with Censored Time-to-Events},
+  author={Nagpal, Chirag and Goswami, Mononito and Dufendach, Keith and Dubrawski, Artur},
+  journal={arXiv preprint arXiv:2202.11089},
+  year={2022}
+  }
+```
+
+[3] [Deep Cox Mixtures for Survival Regression. Conference on Machine Learning for
+Healthcare (2021)](https://arxiv.org/abs/2101.06536)</a>
+
+```
+  @inproceedings{nagpal2021dcm,
+  title={Deep Cox mixtures for survival regression},
+  author={Nagpal, Chirag and Yadlowsky, Steve and Rostamzadeh, Negar and Heller, Katherine},
+  booktitle={Machine Learning for Healthcare Conference},
+  pages={674--708},
+  year={2021},
+  organization={PMLR}
+  }
+```
+
+[4] [Deep Parametric Time-to-Event Regression with Time-Varying Covariates. AAAI
+Spring Symposium (2021)](http://proceedings.mlr.press/v146/nagpal21a.html)</a>
+
+```
+  @InProceedings{pmlr-v146-nagpal21a,
+  title={Deep Parametric Time-to-Event Regression with Time-Varying Covariates},
+  author={Nagpal, Chirag and Jeanselme, Vincent and Dubrawski, Artur},
+  booktitle={Proceedings of AAAI Spring Symposium on Survival Prediction - Algorithms, Challenges, and Applications 2021},
+  series={Proceedings of Machine Learning Research},
+  publisher={PMLR},
+  }
+```
+
+[5] [Deep Survival Machines:
 Fully Parametric Survival Regression and
 Representation Learning for Censored Data with Competing Risks.
 IEEE Journal of Biomedical and Health Informatics (2021)](https://arxiv.org/abs/2003.01176)</a>
@@ -388,43 +431,9 @@ IEEE Journal of Biomedical and Health Informatics (2021)](https://arxiv.org/abs/
   }
 ```
 
-[3] [Deep Parametric Time-to-Event Regression with Time-Varying Covariates. AAAI
-Spring Symposium (2021)](http://proceedings.mlr.press/v146/nagpal21a.html)</a>
 
-```
-  @InProceedings{pmlr-v146-nagpal21a,
-  title={Deep Parametric Time-to-Event Regression with Time-Varying Covariates},
-  author={Nagpal, Chirag and Jeanselme, Vincent and Dubrawski, Artur},
-  booktitle={Proceedings of AAAI Spring Symposium on Survival Prediction - Algorithms, Challenges, and Applications 2021},
-  series={Proceedings of Machine Learning Research},
-  publisher={PMLR},
-  }
-```
 
-[4] [Deep Cox Mixtures for Survival Regression. Conference on Machine Learning for
-Healthcare (2021)](https://arxiv.org/abs/2101.06536)</a>
 
-```
-  @inproceedings{nagpal2021dcm,
-  title={Deep Cox mixtures for survival regression},
-  author={Nagpal, Chirag and Yadlowsky, Steve and Rostamzadeh, Negar and Heller, Katherine},
-  booktitle={Machine Learning for Healthcare Conference},
-  pages={674--708},
-  year={2021},
-  organization={PMLR}
-  }
-```
-
-[5] [Counterfactual Phenotyping with Censored Time-to-Events (2022)](https://arxiv.org/abs/2202.11089)</a>
-
-```
-  @article{nagpal2022counterfactual,
-  title={Counterfactual Phenotyping with Censored Time-to-Events},
-  author={Nagpal, Chirag and Goswami, Mononito and Dufendach, Keith and Dubrawski, Artur},
-  journal={arXiv preprint arXiv:2202.11089},
-  year={2022}
-  }
-```
 
 <a id="install"></a>
 
