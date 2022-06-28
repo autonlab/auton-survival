@@ -397,7 +397,7 @@ an Open-Source Package for Regression, Counterfactual Estimation, Evaluation and
 
 **Additionally, `auton-survival` implements the following methodologies:**
 
-[2] [Counterfactual Phenotyping with Censored Time-to-Events (2022)](https://arxiv.org/abs/2202.11089)</a>
+[2] [Counterfactual Phenotyping with Censored Time-to-Events. ACM Conference on Knowledge Discovery and Data Mining (KDD) 2022](https://arxiv.org/abs/2202.11089)</a>
 
 ```
   @article{nagpal2022counterfactual,
