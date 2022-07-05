@@ -99,8 +99,7 @@ def _load_framingham_dataset(sequential, competing = False):
 
   if competing:
     time_cvd = (data['TIMECVD'] - data['TIME']).values
-    event *= 2
-    event[data['CVD'] == 1] = 1
+    event[data['CVD'] == 1] = 2
     time[data['CVD'] == 1] = time_cvd[data['CVD'] == 1]
 
   x = SimpleImputer(missing_values=np.nan, strategy='mean').fit_transform(x)
@@ -158,10 +157,9 @@ def _load_pbc_dataset(sequential, competing = False):
   x = np.hstack([x1.values, x2.values, x3.values.reshape(-1, 1)])
 
   time = (data['years'] - data['year']).values
-  event = data['status2'].values
+  event = (data['status'] == 'dead').values
   if competing:
-    event *= 2 # Death is 2
-    event[data['status'] == 'transplanted'] = 1
+    event[data['status'] == 'transplanted'] = 2
 
   x = SimpleImputer(missing_values=np.nan, strategy='mean').fit_transform(x)
   x_ = StandardScaler().fit_transform(x)
