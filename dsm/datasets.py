@@ -157,7 +157,7 @@ def _load_pbc_dataset(sequential, competing = False):
   x = np.hstack([x1.values, x2.values, x3.values.reshape(-1, 1)])
 
   time = (data['years'] - data['year']).values
-  event = (data['status'] == 'dead').values
+  event = (data['status'] == 'dead').values.astype(int)
   if competing:
     event[data['status'] == 'transplanted'] = 2
 
