@@ -143,7 +143,7 @@ def predict_survival(model, x, t=None):
   if isinstance(t, (int, float)): t = [t]
 
   model, breslow_spline = model
-  lrisks = model(x).detach().numpy()
+  lrisks = model(x).detach().cpu().numpy()
 
   unique_times = breslow_spline.baseline_survival_.x
 
