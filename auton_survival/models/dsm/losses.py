@@ -303,7 +303,7 @@ def _weibull_pdf(model, x, t_horizon, risk='1'):
   k_ = shape
   b_ = scale
 
-  t_horz = torch.tensor(t_horizon).double().to(x.device)
+  t_horz = torch.tensor(t_horizon).double().to(logits.device)
   t_horz = t_horz.repeat(shape.shape[0], 1)
 
   pdfs = []
@@ -338,7 +338,7 @@ def _weibull_cdf(model, x, t_horizon, risk='1'):
   k_ = shape
   b_ = scale
 
-  t_horz = torch.tensor(t_horizon).double().to(x.device)
+  t_horz = torch.tensor(t_horizon).double().to(logits.device)
   t_horz = t_horz.repeat(shape.shape[0], 1)
 
   cdfs = []
@@ -401,7 +401,7 @@ def _lognormal_cdf(model, x, t_horizon, risk='1'):
   k_ = shape
   b_ = scale
 
-  t_horz = torch.tensor(t_horizon).double().to(x.device)
+  t_horz = torch.tensor(t_horizon).double().to(logits.device)
   t_horz = t_horz.repeat(shape.shape[0], 1)
 
   cdfs = []
@@ -438,7 +438,7 @@ def _normal_cdf(model, x, t_horizon, risk='1'):
   k_ = shape
   b_ = scale
 
-  t_horz = torch.tensor(t_horizon).double().to(x.device)
+  t_horz = torch.tensor(t_horizon).double().to(logits.device)
   t_horz = t_horz.repeat(shape.shape[0], 1)
 
   cdfs = []
