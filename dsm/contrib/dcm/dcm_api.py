@@ -157,6 +157,15 @@ class DeepCoxMixtures:
     return self
 
 
+  def predict_risk(self, x, t=None):
+
+    if self.fitted:
+      return 1-self.predict_survival(x, t)
+    else:
+      raise Exception("The model has not been fitted yet. Please fit the " +
+                      "model using the `fit` method on some training data " +
+                      "before calling `predict_risk`.")
+      
   def predict_survival(self, x, t):
     r"""Returns the estimated survival probability at time \( t \),
       \( \widehat{\mathbb{P}}(T > t|X) \) for some input data \( x \).
