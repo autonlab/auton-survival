@@ -102,8 +102,7 @@ def _load_framingham_dataset(sequential, competing = False):
     event[data['CVD'] == 1] = 2
     time[data['CVD'] == 1] = time_cvd[data['CVD'] == 1]
 
-  x = SimpleImputer(missing_values=np.nan, strategy='mean').fit_transform(x)
-  x_ = StandardScaler().fit_transform(x)
+  x_ = SimpleImputer(missing_values=np.nan, strategy='mean').fit_transform(x)
 
   if not sequential:
     return x_, time + 1, event, np.concatenate([x1.columns, x2.columns])
@@ -161,8 +160,7 @@ def _load_pbc_dataset(sequential, competing = False):
   if competing:
     event[data['status'] == 'transplanted'] = 2
 
-  x = SimpleImputer(missing_values=np.nan, strategy='mean').fit_transform(x)
-  x_ = StandardScaler().fit_transform(x)
+  x_ = SimpleImputer(missing_values=np.nan, strategy='mean').fit_transform(x)
 
   if not sequential:
     return x_, time + 1, event, x1.columns.tolist() + x2.columns.tolist() + [x3.name]
@@ -205,7 +203,6 @@ def _load_support_dataset():
   e = data['death'].values
 
   x = SimpleImputer(missing_values=np.nan, strategy='mean').fit_transform(x)
-  x = StandardScaler().fit_transform(x)
 
   remove = ~np.isnan(t)
   return x[remove], t[remove] + 1, e[remove], np.concatenate([x1.columns, x2.columns])
@@ -240,7 +237,7 @@ def _load_mnist():
 
   return x, t + 1, e, train.data.columns
 
-def load_dataset(dataset='SUPPORT', **kwargs):
+def load_dataset(dataset='SUPPORT', normalize = True, **kwargs):
   """Helper function to load datasets to test Survival Analysis models.
 
   Currently implemented datasets include:
@@ -292,12 +289,13 @@ def load_dataset(dataset='SUPPORT', **kwargs):
   competing = kwargs.get('competing', False)
 
   if dataset == 'SUPPORT':
-    return _load_support_dataset()
-  if dataset == 'PBC':
-    return _load_pbc_dataset(sequential, competing)
-  if dataset == 'FRAMINGHAM':
-    return _load_framingham_dataset(sequential, competing)
-  if dataset == 'MNIST':
-    return _load_mnist()
+    x, t, e, covariates = _load_support_dataset()
+  elif dataset == 'PBC':
+    x, t, e, covariates = _load_pbc_dataset(sequential, competing)
+  elif dataset == 'FRAMINGHAM':
+    x, t, e, covariates = _load_framingham_dataset(sequential, competing)
+  elif dataset == 'MNIST':
+    x, t, e, covariates = _load_mnist()
   else:
     raise NotImplementedError('Dataset '+dataset+' not implemented.')
+  return StandardScaler().fit_transform(x) if normalize else x, t, e, covariates
