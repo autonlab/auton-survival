@@ -113,7 +113,7 @@ def _load_framingham_dataset(sequential, competing = False):
       x.append(x_[data['RANDID'] == id_])
       t.append(time[data['RANDID'] == id_] + 1)
       e.append(event[data['RANDID'] == id_])
-    return x, t, e, np.concatenate([x1.columns, x2.columns])
+    return (x, x_), t, e, np.concatenate([x1.columns, x2.columns])
 
 def _load_pbc_dataset(sequential, competing = False):
   """Helper function to load and preprocess the PBC dataset
@@ -170,7 +170,7 @@ def _load_pbc_dataset(sequential, competing = False):
       x.append(x_[data['id'] == id_])
       t.append(time[data['id'] == id_] + 1)
       e.append(event[data['id'] == id_])
-    return x, t, e, np.concatenate([x1.columns, x2.columns, x3.name])
+    return (x, x_), t, e, x1.columns.tolist() + x2.columns.tolist() + [x3.name]
 
 def _load_support_dataset():
   """Helper function to load and preprocess the SUPPORT dataset.
@@ -298,4 +298,12 @@ def load_dataset(dataset='SUPPORT', normalize = True, **kwargs):
     x, t, e, covariates = _load_mnist()
   else:
     raise NotImplementedError('Dataset '+dataset+' not implemented.')
-  return StandardScaler().fit_transform(x) if normalize else x, t, e, covariates
+
+  if isinstance(x, tuple):
+    (x, x_all) = x
+    if normalize:
+      scaler = StandardScaler().fit(x_all)
+      x = [scaler.transform(x_) for x_ in x]
+  elif normalize:
+    x = StandardScaler().fit_transform(x)
+  return x, t, e, covariates
