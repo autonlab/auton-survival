@@ -387,11 +387,11 @@ Citing and References
 an Open-Source Package for Regression, Counterfactual Estimation, Evaluation and Phenotyping with Censored Time-to-Event Data. arXiv (2022)](https://arxiv.org/abs/2204.07276)</a>
 
 ```
-  @article{auton-survival,
-  title={auton-survival: an Open-Source Package for Regression, Counterfactual Estimation, Evaluation and Phenotyping with Censored Time-to-Event Data},
-  author={Nagpal, Chirag and Potosnak, Willa and Dubrawski, Artur},
-  year={2022},
-  publisher={arXiv}
+  @article{nagpal2022auton,
+    title={auton-survival: an Open-Source Package for Regression, Counterfactual Estimation, Evaluation and Phenotyping with Censored Time-to-Event Data},
+    author={Nagpal, Chirag and Potosnak, Willa and Dubrawski, Artur},
+    journal={arXiv preprint arXiv:2204.07276},
+    year={2022}
   }
 ```
 
