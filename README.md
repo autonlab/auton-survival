@@ -1,6 +1,5 @@
 
-[![Build Status](https://travis-ci.org/autonlab/DeepSurvivalMachines.svg?branch=master)](https://travis-ci.org/autonlab/DeepSurvivalMachines)
-&nbsp;&nbsp;&nbsp;
+<img src="https://visitor-badge.glitch.me/badge?page_id=autonlab.auton-survival" alt="visitor badge"/> &nbsp;&nbsp;&nbsp;
 [![codecov](https://codecov.io/gh/autonlab/DeepSurvivalMachines/branch/master/graph/badge.svg?token=FU1HB5O92D)](https://codecov.io/gh/autonlab/DeepSurvivalMachines)
 &nbsp;&nbsp;&nbsp;
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
