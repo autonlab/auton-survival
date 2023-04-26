@@ -10,6 +10,8 @@ from tqdm import tqdm
 
 from auton_survival.models.dsm.utilities import get_optimizer, _reshape_tensor_with_nans
 
+from copy import deepcopy
+
 def randargmax(b,**kw):
   """ a random tie-breaking argmax"""
   return np.argmax(np.random.random(b.shape) * (b==b.max()), **kw)
