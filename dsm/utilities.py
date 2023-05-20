@@ -184,7 +184,7 @@ def train_dsm(model,
     costs.append(float(valid_loss))
     dics.append(deepcopy(model.state_dict()))
 
-    if costs[-1] >= oldcost:
+    if (costs[-1] >= oldcost):
       if patience == 2:
         minm = np.argmin(costs)
         model.load_state_dict(dics[minm])
