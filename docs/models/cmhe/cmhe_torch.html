@@ -27,7 +27,7 @@ ga('create', 'G-TTD30SJCTB', 'auto'); ga('send', 'pageview');
 <h1 class="title">Module <code>auton_survival.models.cmhe.cmhe_torch</code></h1>
 </header>
 <section id="section-intro">
-<div class="git-link-div"><a href="https://github.com/autonlab/DeepSurvivalMachines" class="git-link">Browse git</a></div>
+<div class="git-link-div"><a href="https://github.com/autonlab/auton-survival" class="git-link">Browse git</a></div>
 </section>
 <section>
 </section>
@@ -40,7 +40,7 @@ ga('create', 'G-TTD30SJCTB', 'auto'); ga('send', 'pageview');
 <dl>
 <dt id="auton_survival.models.cmhe.cmhe_torch.DeepCMHETorch"><code class="flex name class">
 <span>class <span class="ident">DeepCMHETorch</span></span>
-<span>(</span><span>k, g, inputdim, layers=None, gamma=100, smoothing_factor=0.0001, optimizer='Adam')</span>
+<span>(</span><span>k, g, inputdim, layers=None, gamma=100, smoothing_factor=0.0001, gate_l2_penalty=0.0001, optimizer='Adam')</span>
 </code></dt>
 <dd>
 <div class="desc"><p>PyTorch model definition of the Cox Mixture with Hereogenous Effects Model.</p>
@@ -51,7 +51,7 @@ subgroup Z=k; the PH assumptions are assumed to hold and the baseline
 hazard rates is determined non-parametrically using an spline-interpolated
 Breslow's estimator.</p>
 <p>Initializes internal Module state, shared by both nn.Module and ScriptModule.</p></div>
-<div class="git-link-div"><a href="https://github.com/autonlab/DeepSurvivalMachines" class="git-link">Browse git</a></div>
+<div class="git-link-div"><a href="https://github.com/autonlab/auton-survival" class="git-link">Browse git</a></div>
 <h3>Class variables</h3>
 <dl>
 <dt id="auton_survival.models.cmhe.cmhe_torch.DeepCMHETorch.dump_patches"><code class="name">var <span class="ident">dump_patches</span> : bool</code></dt>
@@ -70,7 +70,49 @@ Breslow's estimator.</p>
 </code></dt>
 <dd>
 <div class="desc"></div>
-<div class="git-link-div"><a href="https://github.com/autonlab/DeepSurvivalMachines" class="git-link">Browse git</a></div>
+<div class="git-link-div"><a href="https://github.com/autonlab/auton-survival" class="git-link">Browse git</a></div>
+</dd>
+</dl>
+</dd>
+<dt id="auton_survival.models.cmhe.cmhe_torch.IdentifiableLinear"><code class="flex name class">
+<span>class <span class="ident">IdentifiableLinear</span></span>
+<span>(</span><span>in_features, out_features, bias=True)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Softmax and LogSoftmax with K classes in pytorch are over specfied and lead to
+issues of mis-identifiability. This class is a wrapper for linear layers that
+are correctly specified with K-1 columns. The output of this layer for the Kth
+class is all zeros. This allows direct application of pytorch.nn.LogSoftmax
+and pytorch.nn.Softmax.</p>
+<p>Initializes internal Module state, shared by both nn.Module and ScriptModule.</p></div>
+<div class="git-link-div"><a href="https://github.com/autonlab/auton-survival" class="git-link">Browse git</a></div>
+<h3>Class variables</h3>
+<dl>
+<dt id="auton_survival.models.cmhe.cmhe_torch.IdentifiableLinear.dump_patches"><code class="name">var <span class="ident">dump_patches</span> : bool</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="auton_survival.models.cmhe.cmhe_torch.IdentifiableLinear.training"><code class="name">var <span class="ident">training</span> : bool</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Instance variables</h3>
+<dl>
+<dt id="auton_survival.models.cmhe.cmhe_torch.IdentifiableLinear.weight"><code class="name">var <span class="ident">weight</span></code></dt>
+<dd>
+<div class="desc"></div>
+<div class="git-link-div"><a href="https://github.com/autonlab/auton-survival" class="git-link">Browse git</a></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="auton_survival.models.cmhe.cmhe_torch.IdentifiableLinear.forward"><code class="name flex">
+<span>def <span class="ident">forward</span></span>(<span>self, x) ‑> Callable[..., Any]</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<div class="git-link-div"><a href="https://github.com/autonlab/auton-survival" class="git-link">Browse git</a></div>
 </dd>
 </dl>
 </dd>
@@ -97,6 +139,15 @@ Breslow's estimator.</p>
 <li><code><a title="auton_survival.models.cmhe.cmhe_torch.DeepCMHETorch.forward" href="#auton_survival.models.cmhe.cmhe_torch.DeepCMHETorch.forward">forward</a></code></li>
 <li><code><a title="auton_survival.models.cmhe.cmhe_torch.DeepCMHETorch.dump_patches" href="#auton_survival.models.cmhe.cmhe_torch.DeepCMHETorch.dump_patches">dump_patches</a></code></li>
 <li><code><a title="auton_survival.models.cmhe.cmhe_torch.DeepCMHETorch.training" href="#auton_survival.models.cmhe.cmhe_torch.DeepCMHETorch.training">training</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="auton_survival.models.cmhe.cmhe_torch.IdentifiableLinear" href="#auton_survival.models.cmhe.cmhe_torch.IdentifiableLinear">IdentifiableLinear</a></code></h4>
+<ul class="">
+<li><code><a title="auton_survival.models.cmhe.cmhe_torch.IdentifiableLinear.forward" href="#auton_survival.models.cmhe.cmhe_torch.IdentifiableLinear.forward">forward</a></code></li>
+<li><code><a title="auton_survival.models.cmhe.cmhe_torch.IdentifiableLinear.weight" href="#auton_survival.models.cmhe.cmhe_torch.IdentifiableLinear.weight">weight</a></code></li>
+<li><code><a title="auton_survival.models.cmhe.cmhe_torch.IdentifiableLinear.dump_patches" href="#auton_survival.models.cmhe.cmhe_torch.IdentifiableLinear.dump_patches">dump_patches</a></code></li>
+<li><code><a title="auton_survival.models.cmhe.cmhe_torch.IdentifiableLinear.training" href="#auton_survival.models.cmhe.cmhe_torch.IdentifiableLinear.training">training</a></code></li>
 </ul>
 </li>
 </ul>

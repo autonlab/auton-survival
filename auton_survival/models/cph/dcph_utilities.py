@@ -10,6 +10,8 @@ from tqdm import tqdm
 
 from auton_survival.models.dsm.utilities import get_optimizer, _reshape_tensor_with_nans
 
+from copy import deepcopy
+
 def randargmax(b,**kw):
   """ a random tie-breaking argmax"""
   return np.argmax(np.random.random(b.shape) * (b==b.max()), **kw)
@@ -100,7 +102,8 @@ def train_dcph(model, train_data, val_data, epochs=50,
   breslow_spline = None
 
   losses = []
-
+  dics = []
+  
   for epoch in tqdm(range(epochs)):
 
     # train_step_start = time.time()
@@ -110,7 +113,9 @@ def train_dcph(model, train_data, val_data, epochs=50,
     valcn = test_step(model, xv, tv_, ev_)
     # print(f'Duration of test-step: {time.time() - test_step_start}')
 
-    losses.append(valcn)
+    losses.append(float(valcn))
+    
+    dics.append(deepcopy(model.state_dict()))
 
     if epoch % 1 == 0:
       if debug: print(patience_, epoch, valcn)
@@ -121,6 +126,9 @@ def train_dcph(model, train_data, val_data, epochs=50,
       patience_ = 0
 
     if patience_ == patience:
+      
+      minm = np.argmin(losses)
+      model.load_state_dict(dics[minm])
 
       breslow_spline = fit_breslow(model, xt, tt_, et_)
 
@@ -130,7 +138,10 @@ def train_dcph(model, train_data, val_data, epochs=50,
         return (model, breslow_spline)
 
     valc = valcn
-
+    
+  minm = np.argmin(losses)
+  model.load_state_dict(dics[minm])
+  
   breslow_spline = fit_breslow(model, xt, tt_, et_)
 
   if return_losses:
@@ -143,7 +154,7 @@ def predict_survival(model, x, t=None):
   if isinstance(t, (int, float)): t = [t]
 
   model, breslow_spline = model
-  lrisks = model(x).detach().numpy()
+  lrisks = model(x).detach().cpu().numpy()
 
   unique_times = breslow_spline.baseline_survival_.x
 

@@ -228,6 +228,9 @@ def _predict_dcph(model, features, times):
   if isinstance(times, float) or isinstance(times, int):
     times = [float(times)]
 
+  if isinstance(times, np.ndarray):
+    times = times.ravel().tolist()
+
   return model.predict_survival(x=features.values, t=times)
 
 def _fit_cph(features, outcomes, val_data, random_seed, **hyperparams):

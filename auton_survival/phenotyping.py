@@ -478,8 +478,7 @@ class SurvivalVirtualTwinsPhenotyper(Phenotyper):
 
     self.random_seed = random_seed
 
-  def fit(self, features, outcomes, interventions, metric, 
-          horizon):
+  def fit(self, features, outcomes, interventions, horizons, metric):
 
     """Fit a counterfactual model and regress the difference of the estimated
     counterfactual Restricted Mean Survival Time using a Random Forest regressor.
@@ -495,6 +494,8 @@ class SurvivalVirtualTwinsPhenotyper(Phenotyper):
     interventions : np.array
         Boolean numpy array of treatment indicators. True means individual
         was assigned a specific treatment.
+    horizons : int or float or list
+        Event-horizons at which to evaluate model performance.
     metric : str, default='ibs'
         Metric used to evaluate model performance and tune hyperparameters.
         Options include:
@@ -502,9 +503,6 @@ class SurvivalVirtualTwinsPhenotyper(Phenotyper):
         - 'brs' : Brier Score
         - 'ibs' : Integrated Brier Score
         - 'ctd' : Concordance Index
-    horizon : np.float
-        The event horizon at which to compute the counterfacutal RMST for
-        regression. 
 
     Returns
     -----------
@@ -515,12 +513,13 @@ class SurvivalVirtualTwinsPhenotyper(Phenotyper):
     cf_model = CounterfactualSurvivalRegressionCV(model=self.cf_method,
                                     hyperparam_grid=self.cf_hyperparams)
 
-    self.cf_model = cf_model.fit(features, outcomes, interventions, metric)
+    self.cf_model = cf_model.fit(features, outcomes, interventions,
+                                 horizons, metric)
 
     times = np.unique(outcomes.time.values)
     cf_predictions = self.cf_model.predict_counterfactual_survival(features,
                                                                    times.tolist())
-
+    horizon = max(horizons)
     ite_estimates = cf_predictions[1] - cf_predictions[0]
     ite_estimates = [estimate[times < horizon] for estimate in ite_estimates]
     times = times[times < horizon]
@@ -558,7 +557,7 @@ class SurvivalVirtualTwinsPhenotyper(Phenotyper):
 
     """
 
-    phenotype_preds=  self.pheno_model.predict(features)
+    phenotype_preds = self.pheno_model.predict(features)
     preds_surv_greater = (phenotype_preds -  phenotype_preds.min()) / (phenotype_preds.max() - phenotype_preds.min())
     preds_surv_less = 1 - preds_surv_greater
     preds = np.array([[preds_surv_less[i], preds_surv_greater[i]]

@@ -245,7 +245,6 @@ class DeepCoxMixturesHeterogenousEffects:
     optimizer: str
         The choice of the gradient based optimization method. One of
         'Adam', 'RMSProp' or 'SGD'.
-        
     """
 
     processed_data = self._preprocess_training_data(x, t, e, a,

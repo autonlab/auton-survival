@@ -28,7 +28,7 @@ ga('create', 'G-TTD30SJCTB', 'auto'); ga('send', 'pageview');
 </header>
 <section id="section-intro">
 <p>Utilities to perform cross-validation.</p>
-<div class="git-link-div"><a href="https://github.com/autonlab/DeepSurvivalMachines" class="git-link">Browse git</a></div>
+<div class="git-link-div"><a href="https://github.com/autonlab/auton-survival" class="git-link">Browse git</a></div>
 </section>
 <section>
 </section>
@@ -41,14 +41,14 @@ ga('create', 'G-TTD30SJCTB', 'auto'); ga('send', 'pageview');
 <dl>
 <dt id="auton_survival.experiments.SurvivalRegressionCV"><code class="flex name class">
 <span>class <span class="ident">SurvivalRegressionCV</span></span>
-<span>(</span><span>model='dcph', folds=None, num_folds=5, num_nested_folds=None, random_seed=0, hyperparam_grid={})</span>
+<span>(</span><span>model='dcph', folds=None, num_folds=5, random_seed=0, hyperparam_grid={})</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Universal interface to train Survival Analysis models in a cross-
-validation or nested cross-validation fashion.</p>
-<p>Each of the model is trained in a CV fashion over the user specified
-hyperparameter grid. The best model(s) in terms of user-specified metric
-is selected.</p>
+validation fashion.</p>
+<p>The model is trained in a CV fashion over the user-specified
+hyperparameter grid. Model hyperparameters are selected based on the
+user-specified metric.</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
 <dt><strong><code>model</code></strong> :&ensp;<code>str</code></dt>
@@ -69,9 +69,6 @@ For nested cross-validation, folds correspond to train and test set.</dd>
 <dt><strong><code>num_folds</code></strong> :&ensp;<code>int</code>, default=<code>5</code></dt>
 <dd>The number of folds.
 Ignored if folds is specified.</dd>
-<dt><strong><code>num_nested_folds</code></strong> :&ensp;<code>int</code>, default=<code>None</code></dt>
-<dd>The number of folds to use for nested cross-validation.
-If None, then regular (unnested) CV is performed.</dd>
 <dt><strong><code>random_seed</code></strong> :&ensp;<code>int</code>, default=<code>0</code></dt>
 <dd>Controls reproducibility of results.</dd>
 <dt><strong><code>hyperparam_grid</code></strong> :&ensp;<code>dict</code></dt>
@@ -90,11 +87,11 @@ representation learning for censored data with competing risks. 2020.
 [4] Nagpal, C., Yadlowsky, S., Rostamzadeh, N., and Heller, K. (2021c).
 Deep cox mixtures for survival regression.
 In Machine Learning for Healthcare Conference, pages 674–708. PMLR</p></div>
-<div class="git-link-div"><a href="https://github.com/autonlab/DeepSurvivalMachines" class="git-link">Browse git</a></div>
+<div class="git-link-div"><a href="https://github.com/autonlab/auton-survival" class="git-link">Browse git</a></div>
 <h3>Methods</h3>
 <dl>
 <dt id="auton_survival.experiments.SurvivalRegressionCV.fit"><code class="name flex">
-<span>def <span class="ident">fit</span></span>(<span>self, features, outcomes, metric='ibs', horizon=None)</span>
+<span>def <span class="ident">fit</span></span>(<span>self, features, outcomes, horizons, metric='ibs')</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Fits the survival regression model to the data in a cross-
@@ -107,6 +104,8 @@ and columns as covariates.</dd>
 <dt><strong><code>outcomes</code></strong> :&ensp;<code>pd.DataFrame</code></dt>
 <dd>A pandas dataframe with columns 'time' and 'event' that contain the
 survival time and censoring status <span><span class="MathJax_Preview"> \delta_i = 1 </span><script type="math/tex"> \delta_i = 1 </script></span>, respectively.</dd>
+<dt><strong><code>horizons</code></strong> :&ensp;<code>int</code> or <code>float</code> or <code>list</code></dt>
+<dd>Event-horizons at which to evaluate model performance.</dd>
 <dt><strong><code>metric</code></strong> :&ensp;<code>str</code>, default=<code>'ibs'</code></dt>
 <dd>Metric used to evaluate model performance and tune hyperparameters.
 Options include:
@@ -114,13 +113,10 @@ Options include:
 - 'brs' : Brier Score
 - 'ibs' : Integrated Brier Score
 - 'ctd' : Concordance Index</dd>
-<dt><strong><code>horizon</code></strong> :&ensp;<code>int</code> or <code>float</code>, default=<code>None</code></dt>
-<dd>Event-horizon at which to evaluate model performance.
-If None, then the maximum permissible event-time from the data is used.</dd>
 </dl>
 <h2 id="returns">Returns</h2>
 <p>Trained survival regression model(s).</p></div>
-<div class="git-link-div"><a href="https://github.com/autonlab/DeepSurvivalMachines" class="git-link">Browse git</a></div>
+<div class="git-link-div"><a href="https://github.com/autonlab/auton-survival" class="git-link">Browse git</a></div>
 </dd>
 </dl>
 </dd>
@@ -137,17 +133,13 @@ is then selected.</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
 <dt><strong><code>model</code></strong> :&ensp;<code>str</code></dt>
-<dd>
-<p>A string that determines the choice of the surival analysis model.
-Survival model choices include:</p>
-<ul>
-<li>'dsm' : Deep Survival Machines [3] model</li>
-<li>'dcph' : Deep Cox Proportional Hazards [2] model</li>
-<li>'dcm' : Deep Cox Mixtures [4] model</li>
-<li>'rsf' : Random Survival Forests [1] model</li>
-<li>'cph' : Cox Proportional Hazards [2] model</li>
-</ul>
-</dd>
+<dd>A string that determines the choice of the surival analysis model.
+Survival model choices include:
+- 'dsm' : Deep Survival Machines [3] model
+- 'dcph' : Deep Cox Proportional Hazards [2] model
+- 'dcm' : Deep Cox Mixtures [4] model
+- 'rsf' : Random Survival Forests [1] model
+- 'cph' : Cox Proportional Hazards [2] model</dd>
 <dt><strong><code>cv_folds</code></strong> :&ensp;<code>int</code></dt>
 <dd>Number of folds in the cross validation.</dd>
 <dt><strong><code>random_seed</code></strong> :&ensp;<code>int</code></dt>
@@ -168,15 +160,15 @@ representation learning for censored data with competing risks. 2020.</p>
 <p>[4] Nagpal, C., Yadlowsky, S., Rostamzadeh, N., and Heller, K. (2021c).
 Deep cox mixtures for survival regression.
 In Machine Learning for Healthcare Conference, pages 674–708. PMLR</p></div>
-<div class="git-link-div"><a href="https://github.com/autonlab/DeepSurvivalMachines" class="git-link">Browse git</a></div>
+<div class="git-link-div"><a href="https://github.com/autonlab/auton-survival" class="git-link">Browse git</a></div>
 <h3>Methods</h3>
 <dl>
 <dt id="auton_survival.experiments.CounterfactualSurvivalRegressionCV.fit"><code class="name flex">
-<span>def <span class="ident">fit</span></span>(<span>self, features, outcomes, interventions, metric)</span>
+<span>def <span class="ident">fit</span></span>(<span>self, features, outcomes, interventions, horizons, metric)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Fits the Survival Regression Model to the data in a Cross
-Validation fashion.</p>
+<div class="desc"><p>Fits the Survival Regression Model to the data in a cross-
+validation fashion.</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
 <dt><strong><code>features</code></strong> :&ensp;<code>pandas.DataFrame</code></dt>
@@ -190,13 +182,22 @@ a column named 'event' that contains the censoring status.
 <dt><strong><code>interventions</code></strong> :&ensp;<code>pandas.Series</code></dt>
 <dd>A pandas series containing the treatment status of each subject.
 <span><span class="MathJax_Preview"> a_i = 1 </span><script type="math/tex"> a_i = 1 </script></span> if the subject is <code>treated</code>, else is considered control.</dd>
+<dt><strong><code>horizons</code></strong> :&ensp;<code>int</code> or <code>float</code> or <code>list</code></dt>
+<dd>Event-horizons at which to evaluate model performance.</dd>
+<dt><strong><code>metric</code></strong> :&ensp;<code>str</code>, default=<code>'ibs'</code></dt>
+<dd>Metric used to evaluate model performance and tune hyperparameters.
+Options include:
+- 'auc': Dynamic area under the ROC curve
+- 'brs' : Brier Score
+- 'ibs' : Integrated Brier Score
+- 'ctd' : Concordance Index</dd>
 </dl>
 <h2 id="returns">Returns</h2>
 <dl>
 <dt><code>auton_survival.estimators.CounterfactualSurvivalModel:</code></dt>
 <dd>The trained counterfactual survival model.</dd>
 </dl></div>
-<div class="git-link-div"><a href="https://github.com/autonlab/DeepSurvivalMachines" class="git-link">Browse git</a></div>
+<div class="git-link-div"><a href="https://github.com/autonlab/auton-survival" class="git-link">Browse git</a></div>
 </dd>
 </dl>
 </dd>

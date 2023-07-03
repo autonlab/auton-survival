@@ -39,11 +39,11 @@ import warnings
 
 class SurvivalRegressionCV:
   """Universal interface to train Survival Analysis models in a cross-
-  validation or nested cross-validation fashion.
+  validation fashion.
 
-  Each of the model is trained in a CV fashion over the user specified
-  hyperparameter grid. The best model(s) in terms of user-specified metric
-  is selected.
+  The model is trained in a CV fashion over the user-specified
+  hyperparameter grid. Model hyperparameters are selected based on the
+  user-specified metric.
 
   Parameters
   -----------
@@ -65,9 +65,6 @@ class SurvivalRegressionCV:
   num_folds : int, default=5
       The number of folds.
       Ignored if folds is specified.
-  num_nested_folds : int, default=None
-      The number of folds to use for nested cross-validation.
-      If None, then regular (unnested) CV is performed.
   random_seed : int, default=0
       Controls reproducibility of results.
   hyperparam_grid : dict
@@ -92,12 +89,11 @@ class SurvivalRegressionCV:
   """
 
   def __init__(self, model='dcph', folds=None, num_folds=5,
-               num_nested_folds=None, random_seed=0, hyperparam_grid={}):
+               random_seed=0, hyperparam_grid={}):
 
     self.model = model
     self.folds = folds
     self.num_folds = num_folds
-    self.num_nested_folds = num_nested_folds
     self.random_seed = random_seed
     self.hyperparam_grid = list(ParameterGrid(hyperparam_grid))
 
@@ -116,7 +112,7 @@ class SurvivalRegressionCV:
     outcomes : pd.DataFrame
         A pandas dataframe with columns 'time' and 'event' that contain the
         survival time and censoring status \( \delta_i = 1 \), respectively.
-    horizon : int or float or list
+    horizons : int or float or list
         Event-horizons at which to evaluate model performance.
     metric : str, default='ibs'
         Metric used to evaluate model performance and tune hyperparameters.
@@ -125,12 +121,12 @@ class SurvivalRegressionCV:
         - 'brs' : Brier Score
         - 'ibs' : Integrated Brier Score
         - 'ctd' : Concordance Index
+
     Returns
     -----------
     Trained survival regression model(s).
 
     """
-    
 
     assert horizons is not None, "Horizons must be specified."
     if isinstance(horizons, (int, float)):
@@ -156,10 +152,6 @@ class SurvivalRegressionCV:
     assert max(horizons) < time_max, "Horizons exceeds max time range."
     assert min(horizons) > time_min, "Horizons exceeds min time range."
 
-    # if self.horizon is None:
-    #   assert (self.metric == 'ibs'), "Horizon must be specified for the selected metric"
-    #   self.horizon = time_max
-
     hyper_param_scores = []
     for i, hyper_param in enumerate(self.hyperparam_grid):
       print("At hyper-param", hyper_param)
@@ -176,7 +168,7 @@ class SurvivalRegressionCV:
                                            predictions=predictions,
                                            times=horizons,
                                            outcomes_train=outcomes.loc[self.folds!=fold])
-        fold_scores.append(score)
+        fold_scores.append(np.mean(score))
       hyper_param_scores.append(np.mean(fold_scores)) 
 
     if self.metric in ['ibs', 'brs']:
@@ -188,7 +180,6 @@ class SurvivalRegressionCV:
                           random_seed=self.random_seed,
                           **best_hyper_param).fit(features, outcomes)
     return model
-
 
   def _get_stratified_folds(self, dataset, event_label, n_folds, random_seed):
 
@@ -288,7 +279,6 @@ class CounterfactualSurvivalRegressionCV:
   model : str
       A string that determines the choice of the surival analysis model.
       Survival model choices include:
-
       - 'dsm' : Deep Survival Machines [3] model
       - 'dcph' : Deep Cox Proportional Hazards [2] model
       - 'dcm' : Deep Cox Mixtures [4] model
@@ -341,10 +331,10 @@ class CounterfactualSurvivalRegressionCV:
                                                 random_seed=random_seed,
                                                 hyperparam_grid=hyperparam_grid)
 
-  def fit(self, features, outcomes, interventions, metric):
+  def fit(self, features, outcomes, interventions, horizons, metric):
 
-    r"""Fits the Survival Regression Model to the data in a Cross
-    Validation fashion.
+    r"""Fits the Survival Regression Model to the data in a cross-
+    validation fashion.
 
     Parameters
     -----------
@@ -359,6 +349,15 @@ class CounterfactualSurvivalRegressionCV:
     interventions: pandas.Series
         A pandas series containing the treatment status of each subject.
         \( a_i = 1 \) if the subject is `treated`, else is considered control.
+    horizons : int or float or list
+        Event-horizons at which to evaluate model performance.
+    metric : str, default='ibs'
+        Metric used to evaluate model performance and tune hyperparameters.
+        Options include:
+        - 'auc': Dynamic area under the ROC curve
+        - 'brs' : Brier Score
+        - 'ibs' : Integrated Brier Score
+        - 'ctd' : Concordance Index
 
     Returns
     -----------
@@ -369,9 +368,11 @@ class CounterfactualSurvivalRegressionCV:
 
     treated_model = self.treated_experiment.fit(features.loc[interventions==1],
                                                 outcomes.loc[interventions==1],
+                                                horizons=horizons,
                                                 metric=metric)
     control_model = self.control_experiment.fit(features.loc[interventions!=1],
                                                 outcomes.loc[interventions!=1],
+                                                horizons=horizons,
                                                 metric=metric)
 
     return CounterfactualSurvivalModel(treated_model, control_model)
