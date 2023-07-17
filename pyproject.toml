@@ -1,0 +1,25 @@
+[project]
+name = "auton_survival"
+version = "1.0.0"
+description = "The auton-survival package contains reusable utilities for projects involving censored Time-to-Event Data. "
+authors = [
+  { name = "Chirag Nagpal", email = "chiragn@cs.cmu.edu" }
+]
+license = {file = "LICENSE"}
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "torch>=1.0.0",
+    "numpy>=1.16.5",
+    "pandas>=1.0.0",
+    "tqdm>=4.0.0",
+    "scikit-learn>=0.18",
+    "torchvision>=0.7.0",
+    "scikit-survival>=0.15.0",
+    "lifelines>=0.26.4",
+]
+
+[build-system]
+requires = ["flit_core >=3.2,<4"]
+build-backend = "flit_core.buildapi"
+
