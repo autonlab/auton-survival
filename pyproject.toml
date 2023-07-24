@@ -7,7 +7,7 @@ readme = "README.md"
 packages = [{include = "auton_survival"}]
 
 [tool.poetry.dependencies]
-python = "^3.9"
+python = "^3.8"
 torch = "~1"
 numpy = "~1"
 pandas = "~1"
