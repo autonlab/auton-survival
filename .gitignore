@@ -10,8 +10,7 @@ __pycache__/
 .Python
 build/
 develop-eggs/
-#TODO: uncomment when switching to tagged releases
-#dist/
+dist/
 downloads/
 eggs/
 .eggs/
