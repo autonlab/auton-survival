@@ -1,6 +1,6 @@
 [tool.poetry]
-name = "auton-survival-demo"
-version = "1.0.0"
+name = "auton-survival"
+version = "0.1.0"
 description = ""
 authors = ["Chirag Nagpal <chiragn@cs.cmu.edu>"]
 readme = "README.md"
@@ -41,7 +41,7 @@ allowed_tags = [
     "test"
 ]
 minor_tags = ["feat"]
-patch_tags = ["fix", "perf"]
+patch_tags = ["fix", "perf", "refactor", "docs", "build", "style"]
 
 [build-system]
 requires = [
