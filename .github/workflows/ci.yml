@@ -1,0 +1,80 @@
+name: CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+
+jobs:
+  Quality:
+    if: ${{ false }}
+    runs-on: ubuntu-latest
+    strategy:
+        fail-fast: true
+        matrix:
+          python-version: ["3.8", "3.9", "3.10"]
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - uses: actions/setup-python@v3
+      with:
+        python-version: ${{matrix.python-version}}
+
+    - name: Install Python Poetry
+      uses: abatilo/actions-poetry@v2.3.0
+
+    - name: Configure poetry
+      shell: bash
+      run: python -m poetry config virtualenvs.in-project true
+
+    - name: View poetry version
+      run: poetry --version
+
+    - name: Install dependencies
+      run: |
+        python -m poetry install
+
+    - name: Test
+      run: poetry run python3 -m unittest discover
+    
+  Release:
+    #needs: Quality
+    if: |
+      github.event_name == 'push' && 
+      github.ref == 'refs/heads/master' && 
+      !contains ( github.event.head_commit.message, 'chore(release)' ) && 
+      !startsWith ( github.event.head_commit.message, 'ci(' ) &&
+      !startsWith ( github.event.head_commit.message, 'docs(' )
+    runs-on: ubuntu-latest
+    concurrency: release
+    permissions:
+      id-token: write
+      contents: write
+
+    steps:
+      - uses: actions/setup-python@v3
+        with:
+          python-version: 3.8
+
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Release to GitHub
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          pip install python-semantic-release
+          semantic-release version
+          git fetch --tags
+          for file in ./dist/**; do gh release upload "$(git describe --abbrev=0)" $file; done
+        
+      - name: Release to PyPI
+        env:
+          PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
+        run: |
+          poetry config pypi-token.pypi $PYPI_TOKEN
+          poetry publish
