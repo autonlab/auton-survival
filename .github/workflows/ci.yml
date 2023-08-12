@@ -9,7 +9,6 @@ on:
 
 jobs:
   Quality:
-    if: ${{ false }}
     runs-on: ubuntu-latest
     strategy:
         fail-fast: true
@@ -41,7 +40,7 @@ jobs:
       run: poetry run python3 -m unittest discover
     
   Release:
-    #needs: Quality
+    needs: Quality
     if: |
       github.event_name == 'push' && 
       github.ref == 'refs/heads/master' && 
