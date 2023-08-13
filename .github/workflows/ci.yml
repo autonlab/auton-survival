@@ -44,13 +44,7 @@ jobs:
     if: |
       github.event_name == 'push' && 
       github.ref == 'refs/heads/master' && 
-      !contains ( github.event.head_commit.message, 'chore(release)' ) && 
-      !startsWith ( github.event.head_commit.message, 'ci(' ) &&
-      !startsWith ( github.event.head_commit.message, 'ci:' ) &&
-      !startsWith ( github.event.head_commit.message, 'docs(' ) &&
-      !startsWith ( github.event.head_commit.message, 'docs:' ) &&
-      !startsWith ( github.event.head_commit.message, 'test(' ) &&
-      !startsWith ( github.event.head_commit.message, 'test:' )
+      !contains ( github.event.head_commit.message, 'chore(release)' )
 
     runs-on: ubuntu-latest
     concurrency: release
@@ -67,16 +61,27 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Release to GitHub
+      - name: Check release status
+        id: release_status
+        run: |
+          pip install python-semantic-release
+          if semantic-release --noop --strict version ; then
+            echo "::set-output name=result::true"
+          else
+            echo "::set-output name=result::false"
+          fi
+
+      - if: steps.release_status.outputs.result == 'true'
+        name: Release to GitHub
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          pip install python-semantic-release
           semantic-release version
           git fetch --tags
           for file in ./dist/**; do gh release upload "$(git describe --abbrev=0)" $file; done
         
-      - name: Release to PyPI
+      - if: steps.release_status.outputs.result == 'true'
+        name: Release to PyPI
         env:
           PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
         run: |
