@@ -21,8 +21,8 @@ lifelines = "^0.26"
 version_toml = [
     "pyproject.toml:tool.poetry.version"
 ]
-
 branch = "master"
+commit_author = "github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>"
 upload_to_PyPI = false
 upload_to_release = true
 build_command = "pip install poetry && poetry build"

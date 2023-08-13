@@ -67,7 +67,8 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           pip install python-semantic-release
-          if semantic-release --noop --strict version ; then
+          if semantic-release --noop --strict version
+          then
             echo "Releasing new version."
           else
             echo "Skipping release steps."
@@ -81,7 +82,9 @@ jobs:
         run: |
           semantic-release version
           git fetch --tags
-          for file in ./dist/**; do gh release upload "$(git describe --abbrev=0)" $file; done
+          for file in ./dist/**
+            do gh release upload "${{steps.release-status.outputs.tag}}" $file
+          done
         
       - if: steps.release-status.outputs.released == 'true'
         name: Release to PyPI
