@@ -41,7 +41,7 @@ allowed_tags = [
     "test"
 ]
 minor_tags = ["feat"]
-patch_tags = ["fix", "perf", "refactor", "docs", "build", "style"]
+patch_tags = ["fix", "perf", "refactor", "build", "style"]
 
 [build-system]
 requires = [
