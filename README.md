@@ -1,10 +1,12 @@
 
-<img src="https://visitor-badge.glitch.me/badge?page_id=autonlab.auton-survival" alt="visitor badge"/> &nbsp;&nbsp;&nbsp;
 [![codecov](https://codecov.io/gh/autonlab/DeepSurvivalMachines/branch/master/graph/badge.svg?token=FU1HB5O92D)](https://codecov.io/gh/autonlab/DeepSurvivalMachines)
 &nbsp;&nbsp;&nbsp;
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 &nbsp;&nbsp;&nbsp;
 [![GitHub Repo stars](https://img.shields.io/github/stars/autonlab/auton-survival?style=social)](https://github.com/autonlab/auton-survival)
+&nbsp;&nbsp;&nbsp;
+![CI](https://github.com/autonlab/auton-survival/actions/workflows/ci.yml/badge.svg)
+
 
 
 

@@ -468,9 +468,6 @@ SOFTWARE.
 
 '''
 
-__version__ = "0.1.0"
-
-
 from .models.dsm import DeepSurvivalMachines
 from .models.dcm import DeepCoxMixtures
 from .models.cph import DeepCoxPH, DeepRecurrentCoxPH

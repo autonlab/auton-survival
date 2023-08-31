@@ -1,0 +1,50 @@
+[tool.poetry]
+name = "auton-survival"
+version = "0.1.0"
+description = ""
+authors = ["Chirag Nagpal <chiragn@cs.cmu.edu>"]
+readme = "README.md"
+packages = [{include = "auton_survival"}]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+torch = "^1.13"
+numpy = "^1.24"
+pandas = "^1.5"
+tqdm = "^4.66"
+scikit-learn = "^1.2"
+torchvision = "^0.14"
+scikit-survival = "^0.21"
+lifelines = "^0.26"
+
+[tool.semantic_release]
+version_toml = [
+    "pyproject.toml:tool.poetry.version"
+]
+branch = "master"
+commit_author = "github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>"
+upload_to_PyPI = false
+upload_to_release = true
+build_command = "pip install poetry && poetry build"
+
+[tool.semantic_release.commit_parser_options]
+allowed_tags = [
+    "build",
+    "chore",
+    "ci",
+    "docs",
+    "feat",
+    "fix",
+    "perf",
+    "style",
+    "refactor",
+    "test"
+]
+minor_tags = ["feat"]
+patch_tags = ["fix", "perf", "refactor", "build", "style"]
+
+[build-system]
+requires = [
+    "poetry-core"
+]
+build-backend = "poetry.core.masonry.api"
