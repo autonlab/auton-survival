@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "auton-survival"
-version = "0.1.0"
+version = "0.0.0"
 description = ""
 authors = ["Chirag Nagpal <chiragn@cs.cmu.edu>"]
 readme = "README.md"
