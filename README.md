@@ -7,30 +7,6 @@
 &nbsp;&nbsp;&nbsp;
 ![CI](https://github.com/autonlab/auton-survival/actions/workflows/ci.yml/badge.svg)
 
-
-
-
-
-
-###  📣 📣 📣  **Using `auton-survival` in your research? Consider submitting your work here**:
-
-## AAAI Fall Symposium 2023 SPACA: Survival Prediction Algorithms, Challenges & Applications 
-**https://sites.google.com/corp/view/spaca-2023/home**
-
-**October 25-27, 2023   Arlington, VA, USA**
-
-
-**Focus + Agenda:** Survival analysis attempts to estimate the time until a specified event (eg, death of a patient) occurs, or some related survival measures, and is widely applicable for survival prediction and risk factor analysis. A key challenge in learning effective survival models is that this time-to-event data is subject to “censoring’’ so that the time to event is only known up to a bound for such instances. We seek contributions from researchers from diverse fields including machine learning, healthcare, medicine, finance and engineering. We anticipate this will foster interdisciplinary collaborations and will catalyze the development of the next generation of the survival prediction algorithms.
-
-Submission URL:
-https://easychair.org/conferences/?conf=fss230 select track Second Symposium on Survival Prediction: Algorithms, Challenges and Applications (SPACA)
-
-Template: 
-https://www.aaai.org/Publications/Templates/AuthorKit23.zip
-
-
-
-
 The `auton-survival` Package
 ---------------------------
 
