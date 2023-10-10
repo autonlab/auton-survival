@@ -121,7 +121,7 @@ def train_dcph(
     losses = []
     dics = []
 
-    for epoch in tqdm(range(epochs), desc="Training Epoch"):
+    for epoch in tqdm(range(epochs), desc="Training"):
         _ = train_step(model, xt, tt, et, optimizer, bs, seed=epoch)
 
         valcn = test_step(model, xv, tv_, ev_)
