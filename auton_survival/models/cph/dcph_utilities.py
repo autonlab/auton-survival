@@ -134,7 +134,7 @@ def train_dcph(
             if debug:
                 print(patience_, epoch, valcn)
 
-        if (valcn > valc):
+        if valcn > valc:
             patience_ += 1
         else:
             patience_ = 0
