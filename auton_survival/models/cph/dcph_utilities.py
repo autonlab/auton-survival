@@ -6,9 +6,9 @@ from sksurv.linear_model.coxph import BreslowEstimator
 
 from sklearn.utils import shuffle
 
-from tqdm import tqdm
+from tqdm.auto import tqdm
 
-from auton_survival.models.dsm.utilities import get_optimizer, _reshape_tensor_with_nans
+from auton_survival.models.dsm.dsm_utilities import get_optimizer, _reshape_tensor_with_nans
 
 from copy import deepcopy
 

@@ -29,7 +29,7 @@ from .losses import unconditional_loss, conditional_loss
 
 from sklearn.utils import shuffle
 
-from tqdm import tqdm
+from tqdm.auto import tqdm
 from copy import deepcopy
 
 import torch

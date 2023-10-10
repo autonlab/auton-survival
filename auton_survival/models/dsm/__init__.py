@@ -166,9 +166,9 @@ from .dsm_torch import DeepCNNRNNSurvivalMachinesTorch
 
 from . import losses
 
-from .utilities import train_dsm
-from .utilities import _get_padded_features, _get_padded_targets
-from .utilities import _reshape_tensor_with_nans
+from .dsm_utilities import train_dsm
+from .dsm_utilities import _get_padded_features, _get_padded_targets
+from .dsm_utilities import _reshape_tensor_with_nans
 
 from auton_survival.utils import _dataframe_to_array
 

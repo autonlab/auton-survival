@@ -27,7 +27,7 @@ import numpy as np
 from scipy.interpolate import UnivariateSpline
 from sksurv.linear_model.coxph import BreslowEstimator
 
-from tqdm import tqdm
+from tqdm.auto import tqdm
 
 
 def randargmax(b, **kw):
