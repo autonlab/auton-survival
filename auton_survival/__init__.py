@@ -472,6 +472,11 @@ from .models.dsm import DeepSurvivalMachines
 from .models.dcm import DeepCoxMixtures
 from .models.cph import DeepCoxPH, DeepRecurrentCoxPH
 from .models.cmhe import DeepCoxMixturesHeterogenousEffects
-import logging
+import warnings
 
-logging.captureWarnings(True)
+
+def simple_formatwarning(message, category, filename, lineno, line=None):
+    return warnings.formatwarning(message, category, filename, lineno, line="")
+
+
+warnings.formatwarning = simple_formatwarning
