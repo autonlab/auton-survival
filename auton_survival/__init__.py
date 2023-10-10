@@ -1,4 +1,4 @@
-r'''
+r"""
 
 
 [![Build Status](https://travis-ci.org/autonlab/DeepSurvivalMachines.svg?branch=master)](https://travis-ci.org/autonlab/DeepSurvivalMachines)
@@ -16,11 +16,11 @@ The `auton-survival` Package
 ---------------------------
 
 The python package `auton-survival` is repository of reusable utilities for projects
-involving censored Time-to-Event Data. `auton-survival` provides a flexible APIs 
-allowing rapid experimentation including dataset preprocessing, regression, 
+involving censored Time-to-Event Data. `auton-survival` provides a flexible APIs
+allowing rapid experimentation including dataset preprocessing, regression,
 counterfactual estimation, clustering and phenotyping and propensity adjusted evaluation.
 
-**For complete details on** `auton-survival` **see**: 
+**For complete details on** `auton-survival` **see**:
 <h3>• <a href="https://www.cs.cmu.edu/~chiragn/papers/auton_survival.pdf">White Paper</a> &nbsp;&nbsp; • <a href="https://autonlab.github.io/auton-survival/">Documentation</a> &nbsp;&nbsp; • <a href="https://nbviewer.org/github/autonlab/auton-survival/tree/master/examples/">Demo Notebooks</a></h3>
 
 
@@ -35,7 +35,7 @@ and ML these scenarious are modelled as regression to estimate the conditional
 survival distribution, \( P(T>t|X) \). As compared to typical
 regression problems, Survival Analysis differs in two major ways:
 
-* The Event distribution, \( T \) has positive support, 
+* The Event distribution, \( T \) has positive support,
   \( T in [0, inf) \).
 * There is presence of censoring (ie. a large number of instances of data are
   lost to follow up.)
@@ -67,7 +67,7 @@ Currently supported Survival Models include:
 Training a Deep Cox Proportional Hazards Model with `auton-survival`:
 
 ```python
-from auton_survival import datasets, preprocessing, models 
+from auton_survival import datasets, preprocessing, models
 
 # Load the SUPPORT Dataset
 outcomes, features = datasets.load_dataset("SUPPORT")
@@ -91,7 +91,7 @@ The use of the wrapper allows a simple standard interface for multiple different
 survival regression methods.
 
 `auton_survival.estimators` also provides convenient wrappers around other popular
-python survival analysis packages to experiment with Random Survival Forests and 
+python survival analysis packages to experiment with Random Survival Forests and
 Weibull Accelerated Failure Time regression models.
 
 ```python
@@ -113,7 +113,7 @@ of survival analysis, involving options for cross-validation and
 nested cross-validation style experiments with multiple different survival
 analysis models.
 
-The module supports multiple model peroformance evaluation metrics and further 
+The module supports multiple model peroformance evaluation metrics and further
 eases evaluation by automatically computing the *censoring adjusted* estimates,
 such as **Time Dependent Concordance Index** and **Brier Score** with **IPCW**
 adjustment.
@@ -127,8 +127,8 @@ cat_feats = ['sex', 'income', 'race']
 num_feats = ['age', 'resp', 'glucose']
 
 from auton_survival.experiments import SurvivalRegressionCV
-# Instantiate an auton_survival Experiment 
-experiment = SurvivalRegressionCV(model='cph', num_folds=5, 
+# Instantiate an auton_survival Experiment
+experiment = SurvivalRegressionCV(model='cph', num_folds=5,
                                     hyperparam_grid=hyperparam_grid)
 
 # Fit the `experiment` object with the specified Cox model.
@@ -148,8 +148,8 @@ Phenotyping and Knowledge Discovery
 of patients that demonstrate similar outcomes. In the context of this package,
 we refer to this task as **phenotyping**. `auton_survival.phenotyping` allows:
 
-- **Intersectional Phenotyping**: Recovers groups, or phenotypes, of individuals 
-over exhaustive combinations of user-specified categorical and numerical features. 
+- **Intersectional Phenotyping**: Recovers groups, or phenotypes, of individuals
+over exhaustive combinations of user-specified categorical and numerical features.
 
 ```python
 from auton_survival.phenotyping import IntersectionalPhenotyper
@@ -160,19 +160,19 @@ cat_vars=['ca'], num_vars=['age'])
 phenotypes = phenotyper.fit_predict(features)
 ```
 
-- **Unsupervised Phenotyping**: Identifies groups of individuals based on structured 
-similarity in the fature space by first performing dimensionality reduction of the 
-input covariates, followed by clustering. The estimated probability of an individual 
-to belong to a latent group is computed as the distance to the cluster normalized by 
+- **Unsupervised Phenotyping**: Identifies groups of individuals based on structured
+similarity in the fature space by first performing dimensionality reduction of the
+input covariates, followed by clustering. The estimated probability of an individual
+to belong to a latent group is computed as the distance to the cluster normalized by
 the sum of distance to other clusters.
 
 ```python
 from auton_survival.phenotyping import ClusteringPhenotyper
 
 # Dimensionality reduction using Principal Component Analysis (PCA) to 8 dimensions.
-dim_red_method, = 'pca', 
+dim_red_method, = 'pca',
 # We use a Gaussian Mixture Model (GMM) with 3 components and diagonal covariance.
-clustering_method, n_clusters = 'gmm', 
+clustering_method, n_clusters = 'gmm',
 
 # Initialize the phenotyper with the above hyperparameters.
 phenotyper = ClusteringPhenotyper(clustering_method=clustering_method,
@@ -184,9 +184,9 @@ phenotypes = phenotyper.fit_predict(features)
 ```
 
 - **Supervised Phenotyping**: Identifies latent groups of individuals with similar
-survival outcomes. This approach can be performed as a direct consequence of training 
-the `Deep Survival Machines` and `Deep Cox Mixtures` latent variable survival 
-regression estimators using the `predict latent z` method. 
+survival outcomes. This approach can be performed as a direct consequence of training
+the `Deep Survival Machines` and `Deep Cox Mixtures` latent variable survival
+regression estimators using the `predict latent z` method.
 
 ```python
 from auton_survival.models.dcm import DeepCoxMixtures [\[Demo Notebook\]]
@@ -238,7 +238,7 @@ Evaluation and Reporting
 Helper functions to generate standard reports for common Survival Analysis tasks with support for bootstrapped confidence intervals.
 
 - **Regression Metric**: Metrics for survival model performance evaluation:
-    - Brier Score 
+    - Brier Score
     - Integrated Brier Score
     - Area under the Receiver Operating Characteristic (ROC) Curve
     - Concordance Index
@@ -251,7 +251,7 @@ predictions = model.predict_survival(features, times)
 # Compute Brier Score, Integrated Brier Score
 # Area Under ROC Curve and Time Dependent Concordance Index
 metrics = ['brs', 'ibs', 'auc', 'ctd']
-score = survival_regression_metric(metric='brs', outcomes_train, 
+score = survival_regression_metric(metric='brs', outcomes_train,
                                    outcomes_test, predictions_test,
                                    times=times)
 ```
@@ -267,7 +267,7 @@ from auton_survival.metrics import survival_diff_metric
 # Compute the difference in RMST, Risk at Time, and TaR between treatment and control groups
 metrics = ['restricted_mean', 'survival_at', 'tar']
 effect = survival_diff_metric(metric='restricted_mean', outcomes=outcomes
-                              treatment_indicator=treatment_indicator, 
+                              treatment_indicator=treatment_indicator,
                               weights=None, horizon=120, n_bootstrap=500)
 ```
 
@@ -277,7 +277,7 @@ effect = survival_diff_metric(metric='restricted_mean', outcomes=outcomes
 from auton_survival.metrics import phenotype_purity
 
 # Measure phenotype purity using the Brier Score at event horizons of 1, 2 and 5 years.
-phenotype_purity(phenotypes, outcomes, strategy='instantaneous', 
+phenotype_purity(phenotypes, outcomes, strategy='instantaneous',
                  time=[365,730,1825])
 # Measure phenotype purity using the Integrated Brier score at an event horizon of 5 years.
 phenotype_purity(phenotypes, outcomes, strategy='integrated', time=1825)
@@ -341,7 +341,7 @@ Citing and References
 
 **Please cite the following paper if you use the `auton-survival` package:**
 
-[1] [auton-survival: 
+[1] [auton-survival:
 an Open-Source Package for Regression, Counterfactual Estimation, Evaluation and Phenotyping with Censored Time-to-Event Data. arXiv (2022)](https://arxiv.org/abs/2204.07276)</a>
 
 ```
@@ -461,12 +461,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 <img align="right" height ="120px" src="https://www.cs.cmu.edu/~chiragn/cmu_logo.jpeg">
-<img align="right" height ="110px" src="https://www.cs.cmu.edu/~chiragn/auton_logo.png"> 
+<img align="right" height ="110px" src="https://www.cs.cmu.edu/~chiragn/auton_logo.png">
 
 <br><br><br><br><br>
 <br><br><br><br><br>
 
-'''
+"""
 
 from .models.dsm import DeepSurvivalMachines
 from .models.dcm import DeepCoxMixtures
