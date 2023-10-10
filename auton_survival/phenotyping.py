@@ -346,7 +346,7 @@ class ClusteringPhenotyper(Phenotyper):
 
         if self.dim_red_method is not None:
             logger.info(
-                "Fitting the following Dimensionality Reduction Model:\n %s",
+                "Fitting the following Dimensionality Reduction Model:\n {}",
                 self.dim_red_model,
             )
             self.dim_red_model = self.dim_red_model.fit(features)
@@ -358,7 +358,7 @@ class ClusteringPhenotyper(Phenotyper):
             )
 
         logger.info(
-            "Fitting the following Clustering Model:\n %s", self.clustering_model
+            "Fitting the following Clustering Model:\n {}", self.clustering_model
         )
         self.clustering_model = self.clustering_model.fit(features)
         self.fitted = True

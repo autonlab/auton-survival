@@ -75,7 +75,7 @@ def plot_nelsonaalen(outcomes, groups=None, **kwargs):
         if pd.isna(group):
             continue
 
-        logger.info("Group: %s", group)
+        logger.info("Group: {}", group)
 
         NelsonAalenFitter().fit(
             outcomes[groups == group]["time"], outcomes[groups == group]["event"]

@@ -116,8 +116,8 @@ class DeepCoxMixtures:
         else:
             logger.info("An unfitted instance of the Deep Cox Mixtures model")
 
-        logger.info("Number of underlying cox distributions (k): %s", self.k)
-        logger.info("Hidden Layers: %s", self.layers)
+        logger.info("Number of underlying cox distributions (k): {}", self.k)
+        logger.info("Hidden Layers: {}", self.layers)
 
     def _preprocess_test_data(self, x):
         x = _dataframe_to_array(x)

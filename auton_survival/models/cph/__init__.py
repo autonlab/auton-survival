@@ -83,7 +83,7 @@ class DeepCoxPH:
         else:
             logger.info("An unfitted instance of the Deep Cox PH model")
 
-        logger.info("Hidden Layers: %s", self.layers)
+        logger.info("Hidden Layers: {}", self.layers)
 
     def _preprocess_test_data(self, x):
         x = _dataframe_to_array(x)
@@ -292,7 +292,7 @@ class DeepRecurrentCoxPH(DeepCoxPH):
         else:
             logger.info("An unfitted instance of the Recurrent Deep Cox PH model")
 
-        logger.info("Hidden Layers: %s", self.layers)
+        logger.info("Hidden Layers: {}", self.layers)
 
     def _gen_torch_model(self, inputdim, optimizer):
         """Helper function to return a torch model."""

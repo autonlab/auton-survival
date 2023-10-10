@@ -149,7 +149,7 @@ class DeepCoxMixturesHeterogenousEffects:
         else:
             logger.info("An unfitted instance of the CMHE model")
 
-        logger.info("Hidden Layers: %s", self.layers)
+        logger.info("Hidden Layers: {}", self.layers)
 
     def _preprocess_test_data(self, x, a=None):
         x = _dataframe_to_array(x)

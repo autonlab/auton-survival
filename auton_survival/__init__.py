@@ -472,3 +472,12 @@ from .models.dsm import DeepSurvivalMachines
 from .models.dcm import DeepCoxMixtures
 from .models.cph import DeepCoxPH, DeepRecurrentCoxPH
 from .models.cmhe import DeepCoxMixturesHeterogenousEffects
+
+from loguru import logger
+import sys
+
+
+config = {"handlers": [{"sink": sys.stdout}]}
+
+logger.configure(**config)
+logger.disable("auton_survival")

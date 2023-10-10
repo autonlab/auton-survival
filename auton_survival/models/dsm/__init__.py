@@ -534,9 +534,9 @@ class DeepSurvivalMachines(DSMBase):
         else:
             logger.info("An unfitted instance of the Deep Survival Machines model")
 
-        logger.info("Number of underlying distributions (k): %s", self.k)
-        logger.info("Hidden Layers: %s", self.layers)
-        logger.info("Distribution Choice: %s", self.dist)
+        logger.info("Number of underlying distributions (k): {}", self.k)
+        logger.info("Hidden Layers: {}", self.layers)
+        logger.info("Distribution Choice: {}", self.dist)
 
 
 class DeepRecurrentSurvivalMachines(DSMBase):

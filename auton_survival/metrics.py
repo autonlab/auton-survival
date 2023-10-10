@@ -136,7 +136,7 @@ def treatment_effect(
 
     if isinstance(n_bootstrap, int):
         logger.info(
-            "Bootstrapping... %s number of times. This may take a while. Please be Patient...",
+            "Bootstrapping... {} number of times. This may take a while. Please be Patient...",
             n_bootstrap,
         )
 

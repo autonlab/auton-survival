@@ -130,7 +130,7 @@ def train_dcph(
 
         dics.append(deepcopy(model.state_dict()))
 
-        logger.debug("Patience: %s | Epoch: %s | Loss: %s", patience_, epoch, valcn)
+        logger.debug("Patience: {} | Epoch: {} | Loss: {}", patience_, epoch, valcn)
 
         if valcn > valc:
             patience_ += 1

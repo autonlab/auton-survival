@@ -155,11 +155,11 @@ class SurvivalRegressionCV:
 
         hyper_param_scores = []
         for i, hyper_param in enumerate(self.hyperparam_grid):
-            logger.info("At hyper-param: %s", hyper_param)
+            logger.info("At hyper-param: {}", hyper_param)
 
             fold_scores = []
             for fold in set(self.folds):
-                logger.info("At fold: %s", fold)
+                logger.info("At fold: {}", fold)
                 model = SurvivalModel(
                     self.model, random_seed=self.random_seed, **hyper_param
                 )
