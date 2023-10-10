@@ -244,13 +244,12 @@ def survival_regression_metric(
     if outcomes_train is None:
         outcomes_train = outcomes
         warnings.warn(
-            "You are are evaluating model performance on the same data used to estimate the censoring distribution.",
-            stacklevel=2,
+            "You are are evaluating model performance on the same data used to estimate the censoring distribution."
         )
 
     assert (
         max(times) < outcomes_train.time.max()
-    ), "Times should be within the range of event times to avoid exterpolation."
+    ), "Times should be within the range of event times to avoid extrapolation."
     assert (
         max(times) <= outcomes.time.max()
     ), "Times must be within the range of event times."
