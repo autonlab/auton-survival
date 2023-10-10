@@ -105,24 +105,25 @@ def treatment_effect(
         assert horizons is not None, "Please specify Event Horizon"
         assert (
             risk_levels is None
-        ), "Risks must be non for 'restricted_mean' and \
-'survival_at' metrics"
+        ), "Risks must be non for 'restricted_mean' and 'survival_at' metrics"
 
     if metric in ["tar"]:
         assert (
             risk_levels is not None
-        ), "Please specify risk level(s) at \
-which to compare time-to-event."
+        ), "Please specify risk level(s) at which to compare time-to-event."
+
         assert horizons is None, "Horizons must be none for 'tar' metric."
 
     if metric == "hazard_ratio":
         warnings.warn(
-            "WARNING: You are computing Hazard Ratios.\n Make sure you have tested the PH Assumptions."
+            "You are computing Hazard Ratios.\n Make sure you have tested the PH Assumptions."
         )
     if (n_bootstrap is None) and (weights is not None):
-        Warning(
-            "Treatment Propensity weights would be ignored, Since no boostrapping is performed."
-            + "In order to incorporate IPTW weights please specify number of bootstrap iterations n_bootstrap>=1"
+        warnings.warn(
+            """
+            Treatment Propensity weights would be ignored, Since no boostrapping is performed.
+            In order to incorporate IPTW weights please specify number of bootstrap iterations n_bootstrap>=1
+            """
         )
     # Bootstrapping ...
     if n_bootstrap is not None:
@@ -243,8 +244,7 @@ def survival_regression_metric(
     if outcomes_train is None:
         outcomes_train = outcomes
         warnings.warn(
-            "You are are evaluating model performance on the \
-same data used to estimate the censoring distribution."
+            "You are are evaluating model performance on the same data used to estimate the censoring distribution."
         )
 
     assert (
@@ -396,14 +396,12 @@ def phenotype_purity(
         phenotypes_test = phenotypes_train
         outcomes_test = outcomes_train
         warnings.warn(
-            "You are are estimating survival probabilities for \
-the same dataset used to estimate the censoring distribution."
+            "You are are estimating survival probabilities for the same dataset used to estimate the censoring distribution."
         )
 
     assert (
         outcomes_test.time.max() >= outcomes_train.time.max()
-    ), "Test \
-set times must be within the range of training set follow-up times."
+    ), "Test set times must be within the range of training set follow-up times."
 
     survival_curves = {}
     for phenotype in np.unique(phenotypes_train):

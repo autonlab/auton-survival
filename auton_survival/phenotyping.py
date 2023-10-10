@@ -275,8 +275,10 @@ class ClusteringPhenotyper(Phenotyper):
         # Raise warning if "hierarchical" is used with dim_redcution
         if (clustering_method in ["hierarchical"]) and (dim_red_method is not None):
             warnings.warn(
-                "Are you sure you want to run hierarchical clustering on decomposed features?.",
-                "Such behaviour is atypical.",
+                """
+                Are you sure you want to run hierarchical clustering on decomposed features?.,
+                Such behaviour is atypical.
+                """
             )
 
             # Dimensionality Reduction Step:
