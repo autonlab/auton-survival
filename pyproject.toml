@@ -16,6 +16,7 @@ scikit-learn = "^1.2"
 torchvision = "^0.14"
 scikit-survival = "^0.21"
 lifelines = "^0.26"
+coloredlogs = "^15.0.1"
 
 [tool.poetry.group.dev.dependencies]
 pre-commit = "^3.4.0"
