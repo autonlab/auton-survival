@@ -23,7 +23,7 @@
 
 r""" Deep Cox Proportional Hazards Model"""
 
-import logging
+from loguru import logger
 import torch
 import numpy as np
 
@@ -33,8 +33,6 @@ from .dcph_utilities import train_dcph, predict_survival
 from auton_survival.utils import _dataframe_to_array
 from auton_survival.models.dsm.dsm_utilities import _get_padded_features
 from auton_survival.models.dsm.dsm_utilities import _get_padded_targets
-
-logger = logging.getLogger(__name__)
 
 
 class DeepCoxPH:

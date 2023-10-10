@@ -35,9 +35,7 @@ from sklearn.model_selection import ParameterGrid
 from sklearn.utils import shuffle
 
 from tqdm import tqdm
-import logging
-
-logger = logging.getLogger(__name__)
+from loguru import logger
 
 
 class SurvivalRegressionCV:

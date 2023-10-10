@@ -36,9 +36,7 @@ import torch
 import numpy as np
 
 import gc
-import logging
-
-logger = logging.getLogger(__name__)
+from loguru import logger
 
 
 def get_optimizer(model, lr):

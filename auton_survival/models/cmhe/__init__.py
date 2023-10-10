@@ -75,7 +75,7 @@ Example Usage
 
 """
 
-import logging
+from loguru import logger
 import numpy as np
 import torch
 
@@ -84,8 +84,6 @@ from .cmhe_utilities import train_cmhe, predict_survival
 from .cmhe_utilities import predict_latent_phi, predict_latent_z
 
 from auton_survival.utils import _dataframe_to_array
-
-logger = logging.getLogger(__name__)
 
 
 class DeepCoxMixturesHeterogenousEffects:

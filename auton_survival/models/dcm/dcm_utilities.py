@@ -1,4 +1,4 @@
-import logging
+from loguru import logger
 from matplotlib.pyplot import get
 
 import torch
@@ -12,8 +12,6 @@ from sklearn.utils import shuffle
 from tqdm.auto import tqdm
 
 from auton_survival.models.dsm.dsm_utilities import get_optimizer
-
-logger = logging.getLogger(__name__)
 
 
 def randargmax(b, **kw):

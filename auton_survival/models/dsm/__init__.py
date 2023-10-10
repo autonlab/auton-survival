@@ -156,7 +156,7 @@ Healthcare (2021)](https://arxiv.org/abs/2101.06536)</a>
 
 """
 
-import logging
+from loguru import logger
 import torch
 import numpy as np
 
@@ -173,7 +173,6 @@ from .dsm_utilities import _reshape_tensor_with_nans
 
 from auton_survival.utils import _dataframe_to_array
 
-logger = logging.getLogger(__name__)
 
 __pdoc__ = {}
 __pdoc__["DeepSurvivalMachines.fit"] = True

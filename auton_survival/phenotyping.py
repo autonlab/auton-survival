@@ -24,7 +24,7 @@
 """Utilities to phenotype individuals based on similar survival
 characteristics."""
 
-import logging
+from loguru import logger
 from random import random
 import numpy as np
 import pandas as pd
@@ -36,8 +36,6 @@ from sklearn.metrics import auc
 
 from auton_survival.utils import _get_method_kwargs
 from auton_survival.experiments import CounterfactualSurvivalRegressionCV
-
-logger = logging.getLogger(__name__)
 
 
 class Phenotyper:

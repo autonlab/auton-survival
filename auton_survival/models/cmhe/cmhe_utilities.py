@@ -21,7 +21,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import logging
+from loguru import logger
 import torch
 import numpy as np
 
@@ -29,8 +29,6 @@ from scipy.interpolate import UnivariateSpline
 from sksurv.linear_model.coxph import BreslowEstimator
 
 from tqdm.auto import tqdm
-
-logger = logging.getLogger(__name__)
 
 
 def randargmax(b, **kw):

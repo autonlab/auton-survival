@@ -1,4 +1,4 @@
-import logging
+from loguru import logger
 import numpy as np
 import pandas as pd
 
@@ -6,8 +6,6 @@ from lifelines import KaplanMeierFitter, NelsonAalenFitter
 
 from lifelines import KaplanMeierFitter
 from lifelines.plotting import add_at_risk_counts
-
-logger = logging.getLogger(__name__)
 
 
 def plot_kaplanmeier(outcomes, groups=None, plot_counts=False, **kwargs):

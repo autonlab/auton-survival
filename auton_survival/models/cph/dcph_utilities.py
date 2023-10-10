@@ -1,7 +1,7 @@
 import torch
 import numpy as np
 import pandas as pd
-import logging
+from loguru import logger
 
 from sksurv.linear_model.coxph import BreslowEstimator
 
@@ -15,8 +15,6 @@ from auton_survival.models.dsm.dsm_utilities import (
 )
 
 from copy import deepcopy
-
-logger = logging.getLogger(__name__)
 
 
 def randargmax(b, **kw):
