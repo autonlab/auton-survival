@@ -477,4 +477,3 @@ import logging
 import coloredlogs
 
 coloredlogs.install(logger=logging.getLogger("auton_survival"))
-logging.basicConfig()
