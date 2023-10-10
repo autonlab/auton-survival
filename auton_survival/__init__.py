@@ -476,5 +476,5 @@ from .models.cmhe import DeepCoxMixturesHeterogenousEffects
 import logging
 import coloredlogs
 
-logging.basicConfig()
 coloredlogs.install(logger=logging.getLogger("auton_survival"))
+logging.basicConfig()
