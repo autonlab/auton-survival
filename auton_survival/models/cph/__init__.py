@@ -73,6 +73,7 @@ class DeepCoxPH:
     def __init__(self, layers=None, random_seed=0):
         self.layers = layers
         self.fitted = False
+        self.initialized = False
         self.random_seed = random_seed
 
     def __call__(self):
@@ -132,6 +133,11 @@ class DeepCoxPH:
 
         return DeepCoxPHTorch(inputdim, layers=self.layers, optimizer=optimizer)
 
+    def init_torch_model(self, inputdim, optimizer):
+        if not self.initialized:
+            self.torch_model = (self._gen_torch_model(inputdim, optimizer), None)
+            self.initialized = True
+
     def fit(
         self,
         x,
@@ -182,10 +188,12 @@ class DeepCoxPH:
 
         inputdim = x_train.shape[-1]
 
-        model = self._gen_torch_model(inputdim, optimizer)
+        self.init_torch_model(inputdim, optimizer)
 
-        model, _ = train_dcph(
-            model,
+        torch_module = self.torch_model[0]
+
+        trained_model, losses = train_dcph(
+            torch_module,
             (x_train, t_train, e_train),
             (x_val, t_val, e_val),
             epochs=iters,
@@ -195,7 +203,8 @@ class DeepCoxPH:
             random_seed=self.random_seed,
         )
 
-        self.torch_model = (model[0].eval(), model[1])
+        self.torch_model = (trained_model[0].eval(), trained_model[1])
+        self.losses = losses
         self.fitted = True
 
         return self

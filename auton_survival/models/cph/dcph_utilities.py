@@ -8,7 +8,10 @@ from sklearn.utils import shuffle
 
 from tqdm.auto import tqdm
 
-from auton_survival.models.dsm.dsm_utilities import get_optimizer, _reshape_tensor_with_nans
+from auton_survival.models.dsm.dsm_utilities import (
+    get_optimizer,
+    _reshape_tensor_with_nans,
+)
 
 from copy import deepcopy
 
@@ -40,7 +43,8 @@ def fit_breslow(model, x, t, e):
     return BreslowEstimator().fit(model(x).detach().cpu().numpy(), e.numpy(), t.numpy())
 
 
-def train_step(model, x, t, e, optimizer, bs=256, seed=100):
+@torch.enable_grad()
+def train_step(model: torch.nn.Module, x, t, e, optimizer, bs=256, seed=100):
     x, t, e = shuffle(x, t, e, random_state=seed)
 
     n = x.shape[0]
@@ -49,18 +53,21 @@ def train_step(model, x, t, e, optimizer, bs=256, seed=100):
 
     epoch_loss = 0
 
+    model.train()
+
     for i in range(batches):
         xb = x[i * bs : (i + 1) * bs]
         tb = t[i * bs : (i + 1) * bs]
         eb = e[i * bs : (i + 1) * bs]
 
-        # Training Step
-        torch.enable_grad()
-        optimizer.zero_grad()
         loss = partial_ll_loss(
             model(xb), _reshape_tensor_with_nans(tb), _reshape_tensor_with_nans(eb)
         )
+
+        optimizer.zero_grad()
+
         loss.backward()
+
         optimizer.step()
 
         epoch_loss += float(loss)
@@ -68,9 +75,11 @@ def train_step(model, x, t, e, optimizer, bs=256, seed=100):
     return epoch_loss / n
 
 
+@torch.inference_mode()
 def test_step(model, x, t, e):
-    with torch.no_grad():
-        loss = float(partial_ll_loss(model(x), t, e))
+    model.eval()
+
+    loss = float(partial_ll_loss(model(x), t, e))
 
     return loss / x.shape[0]
 
