@@ -257,8 +257,7 @@ def train_step(
                         )
 
             except Exception as exception:
-                logging.error(str(exception))
-                warnings.warn("Couldn't fit splines, reusing from previous epoch")
+                logging.warning("Couldn't fit splines, reusing from previous epoch")
         epoch_loss += loss
 
     return breslow_splines

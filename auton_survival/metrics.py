@@ -115,11 +115,11 @@ def treatment_effect(
         assert horizons is None, "Horizons must be none for 'tar' metric."
 
     if metric == "hazard_ratio":
-        warnings.warn(
+        logging.warning(
             "You are computing Hazard Ratios.\n Make sure you have tested the PH Assumptions."
         )
     if (n_bootstrap is None) and (weights is not None):
-        warnings.warn(
+        logging.warning(
             """
             Treatment Propensity weights would be ignored, Since no boostrapping is performed.
             In order to incorporate IPTW weights please specify number of bootstrap iterations n_bootstrap>=1
@@ -243,7 +243,7 @@ def survival_regression_metric(
 
     if outcomes_train is None:
         outcomes_train = outcomes
-        warnings.warn(
+        logging.warning(
             "You are are evaluating model performance on the same data used to estimate the censoring distribution."
         )
 
@@ -393,7 +393,7 @@ def phenotype_purity(
     if outcomes_test is None:
         phenotypes_test = phenotypes_train
         outcomes_test = outcomes_train
-        warnings.warn(
+        logging.warning(
             "You are are estimating survival probabilities for the same dataset used to estimate the censoring distribution."
         )
 
