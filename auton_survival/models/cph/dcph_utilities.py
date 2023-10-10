@@ -122,12 +122,9 @@ def train_dcph(
     dics = []
 
     for epoch in tqdm(range(epochs)):
-        # train_step_start = time.time()
         _ = train_step(model, xt, tt, et, optimizer, bs, seed=epoch)
-        # print(f'Duration of train-step: {time.time() - train_step_start}')
-        # test_step_start = time.time()
+
         valcn = test_step(model, xv, tv_, ev_)
-        # print(f'Duration of test-step: {time.time() - test_step_start}')
 
         losses.append(float(valcn))
 
@@ -184,7 +181,6 @@ def predict_survival(model, x, t=None):
         return predictions
     else:
         return __interpolate_missing_times(predictions.T, t)
-        # return np.array(predictions).T
 
 
 def __interpolate_missing_times(survival_predictions, times):
