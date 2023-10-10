@@ -244,7 +244,8 @@ def survival_regression_metric(
     if outcomes_train is None:
         outcomes_train = outcomes
         warnings.warn(
-            "You are are evaluating model performance on the same data used to estimate the censoring distribution."
+            "You are are evaluating model performance on the same data used to estimate the censoring distribution.",
+            stacklevel=2,
         )
 
     assert (
