@@ -149,6 +149,7 @@ class DeepCoxPH:
         learning_rate=1e-3,
         batch_size=100,
         optimizer="Adam",
+        patience=3,
     ):
         r"""This method is used to train an instance of the DSM model.
 
@@ -201,6 +202,7 @@ class DeepCoxPH:
             bs=batch_size,
             return_losses=True,
             random_seed=self.random_seed,
+            patience=patience,
         )
 
         self.torch_model = (trained_model[0].eval(), trained_model[1])
