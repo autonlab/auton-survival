@@ -50,6 +50,7 @@ for Survival Regression. Machine Learning in Health Conference (2021)</a>
 
 """
 
+import logging
 import torch
 import numpy as np
 
@@ -111,12 +112,12 @@ class DeepCoxMixtures:
 
     def __call__(self):
         if self.fitted:
-            print("A fitted instance of the Deep Cox Mixtures model")
+            logging.info("A fitted instance of the Deep Cox Mixtures model")
         else:
-            print("An unfitted instance of the Deep Cox Mixtures model")
+            logging.info("An unfitted instance of the Deep Cox Mixtures model")
 
-        print("Number of underlying cox distributions (k):", self.k)
-        print("Hidden Layers:", self.layers)
+        logging.info("Number of underlying cox distributions (k): %s", self.k)
+        logging.info("Hidden Layers: %s", self.layers)
 
     def _preprocess_test_data(self, x):
         x = _dataframe_to_array(x)

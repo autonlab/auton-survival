@@ -156,6 +156,7 @@ Healthcare (2021)](https://arxiv.org/abs/2101.06536)</a>
 
 """
 
+import logging
 import torch
 import numpy as np
 
@@ -529,13 +530,13 @@ class DeepSurvivalMachines(DSMBase):
 
     def __call__(self):
         if self.fitted:
-            print("A fitted instance of the Deep Survival Machines model")
+            logging.info("A fitted instance of the Deep Survival Machines model")
         else:
-            print("An unfitted instance of the Deep Survival Machines model")
+            logging.info("An unfitted instance of the Deep Survival Machines model")
 
-        print("Number of underlying distributions (k):", self.k)
-        print("Hidden Layers:", self.layers)
-        print("Distribution Choice:", self.dist)
+        logging.info("Number of underlying distributions (k): %s", self.k)
+        logging.info("Hidden Layers: %s", self.layers)
+        logging.info("Distribution Choice: %s", self.dist)
 
 
 class DeepRecurrentSurvivalMachines(DSMBase):

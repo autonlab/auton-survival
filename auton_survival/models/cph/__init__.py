@@ -23,6 +23,7 @@
 
 r""" Deep Cox Proportional Hazards Model"""
 
+import logging
 import torch
 import numpy as np
 
@@ -78,11 +79,11 @@ class DeepCoxPH:
 
     def __call__(self):
         if self.fitted:
-            print("A fitted instance of the Deep Cox PH model")
+            logging.info("A fitted instance of the Deep Cox PH model")
         else:
-            print("An unfitted instance of the Deep Cox PH model")
+            logging.info("An unfitted instance of the Deep Cox PH model")
 
-        print("Hidden Layers:", self.layers)
+        logging.info("Hidden Layers: %s", self.layers)
 
     def _preprocess_test_data(self, x):
         x = _dataframe_to_array(x)
@@ -287,11 +288,11 @@ class DeepRecurrentCoxPH(DeepCoxPH):
 
     def __call__(self):
         if self.fitted:
-            print("A fitted instance of the Recurrent Deep Cox PH model")
+            logging.info("A fitted instance of the Recurrent Deep Cox PH model")
         else:
-            print("An unfitted instance of the Recurrent Deep Cox PH model")
+            logging.info("An unfitted instance of the Recurrent Deep Cox PH model")
 
-        print("Hidden Layers:", self.layers)
+        logging.info("Hidden Layers: %s", self.layers)
 
     def _gen_torch_model(self, inputdim, optimizer):
         """Helper function to return a torch model."""

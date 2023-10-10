@@ -21,6 +21,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+import logging
 import torch
 import numpy as np
 
@@ -294,11 +295,7 @@ def train_step(
                         typ="soft",
                         smoothing_factor=smoothing_factor,
                     )
-                    # print(f'Duration of Breslow spline estimation: {time.time() - estimate_breslow_start}')
-            # except Exception as exce:
-            #   print("Exception!!!:", exce)
-            #   logging.warning("Couldn't fit splines, reusing from previous epoch")
-    # print (epoch_loss/n)
+
     return breslow_splines
 
 
@@ -363,16 +360,12 @@ def train_cmhe(
             update_splines_after=update_splines_after,
             smoothing_factor=smoothing_factor,
         )
-        # print(f'Duration of train-step: {time.time() - train_step_start}')
-        # test_step_start = time.time()
+
         valcn = test_step(model, xv, tv, ev, av, breslow_splines, loss=vloss, typ=typ)
-        # print(f'Duration of test-step: {time.time() - test_step_start}')
 
         losses.append(valcn)
 
-        if epoch % 1 == 0:
-            if debug:
-                print(patience_, epoch, valcn)
+        logging.debug("Patience: %s | Epoch: %s | Loss: %s", patience_, epoch, valcn)
 
         if valcn > valc:
             patience_ += 1

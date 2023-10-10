@@ -36,6 +36,7 @@ from sklearn.utils import shuffle
 
 from tqdm import tqdm
 import warnings
+import logging
 
 
 class SurvivalRegressionCV:
@@ -155,11 +156,11 @@ class SurvivalRegressionCV:
 
         hyper_param_scores = []
         for i, hyper_param in enumerate(self.hyperparam_grid):
-            print("At hyper-param", hyper_param)
+            logging.info("At hyper-param: %s", hyper_param)
 
             fold_scores = []
             for fold in set(self.folds):
-                print("At fold:", fold)
+                logging.info("At fold: %s", fold)
                 model = SurvivalModel(
                     self.model, random_seed=self.random_seed, **hyper_param
                 )

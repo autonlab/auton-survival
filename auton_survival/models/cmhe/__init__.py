@@ -75,6 +75,7 @@ Example Usage
 
 """
 
+import logging
 import numpy as np
 import torch
 
@@ -144,11 +145,11 @@ class DeepCoxMixturesHeterogenousEffects:
 
     def __call__(self):
         if self.fitted:
-            print("A fitted instance of the CMHE model")
+            logging.info("A fitted instance of the CMHE model")
         else:
-            print("An unfitted instance of the CMHE model")
+            logging.info("An unfitted instance of the CMHE model")
 
-        print("Hidden Layers:", self.layers)
+        logging.info("Hidden Layers: %s", self.layers)
 
     def _preprocess_test_data(self, x, a=None):
         x = _dataframe_to_array(x)

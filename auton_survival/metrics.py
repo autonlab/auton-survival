@@ -33,6 +33,7 @@ from scipy.optimize import fsolve
 from sklearn.metrics import auc
 from tqdm import tqdm
 import warnings
+import logging
 
 
 def treatment_effect(
@@ -134,10 +135,9 @@ which to compare time-to-event."
         risk_levels = [risk_levels]
 
     if isinstance(n_bootstrap, int):
-        print(
-            "Bootstrapping... ",
+        logging.info(
+            "Bootstrapping... %s number of times. This may take a while. Please be Patient...",
             n_bootstrap,
-            " number of times. This may take a while. Please be Patient...",
         )
 
     is_treated = treatment_indicator.astype(float)

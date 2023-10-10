@@ -1,6 +1,7 @@
 import torch
 import numpy as np
 import pandas as pd
+import logging
 
 from sksurv.linear_model.coxph import BreslowEstimator
 
@@ -92,7 +93,6 @@ def train_dcph(
     patience=3,
     bs=256,
     lr=1e-3,
-    debug=False,
     random_seed=0,
     return_losses=False,
 ):
@@ -121,7 +121,7 @@ def train_dcph(
     losses = []
     dics = []
 
-    for epoch in tqdm(range(epochs)):
+    for epoch in tqdm(range(epochs), desc="Training Epoch"):
         _ = train_step(model, xt, tt, et, optimizer, bs, seed=epoch)
 
         valcn = test_step(model, xv, tv_, ev_)
@@ -130,9 +130,7 @@ def train_dcph(
 
         dics.append(deepcopy(model.state_dict()))
 
-        if epoch % 1 == 0:
-            if debug:
-                print(patience_, epoch, valcn)
+        logging.debug("Patience: %s | Epoch: %s | Loss: %s", patience_, epoch, valcn)
 
         if valcn > valc:
             patience_ += 1

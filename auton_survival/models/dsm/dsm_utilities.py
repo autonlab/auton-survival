@@ -78,7 +78,7 @@ def pretrain_dsm(
             valid_loss += unconditional_loss(premodel, t_valid, e_valid, str(r + 1))
         valid_loss = valid_loss.detach().cpu().numpy()
         costs.append(valid_loss)
-        # print(valid_loss)
+
         if np.abs(costs[-1] - oldcost) < thres:
             patience += 1
             if patience == 3:

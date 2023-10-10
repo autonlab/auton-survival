@@ -1,3 +1,4 @@
+import logging
 import numpy as np
 import pandas as pd
 
@@ -74,7 +75,7 @@ def plot_nelsonaalen(outcomes, groups=None, **kwargs):
         if pd.isna(group):
             continue
 
-        print("Group:", group)
+        logging.info("Group: %s", group)
 
         NelsonAalenFitter().fit(
             outcomes[groups == group]["time"], outcomes[groups == group]["event"]
