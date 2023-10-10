@@ -639,8 +639,7 @@ class SurvivalModel:
         if val_data is None:
             assert (
                 weights_val is None
-            ), "Weights for validation data \
-must be None if validation data is not specified."
+            ), "Weights for validation data must be None if validation data is not specified."
 
             data_train = data.sample(frac=1 - vsize, random_state=self.random_seed)
             data_val = data[~data.index.isin(data_train.index)]
@@ -652,8 +651,7 @@ must be None if validation data is not specified."
         if weights is not None:
             assert (
                 len(weights) == features.shape[0]
-            ), "Size of passed weights \
-must match size of training data."
+            ), "Size of passed weights must match size of training data."
             assert (weights > 0.0).any(), "All weights must be positive."
 
             weights = pd.Series(weights, index=data.index)
@@ -661,8 +659,7 @@ must match size of training data."
             if weights_val is not None:
                 assert (
                     len(weights_val) == data_val[features.columns].shape[0]
-                ), "Size \
-of passed weights_val must match size of validation data."
+                ), "Size of passed weights_val must match size of validation data."
                 assert (weights_val > 0.0).any(), "All weights_val must be positive."
 
                 weights_train = weights
@@ -670,8 +667,7 @@ of passed weights_val must match size of validation data."
             else:
                 assert (
                     val_data is None
-                ), "Validation weights must be specified if validation \
-data and training set weights are both specified."
+                ), "Validation weights must be specified if validation data and training set weights are both specified."
                 weights_train = weights[data_train.index]
                 weights_val = weights[data_val.index]
 

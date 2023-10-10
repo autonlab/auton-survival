@@ -77,8 +77,7 @@ class Imputer:
 
         assert (
             len(cat_feats + num_feats) != 0
-        ), "Please specify \
-    categorical and numerical features."
+        ), "Please specify categorical and numerical features."
 
         self._cat_feats = cat_feats
         self._num_feats = num_feats
@@ -128,8 +127,7 @@ class Imputer:
         all_feats = self._cat_feats + self._num_feats
         assert (
             len(set(data.columns) ^ set(all_feats)) == 0
-        ), "Passed columns don't \
-    match columns trained on !!! "
+        ), "Passed columns don't match columns trained on !!! "
         assert self.fitted, "Model is not fitted yet !!!"
 
         df = data.copy()

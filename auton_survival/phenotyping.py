@@ -414,10 +414,7 @@ class ClusteringPhenotyper(Phenotyper):
 
         """
 
-        assert (
-            self.fitted
-        ), "Phenotyper must be `fitted` before calling \
-    `phenotype`."
+        assert self.fitted, "Phenotyper must be `fitted` before calling `phenotype`."
 
         if self.dim_red_method is not None:
             features = self.dim_red_model.transform(features)
@@ -444,10 +441,7 @@ class ClusteringPhenotyper(Phenotyper):
 
         """
 
-        assert (
-            self.fitted
-        ), "Phenotyper must be `fitted` before calling \
-    `phenotype`."
+        assert self.fitted, "Phenotyper must be `fitted` before calling `phenotype`."
 
         return np.argmax(self.predict_proba(features), axis=1)
 
