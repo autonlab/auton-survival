@@ -38,6 +38,8 @@ import numpy as np
 import gc
 import logging
 
+logger = logging.getLogger(__name__)
+
 
 def get_optimizer(model, lr):
     if model.optimizer == "Adam":
@@ -133,7 +135,7 @@ def train_dsm(
     torch.manual_seed(random_seed)
     np.random.seed(random_seed)
 
-    logging.info("Pretraining the Underlying Distributions...")
+    logger.info("Pretraining the Underlying Distributions...")
     # For padded variable length sequences we first unroll the input and
     # mask out the padded nans.
     t_train_ = _reshape_tensor_with_nans(t_train)

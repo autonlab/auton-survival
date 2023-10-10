@@ -1,5 +1,4 @@
 import logging
-import warnings
 from matplotlib.pyplot import get
 
 import torch
@@ -10,11 +9,11 @@ from sksurv.linear_model.coxph import BreslowEstimator
 
 from sklearn.utils import shuffle
 
-
 from tqdm.auto import tqdm
 
-
 from auton_survival.models.dsm.dsm_utilities import get_optimizer
+
+logger = logging.getLogger(__name__)
 
 
 def randargmax(b, **kw):
@@ -257,7 +256,7 @@ def train_step(
                         )
 
             except Exception as exception:
-                logging.warning("Couldn't fit splines, reusing from previous epoch")
+                logger.warning("Couldn't fit splines, reusing from previous epoch")
         epoch_loss += loss
 
     return breslow_splines
@@ -329,7 +328,7 @@ def train_dcm(
 
         losses.append(valcn)
 
-        logging.debug("Patience: %s | Epoch: %s | Loss: %s", patience_, epoch, valcn)
+        logger.debug("Patience: %s | Epoch: %s | Loss: %s", patience_, epoch, valcn)
 
         if valcn > valc:
             patience_ += 1

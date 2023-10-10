@@ -59,6 +59,8 @@ from .dcm_utilities import train_dcm, predict_survival, predict_latent_z
 
 from auton_survival.utils import _dataframe_to_array
 
+logger = logging.getLogger(__name__)
+
 
 class DeepCoxMixtures:
     """A Deep Cox Mixture model.
@@ -112,12 +114,12 @@ class DeepCoxMixtures:
 
     def __call__(self):
         if self.fitted:
-            logging.info("A fitted instance of the Deep Cox Mixtures model")
+            logger.info("A fitted instance of the Deep Cox Mixtures model")
         else:
-            logging.info("An unfitted instance of the Deep Cox Mixtures model")
+            logger.info("An unfitted instance of the Deep Cox Mixtures model")
 
-        logging.info("Number of underlying cox distributions (k): %s", self.k)
-        logging.info("Hidden Layers: %s", self.layers)
+        logger.info("Number of underlying cox distributions (k): %s", self.k)
+        logger.info("Hidden Layers: %s", self.layers)
 
     def _preprocess_test_data(self, x):
         x = _dataframe_to_array(x)

@@ -7,6 +7,8 @@ from lifelines import KaplanMeierFitter, NelsonAalenFitter
 from lifelines import KaplanMeierFitter
 from lifelines.plotting import add_at_risk_counts
 
+logger = logging.getLogger(__name__)
+
 
 def plot_kaplanmeier(outcomes, groups=None, plot_counts=False, **kwargs):
     """Plot a Kaplan-Meier Survival Estimator stratified by groups.
@@ -75,7 +77,7 @@ def plot_nelsonaalen(outcomes, groups=None, **kwargs):
         if pd.isna(group):
             continue
 
-        logging.info("Group: %s", group)
+        logger.info("Group: %s", group)
 
         NelsonAalenFitter().fit(
             outcomes[groups == group]["time"], outcomes[groups == group]["event"]

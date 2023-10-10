@@ -34,6 +34,8 @@ from auton_survival.utils import _dataframe_to_array
 from auton_survival.models.dsm.dsm_utilities import _get_padded_features
 from auton_survival.models.dsm.dsm_utilities import _get_padded_targets
 
+logger = logging.getLogger(__name__)
+
 
 class DeepCoxPH:
     """A Deep Cox Proportional Hazards model.
@@ -79,11 +81,11 @@ class DeepCoxPH:
 
     def __call__(self):
         if self.fitted:
-            logging.info("A fitted instance of the Deep Cox PH model")
+            logger.info("A fitted instance of the Deep Cox PH model")
         else:
-            logging.info("An unfitted instance of the Deep Cox PH model")
+            logger.info("An unfitted instance of the Deep Cox PH model")
 
-        logging.info("Hidden Layers: %s", self.layers)
+        logger.info("Hidden Layers: %s", self.layers)
 
     def _preprocess_test_data(self, x):
         x = _dataframe_to_array(x)
@@ -288,11 +290,11 @@ class DeepRecurrentCoxPH(DeepCoxPH):
 
     def __call__(self):
         if self.fitted:
-            logging.info("A fitted instance of the Recurrent Deep Cox PH model")
+            logger.info("A fitted instance of the Recurrent Deep Cox PH model")
         else:
-            logging.info("An unfitted instance of the Recurrent Deep Cox PH model")
+            logger.info("An unfitted instance of the Recurrent Deep Cox PH model")
 
-        logging.info("Hidden Layers: %s", self.layers)
+        logger.info("Hidden Layers: %s", self.layers)
 
     def _gen_torch_model(self, inputdim, optimizer):
         """Helper function to return a torch model."""

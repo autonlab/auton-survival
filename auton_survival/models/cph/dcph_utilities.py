@@ -16,6 +16,8 @@ from auton_survival.models.dsm.dsm_utilities import (
 
 from copy import deepcopy
 
+logger = logging.getLogger(__name__)
+
 
 def randargmax(b, **kw):
     """a random tie-breaking argmax"""
@@ -130,7 +132,7 @@ def train_dcph(
 
         dics.append(deepcopy(model.state_dict()))
 
-        logging.debug("Patience: %s | Epoch: %s | Loss: %s", patience_, epoch, valcn)
+        logger.debug("Patience: %s | Epoch: %s | Loss: %s", patience_, epoch, valcn)
 
         if valcn > valc:
             patience_ += 1

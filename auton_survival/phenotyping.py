@@ -36,7 +36,8 @@ from sklearn.metrics import auc
 
 from auton_survival.utils import _get_method_kwargs
 from auton_survival.experiments import CounterfactualSurvivalRegressionCV
-import warnings
+
+logger = logging.getLogger(__name__)
 
 
 class Phenotyper:
@@ -274,7 +275,7 @@ class ClusteringPhenotyper(Phenotyper):
 
         # Raise warning if "hierarchical" is used with dim_redcution
         if (clustering_method in ["hierarchical"]) and (dim_red_method is not None):
-            logging.warning(
+            logger.warning(
                 """
                 Are you sure you want to run hierarchical clustering on decomposed features?.,
                 Such behaviour is atypical.
@@ -346,7 +347,7 @@ class ClusteringPhenotyper(Phenotyper):
         """
 
         if self.dim_red_method is not None:
-            logging.info(
+            logger.info(
                 "Fitting the following Dimensionality Reduction Model:\n %s",
                 self.dim_red_model,
             )
@@ -354,11 +355,11 @@ class ClusteringPhenotyper(Phenotyper):
             features = self.dim_red_model.transform(features)
 
         else:
-            logging.info(
+            logger.info(
                 "No Dimensionaity reduction specified...\n Proceeding to learn clusters with the raw features..."
             )
 
-        logging.info(
+        logger.info(
             "Fitting the following Clustering Model:\n %s", self.clustering_model
         )
         self.clustering_model = self.clustering_model.fit(features)

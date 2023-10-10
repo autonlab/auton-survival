@@ -173,6 +173,7 @@ from .dsm_utilities import _reshape_tensor_with_nans
 
 from auton_survival.utils import _dataframe_to_array
 
+logger = logging.getLogger(__name__)
 
 __pdoc__ = {}
 __pdoc__["DeepSurvivalMachines.fit"] = True
@@ -530,13 +531,13 @@ class DeepSurvivalMachines(DSMBase):
 
     def __call__(self):
         if self.fitted:
-            logging.info("A fitted instance of the Deep Survival Machines model")
+            logger.info("A fitted instance of the Deep Survival Machines model")
         else:
-            logging.info("An unfitted instance of the Deep Survival Machines model")
+            logger.info("An unfitted instance of the Deep Survival Machines model")
 
-        logging.info("Number of underlying distributions (k): %s", self.k)
-        logging.info("Hidden Layers: %s", self.layers)
-        logging.info("Distribution Choice: %s", self.dist)
+        logger.info("Number of underlying distributions (k): %s", self.k)
+        logger.info("Hidden Layers: %s", self.layers)
+        logger.info("Distribution Choice: %s", self.dist)
 
 
 class DeepRecurrentSurvivalMachines(DSMBase):

@@ -85,6 +85,8 @@ from .cmhe_utilities import predict_latent_phi, predict_latent_z
 
 from auton_survival.utils import _dataframe_to_array
 
+logger = logging.getLogger(__name__)
+
 
 class DeepCoxMixturesHeterogenousEffects:
     """A Deep Cox Mixtures with Heterogenous Effects model.
@@ -145,11 +147,11 @@ class DeepCoxMixturesHeterogenousEffects:
 
     def __call__(self):
         if self.fitted:
-            logging.info("A fitted instance of the CMHE model")
+            logger.info("A fitted instance of the CMHE model")
         else:
-            logging.info("An unfitted instance of the CMHE model")
+            logger.info("An unfitted instance of the CMHE model")
 
-        logging.info("Hidden Layers: %s", self.layers)
+        logger.info("Hidden Layers: %s", self.layers)
 
     def _preprocess_test_data(self, x, a=None):
         x = _dataframe_to_array(x)
