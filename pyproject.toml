@@ -17,6 +17,9 @@ torchvision = "^0.14"
 scikit-survival = "^0.21"
 lifelines = "^0.26"
 
+[tool.poetry.group.dev.dependencies]
+pre-commit = "^3.4.0"
+
 [tool.semantic_release]
 version_toml = [
     "pyproject.toml:tool.poetry.version"
