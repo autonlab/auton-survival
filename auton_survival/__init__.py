@@ -473,7 +473,6 @@ from .models.dcm import DeepCoxMixtures
 from .models.cph import DeepCoxPH, DeepRecurrentCoxPH
 from .models.cmhe import DeepCoxMixturesHeterogenousEffects
 
-import logging
 import coloredlogs
 
-coloredlogs.install(logger=logging.getLogger("auton_survival"))
+coloredlogs.install()
