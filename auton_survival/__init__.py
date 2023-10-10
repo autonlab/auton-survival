@@ -476,8 +476,5 @@ from .models.cmhe import DeepCoxMixturesHeterogenousEffects
 from loguru import logger
 import sys
 
-
-config = {"handlers": [{"sink": sys.stdout}]}
-
-logger.configure(**config)
-logger.disable("auton_survival")
+logger.remove()
+logger.add(sys.stdout, level="INFO")
