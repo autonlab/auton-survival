@@ -474,7 +474,8 @@ from .models.cph import DeepCoxPH, DeepRecurrentCoxPH
 from .models.cmhe import DeepCoxMixturesHeterogenousEffects
 
 from loguru import logger
-import sys
+import sys, os
 
 logger.remove()
-logger.add(sys.stdout, level="INFO")
+log_level = os.environ["LOGURU_LEVEL"] if "LOGURU_LEVEL" in os.environ else "INFO"
+logger.add(sys.stdout, level=log_level)
