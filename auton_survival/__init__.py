@@ -477,4 +477,4 @@ from loguru import logger
 import sys, os
 
 logger.remove()
-logger.add(sys.stdout, level="DEBUG")
+logger.add(sys.stdout, level="INFO")
