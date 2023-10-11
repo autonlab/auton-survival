@@ -160,6 +160,8 @@ from loguru import logger
 import torch
 import numpy as np
 
+from ..utils.recurrent_nn_utils import _get_padded_features
+
 from .dsm_torch import DeepSurvivalMachinesTorch
 from .dsm_torch import DeepRecurrentSurvivalMachinesTorch
 from .dsm_torch import DeepConvolutionalSurvivalMachinesTorch
@@ -168,7 +170,7 @@ from .dsm_torch import DeepCNNRNNSurvivalMachinesTorch
 from . import losses
 
 from .dsm_utilities import train_dsm
-from .dsm_utilities import _get_padded_features, _get_padded_targets
+from ..utils.recurrent_nn_utils import _get_padded_targets
 from .dsm_utilities import _reshape_tensor_with_nans
 
 from auton_survival.utils import _dataframe_to_array

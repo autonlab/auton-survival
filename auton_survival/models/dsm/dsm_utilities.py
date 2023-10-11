@@ -24,6 +24,7 @@
 
 """Utility functions to train the Deep Survival Machines models"""
 
+from auton_survival.models.utils.common_utils import get_optimizer
 from .dsm_torch import DeepSurvivalMachinesTorch
 from .losses import unconditional_loss, conditional_loss
 
@@ -37,19 +38,6 @@ import numpy as np
 
 import gc
 from loguru import logger
-
-
-def get_optimizer(model, lr):
-    if model.optimizer == "Adam":
-        return torch.optim.Adam(model.parameters(), lr=lr)
-    elif model.optimizer == "SGD":
-        return torch.optim.SGD(model.parameters(), lr=lr)
-    elif model.optimizer == "RMSProp":
-        return torch.optim.RMSprop(model.parameters(), lr=lr)
-    else:
-        raise NotImplementedError(
-            "Optimizer " + model.optimizer + " is not implemented"
-        )
 
 
 def pretrain_dsm(
@@ -92,26 +80,6 @@ def _reshape_tensor_with_nans(data):
     """Helper function to unroll padded RNN inputs."""
     data = data.reshape(-1)
     return data[~torch.isnan(data)]
-
-
-def _get_padded_features(x):
-    """Helper function to pad variable length RNN inputs with nans."""
-    d = max([len(x_) for x_ in x])
-    padx = []
-    for i in range(len(x)):
-        pads = np.nan * np.ones((d - len(x[i]),) + x[i].shape[1:])
-        padx.append(np.concatenate([x[i], pads]))
-    return np.array(padx)
-
-
-def _get_padded_targets(t):
-    """Helper function to pad variable length RNN inputs with nans."""
-    d = max([len(t_) for t_ in t])
-    padt = []
-    for i in range(len(t)):
-        pads = np.nan * np.ones(d - len(t[i]))
-        padt.append(np.concatenate([t[i], pads]))
-    return np.array(padt)[:, :, np.newaxis]
 
 
 def train_dsm(

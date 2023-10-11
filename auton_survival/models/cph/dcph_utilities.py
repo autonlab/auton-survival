@@ -10,34 +10,11 @@ from sklearn.utils import shuffle
 from tqdm.auto import tqdm
 
 from auton_survival.models.dsm.dsm_utilities import (
-    get_optimizer,
     _reshape_tensor_with_nans,
 )
 
 from copy import deepcopy
-
-
-def randargmax(b, **kw):
-    """a random tie-breaking argmax"""
-    return np.argmax(np.random.random(b.shape) * (b == b.max()), **kw)
-
-
-def partial_ll_loss(lrisks, tb, eb, eps=1e-3):
-    tb = tb + eps * np.random.random(len(tb))
-    sindex = np.argsort(-tb)
-
-    tb = tb[sindex]
-    eb = eb[sindex]
-
-    lrisks = lrisks[sindex]
-    lrisksdenom = torch.logcumsumexp(lrisks, dim=0)
-
-    plls = lrisks - lrisksdenom
-    pll = plls[eb == 1]
-
-    pll = torch.sum(pll)
-
-    return -pll
+from auton_survival.models.utils.common_utils import get_optimizer, partial_ll_loss
 
 
 def fit_breslow(model, x, t, e):
@@ -62,7 +39,10 @@ def train_step(model: torch.nn.Module, x, t, e, optimizer, bs=256, seed=100):
         eb = e[i * bs : (i + 1) * bs]
 
         loss = partial_ll_loss(
-            model(xb), _reshape_tensor_with_nans(tb), _reshape_tensor_with_nans(eb)
+            model(xb),
+            _reshape_tensor_with_nans(tb),
+            _reshape_tensor_with_nans(eb),
+            eps=1e-3,
         )
 
         optimizer.zero_grad()
@@ -80,7 +60,7 @@ def train_step(model: torch.nn.Module, x, t, e, optimizer, bs=256, seed=100):
 def test_step(model, x, t, e):
     model.eval()
 
-    loss = float(partial_ll_loss(model(x), t, e))
+    loss = float(partial_ll_loss(model(x), t, e, eps=1e-3))
 
     return loss / x.shape[0]
 

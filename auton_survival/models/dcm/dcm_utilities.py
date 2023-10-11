@@ -4,96 +4,24 @@ from matplotlib.pyplot import get
 import torch
 import numpy as np
 
-from scipy.interpolate import UnivariateSpline
 from sksurv.linear_model.coxph import BreslowEstimator
 
 from sklearn.utils import shuffle
 
 from tqdm.auto import tqdm
 
-from auton_survival.models.dsm.dsm_utilities import get_optimizer
+from auton_survival.models.utils.common_utils import get_optimizer
 
-
-def randargmax(b, **kw):
-    """a random tie-breaking argmax"""
-    return np.argmax(np.random.random(b.shape) * (b == b.max()), **kw)
-
-
-def partial_ll_loss(lrisks, tb, eb, eps=1e-2):
-    tb = tb + eps * np.random.random(len(tb))
-    sindex = np.argsort(-tb)
-
-    tb = tb[sindex]
-    eb = eb[sindex]
-
-    lrisks = lrisks[sindex]  # lrisks = tf.gather(lrisks, sindex)
-    # lrisksdenom = tf.math.cumulative_logsumexp(lrisks)
-    lrisksdenom = torch.logcumsumexp(lrisks, dim=0)
-
-    plls = lrisks - lrisksdenom
-    pll = plls[eb == 1]
-
-    pll = torch.sum(pll)  # pll = tf.reduce_sum(pll)
-
-    return -pll
-
-
-def fit_spline(t, surv, s=1e-4):
-    return UnivariateSpline(t, surv, s=s, ext=3, k=1)
-
-
-def smooth_bl_survival(breslow, smoothing_factor):
-    blsurvival = breslow.baseline_survival_
-    x, y = blsurvival.x, blsurvival.y
-    return fit_spline(x, y, s=smoothing_factor)
-
-
-def get_probability_(lrisks, ts, spl):
-    risks = np.exp(lrisks)
-    s0ts = (-risks) * (spl(ts) ** (risks - 1))
-    return s0ts * spl.derivative()(ts)
-
-
-def get_survival_(lrisks, ts, spl):
-    risks = np.exp(lrisks)
-    return spl(ts) ** risks
-
-
-def get_probability(lrisks, breslow_splines, t):
-    psurv = []
-    for i in range(lrisks.shape[1]):
-        p = get_probability_(lrisks[:, i], t, breslow_splines[i])
-        psurv.append(p)
-    psurv = np.array(psurv).T
-    return psurv
-
-
-def get_survival(lrisks, breslow_splines, t):
-    psurv = []
-    for i in range(lrisks.shape[1]):
-        p = get_survival_(lrisks[:, i], t, breslow_splines[i])
-        psurv.append(p)
-    psurv = np.array(psurv).T
-    return psurv
-
-
-def get_posteriors(probs):
-    # probs_ = probs+1e-8
-    return probs - torch.logsumexp(probs, dim=1).reshape(-1, 1)
-
-
-def get_hard_z(gates_prob):
-    return torch.argmax(gates_prob, dim=1)
-
-
-def sample_hard_z(gates_prob):
-    return torch.multinomial(gates_prob.exp(), num_samples=1)[:, 0]
-
-
-def repair_probs(probs):
-    probs[torch.isnan(probs)] = -10
-    probs[probs < -10] = -10
-    return probs
+from auton_survival.models.utils.common_utils import partial_ll_loss
+from auton_survival.models.utils.cox_mixtures_utils import (
+    get_hard_z,
+    get_posteriors,
+    get_probability,
+    get_survival,
+    repair_probs,
+    sample_hard_z,
+    smooth_bl_survival,
+)
 
 
 def get_likelihood(model, breslow_splines, x, t, e):
@@ -149,7 +77,7 @@ def e_step(model, breslow_splines, x, t, e):
         pass
     else:
         probs = get_likelihood(model, breslow_splines, x, t, e)
-        posteriors = get_posteriors(repair_probs(probs))
+        posteriors = get_posteriors(repair_probs(probs, cutoff=-10))
 
     return posteriors
 
@@ -187,7 +115,7 @@ def fit_breslow(model, x, t, e, posteriors=None, smoothing_factor=1e-4, typ="sof
     for i in range(model.k):
         breslowk = BreslowEstimator().fit(lrisks[:, i][z == i], e[z == i], t[z == i])
         breslow_splines[i] = smooth_bl_survival(
-            breslowk, smoothing_factor=smoothing_factor
+            breslowk, smoothing_factor=smoothing_factor, k=1
         )
 
     return breslow_splines

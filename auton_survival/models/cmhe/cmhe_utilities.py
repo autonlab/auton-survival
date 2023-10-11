@@ -25,91 +25,20 @@ from loguru import logger
 import torch
 import numpy as np
 
-from scipy.interpolate import UnivariateSpline
 from sksurv.linear_model.coxph import BreslowEstimator
+from sklearn.utils import shuffle
 
 from tqdm.auto import tqdm
-
-
-def randargmax(b, **kw):
-    """a random tie-breaking argmax"""
-    return np.argmax(np.random.random(b.shape) * (b == b.max()), **kw)
-
-
-def partial_ll_loss(lrisks, tb, eb, eps=1e-2):
-    tb = tb + eps * np.random.random(len(tb))
-    sindex = np.argsort(-tb)
-
-    tb = tb[sindex]
-    eb = eb[sindex]
-
-    lrisks = lrisks[sindex]  # lrisks = tf.gather(lrisks, sindex)
-
-    lrisksdenom = torch.logcumsumexp(lrisks, dim=0)
-    plls = lrisks - lrisksdenom
-    pll = plls[eb == 1]
-
-    pll = torch.sum(pll)  # pll = tf.reduce_sum(pll)
-
-    return -pll
-
-
-def fit_spline(t, surv, smoothing_factor=1e-4):
-    return UnivariateSpline(t, surv, s=smoothing_factor, ext=3)
-
-
-def smooth_bl_survival(breslow, smoothing_factor):
-    blsurvival = breslow.baseline_survival_
-    x, y = blsurvival.x, blsurvival.y
-    return fit_spline(x, y, smoothing_factor=smoothing_factor)
-
-
-def get_probability_(lrisks, ts, spl):
-    risks = np.exp(lrisks)
-    s0ts = (-risks) * (spl(ts) ** (risks - 1))
-    return s0ts * spl.derivative()(ts)
-
-
-def get_survival_(lrisks, ts, spl):
-    risks = np.exp(lrisks)
-    return spl(ts) ** risks
-
-
-def get_probability(lrisks, breslow_splines, t):
-    psurv = []
-    for i in range(lrisks.shape[1]):
-        p = get_probability_(lrisks[:, i], t, breslow_splines[i])
-        psurv.append(p)
-    psurv = np.array(psurv).T
-    return psurv
-
-
-def get_survival(lrisks, breslow_splines, t):
-    psurv = []
-    for i in range(lrisks.shape[1]):
-        p = get_survival_(lrisks[:, i], t, breslow_splines[i])
-        psurv.append(p)
-    psurv = np.array(psurv).T
-    return psurv
-
-
-def get_posteriors(probs):
-    probs_ = probs + 1e-8
-    return probs - torch.logsumexp(probs, dim=1).reshape(-1, 1)
-
-
-def get_hard_z(gates_prob):
-    return torch.argmax(gates_prob, dim=1)
-
-
-def sample_hard_z(gates_prob):
-    return torch.multinomial(gates_prob.exp(), num_samples=1)[:, 0]
-
-
-def repair_probs(probs):
-    probs[torch.isnan(probs)] = -20
-    probs[probs < -20] = -20
-    return probs
+from auton_survival.models.utils.common_utils import partial_ll_loss
+from auton_survival.models.utils.cox_mixtures_utils import (
+    get_hard_z,
+    get_posteriors,
+    get_probability,
+    get_survival,
+    repair_probs,
+    sample_hard_z,
+    smooth_bl_survival,
+)
 
 
 def get_likelihood(model, breslow_splines, x, t, e, a):
@@ -247,8 +176,6 @@ def train_step(
     update_splines_after=10,
     smoothing_factor=1e-4,
 ):
-    from sklearn.utils import shuffle
-
     x, t, e, a = shuffle(x, t, e, a, random_state=seed)
 
     n = x.shape[0]
