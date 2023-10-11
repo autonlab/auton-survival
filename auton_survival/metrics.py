@@ -256,6 +256,10 @@ def survival_regression_metric(
     survival_train = util.Surv.from_dataframe("event", "time", outcomes_train)
     survival_test = util.Surv.from_dataframe("event", "time", outcomes)
 
+    logger.debug("Predictions (from predictions param):\n {}", predictions)
+    logger.debug("Survival Train (from outcomes_train param):\n {}", survival_train)
+    logger.debug("Survival Test (from outcomes param):\n {}", survival_test)
+
     if metric == "brs":
         _metric = _brier_score
     elif metric == "ibs":
@@ -321,16 +325,23 @@ def _concordance_index_ipcw(
         np.random.seed(random_seed)
         idx = np.random.choice(idx, len(predictions), replace=True)
 
+    logger.debug("idx (from len of predictions param):\n {}", idx)
+
     vals = []
     for i in range(len(times)):
-        vals.append(
-            metrics.concordance_index_ipcw(
-                survival_train,
-                survival_test[idx],
-                1 - predictions[idx][:, i],
-                tau=times[i],
-            )[0]
+        logger.debug("Iteration {} of IPCW calculation\n", i)
+
+        ipcw = metrics.concordance_index_ipcw(
+            survival_train,
+            survival_test[idx],
+            1 - predictions[idx][:, i],
+            tau=times[i],
         )
+
+        logger.debug("IPCW {} for iteration {}\n", ipcw, i)
+        logger.debug("Value added to return array is {} for iteration {}\n", ipcw[0], i)
+
+        vals.append(ipcw[0])
     return vals
 
 
