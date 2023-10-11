@@ -477,5 +477,4 @@ from loguru import logger
 import sys, os
 
 logger.remove()
-log_level = os.environ["LOGURU_LEVEL"] if "LOGURU_LEVEL" in os.environ else "INFO"
-logger.add(sys.stdout, level=log_level)
+logger.add(sys.stdout, level="DEBUG")
