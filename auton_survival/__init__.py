@@ -474,30 +474,31 @@ from .models.cph import DeepCoxPH, DeepRecurrentCoxPH
 from .models.cmhe import DeepCoxMixturesHeterogenousEffects
 
 from loguru import logger
-import sys, warnings
+import warnings
 from tqdm.auto import tqdm
+
 
 logger.disable("auton_survival")
 
 
-def enable_auton_logger(add_logger=False, capture_warnings=False):
+def enable_auton_logger(add_logger=False, capture_warnings=False, log_level="INFO"):
     """
     Enable auton_survival logs
     """
     logger.enable("auton_survival")
     if add_logger:
-        _add_auton_logger()
+        _add_auton_logger(log_level)
     if capture_warnings:
         _enable_warnings_capture()
 
 
-def _add_auton_logger():
+def _add_auton_logger(log_level):
     """
     Enable auton_survival logs and add a minimal tqdm-friendly loguru logger
     """
-    enable_auton_logger()
     logger.remove()
-    logger.add(lambda msg: tqdm.write(msg, end=""), colorize=True, level="INFO")
+
+    logger.add(lambda msg: tqdm.write(msg, end=""), colorize=True, level=log_level)
 
 
 def _enable_warnings_capture():
