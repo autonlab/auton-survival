@@ -1,3 +1,4 @@
+import warnings
 from loguru import logger
 from matplotlib.pyplot import get
 
@@ -182,7 +183,7 @@ def train_step(
                         )
 
             except Exception as exception:
-                logger.warning("Couldn't fit splines, reusing from previous epoch")
+                warnings.warn("Couldn't fit splines, reusing from previous epoch")
         epoch_loss += loss
 
     return breslow_splines

@@ -33,6 +33,7 @@ from scipy.optimize import fsolve
 from sklearn.metrics import auc
 from tqdm import tqdm
 from loguru import logger
+import warnings
 
 
 def treatment_effect(
@@ -114,11 +115,11 @@ def treatment_effect(
         assert horizons is None, "Horizons must be none for 'tar' metric."
 
     if metric == "hazard_ratio":
-        logger.warning(
+        warnings.warn(
             "You are computing Hazard Ratios.\n Make sure you have tested the PH Assumptions."
         )
     if (n_bootstrap is None) and (weights is not None):
-        logger.warning(
+        warnings.warn(
             """
             Treatment Propensity weights would be ignored, Since no boostrapping is performed.
             In order to incorporate IPTW weights please specify number of bootstrap iterations n_bootstrap>=1
@@ -242,7 +243,7 @@ def survival_regression_metric(
 
     if outcomes_train is None:
         outcomes_train = outcomes
-        logger.warning(
+        warnings.warn(
             "You are are evaluating model performance on the same data used to estimate the censoring distribution."
         )
 
@@ -392,7 +393,7 @@ def phenotype_purity(
     if outcomes_test is None:
         phenotypes_test = phenotypes_train
         outcomes_test = outcomes_train
-        logger.warning(
+        warnings.warn(
             "You are are estimating survival probabilities for the same dataset used to estimate the censoring distribution."
         )
 
