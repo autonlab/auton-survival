@@ -118,15 +118,7 @@ def train_dcph(
             patience_ = 0
 
         if patience_ == patience:
-            minm = np.argmin(losses)
-            model.load_state_dict(dics[minm])
-
-            breslow_spline = fit_breslow(model, xt, tt_, et_)
-
-            if return_losses:
-                return (model, breslow_spline), losses
-            else:
-                return (model, breslow_spline)
+            break
 
         valc = valcn
 

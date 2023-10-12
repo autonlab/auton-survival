@@ -166,13 +166,7 @@ def train_dsm(
 
         if costs[-1] >= oldcost:
             if patience == 2:
-                minm = np.argmin(costs)
-                model.load_state_dict(dics[minm])
-
-                del dics
-                gc.collect()
-
-                return model, i
+                break
             else:
                 patience += 1
         else:

@@ -263,10 +263,7 @@ def train_dcm(
             patience_ = 0
 
         if patience_ == patience:
-            if return_losses:
-                return (model, breslow_splines), losses
-            else:
-                return (model, breslow_splines)
+            break
 
         valc = valcn
 
