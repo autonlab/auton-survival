@@ -474,7 +474,6 @@ from .models.cph import DeepCoxPH, DeepRecurrentCoxPH
 from .models.cmhe import DeepCoxMixturesHeterogenousEffects
 
 from loguru import logger
-import sys, os
+import sys
 
-logger.remove()
-logger.add(sys.stdout, level="INFO")
+logger.disable("auton_survival")
