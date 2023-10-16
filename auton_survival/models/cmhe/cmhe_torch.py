@@ -49,7 +49,7 @@ class DeepCMHETorch(torch.nn.Module):
 
   def __init__(self, k, g, inputdim, layers=None, gamma=100,
                smoothing_factor=1e-4, gate_l2_penalty=1e-4, 
-               optimizer='Adam'):
+               optimizer='Adam', dropout=0):
 
     super(DeepCMHETorch, self).__init__()
 
@@ -72,7 +72,7 @@ class DeepCMHETorch(torch.nn.Module):
 
     self.gate_l2_penalty = gate_l2_penalty 
 
-    self.embedding = create_representation(inputdim, layers, 'Tanh')
+    self.embedding = create_representation(inputdim, layers, 'Tanh', dropout=dropout)
 
 
   def forward(self, x, a):

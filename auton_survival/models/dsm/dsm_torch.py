@@ -32,6 +32,7 @@ Note: NOT DESIGNED TO BE CALLED DIRECTLY!!!
 
 """
 
+import numbers
 import torch
 from torch import nn
 
@@ -45,7 +46,8 @@ for clsn in ['DeepSurvivalMachinesTorch',
     __pdoc__[clsn+'.'+membr] = False
 
 
-def create_representation(inputdim, layers, activation, bias=False):
+def create_representation(inputdim, layers, activation, bias=False,
+                            dropout=0.):
   r"""Helper function to generate the representation function for DSM.
 
   Deep Survival Machines learns a representation (\ Phi(X) \) for the input
@@ -86,6 +88,8 @@ def create_representation(inputdim, layers, activation, bias=False):
   for hidden in layers:
     modules.append(nn.Linear(prevdim, hidden, bias=bias))
     modules.append(act)
+    if dropout > 0:
+      modules.append(nn.Dropout(p=dropout))
     prevdim = hidden
 
   return nn.Sequential(*modules)
@@ -173,7 +177,7 @@ class DeepSurvivalMachinesTorch(torch.nn.Module):
 
   def __init__(self, inputdim, k, layers=None, dist='Weibull',
                temp=1000., discount=1.0, optimizer='Adam',
-               risks=1):
+               risks=1, dropout=0):
     super(DeepSurvivalMachinesTorch, self).__init__()
 
     self.k = k
@@ -183,6 +187,10 @@ class DeepSurvivalMachinesTorch(torch.nn.Module):
     self.optimizer = optimizer
     self.risks = risks
 
+    if not isinstance(dropout, numbers.Number) or dropout < 0 or dropout > 1:
+       raise ValueError("dropout probability has to be between 0 and 1, "
+                   "but got {}".format(dropout))
+
     if layers is None: layers = []
     self.layers = layers
 
@@ -190,7 +198,7 @@ class DeepSurvivalMachinesTorch(torch.nn.Module):
     else: lastdim = layers[-1]
 
     self._init_dsm_layers(lastdim)
-    self.embedding = create_representation(inputdim, layers, 'ReLU6')
+    self.embedding = create_representation(inputdim, layers, 'ReLU6', dropout=dropout)
 
 
   def forward(self, x, risk='1'):
