@@ -2,6 +2,21 @@
 
 
 
+## v0.1.0 (2023-10-16)
+
+### Feature
+
+* feat: trigger first release on PyPI (#129)
+
+* feat: trigger first release on PyPI
+
+* ci: do not run Release job on forks ([`cc21429`](https://github.com/autonlab/auton-survival/commit/cc214297ce7568b1de7abcc0821856f545ba291c))
+
+### Unknown
+
+* Update README.md ([`c9001ec`](https://github.com/autonlab/auton-survival/commit/c9001ec48dc41012d533ab14f605cca1b1ac6b12))
+
+
 ## v0.0.0 (2023-08-31)
 
 ### Ci
