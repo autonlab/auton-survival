@@ -277,6 +277,17 @@ def survival_regression_metric(
         ]
 
 
+def concordance_index_censored(
+    event_indicator, event_time, estimate, tied_tol: float = 1e-8
+):
+    return metrics.concordance_index_censored(
+        event_indicator=event_indicator,
+        event_time=event_time,
+        estimate=estimate,
+        tied_tol=tied_tol,
+    )
+
+
 def _brier_score(survival_train, survival_test, predictions, times, random_seed=None):
     idx = np.arange(len(predictions))
     if random_seed is not None:
