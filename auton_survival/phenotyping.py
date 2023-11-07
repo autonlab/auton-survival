@@ -89,7 +89,9 @@ class IntersectionalPhenotyper(Phenotyper):
         if num_vars is None:
             num_vars = []
 
-        assert len(cat_vars + num_vars) != 0, "Please specify intersectional Groups"
+        assert (
+            len(cat_vars + num_vars) != 0
+        ), "Please specify intersectional Groups"
 
         self.cat_vars = cat_vars
         self.num_vars = num_vars
@@ -146,7 +148,9 @@ class IntersectionalPhenotyper(Phenotyper):
 
         """
 
-        assert self.fitted, "Phenotyper must be `fitted` before calling `phenotype`."
+        assert (
+            self.fitted
+        ), "Phenotyper must be `fitted` before calling `phenotype`."
         features = deepcopy(features)
 
         for num_var in self.num_vars:
@@ -160,7 +164,8 @@ class IntersectionalPhenotyper(Phenotyper):
             )
 
         phenotypes = [
-            group.tolist() for group in features[self.cat_vars + self.num_vars].values
+            group.tolist()
+            for group in features[self.cat_vars + self.num_vars].values
         ]
         phenotypes = self._rename(phenotypes)
 
@@ -263,7 +268,11 @@ class ClusteringPhenotyper(Phenotyper):
     _VALID_CLUSTERING_METHODS = ["kmeans", "dbscan", "gmm", "hierarchical"]
 
     def __init__(
-        self, clustering_method="kmeans", dim_red_method=None, random_seed=0, **kwargs
+        self,
+        clustering_method="kmeans",
+        dim_red_method=None,
+        random_seed=0,
+        **kwargs
     ):
         assert (
             clustering_method in ClusteringPhenotyper._VALID_CLUSTERING_METHODS
@@ -273,7 +282,9 @@ class ClusteringPhenotyper(Phenotyper):
         ), "Please specify a valid Dimensionality Reduction method"
 
         # Raise warning if "hierarchical" is used with dim_redcution
-        if (clustering_method in ["hierarchical"]) and (dim_red_method is not None):
+        if (clustering_method in ["hierarchical"]) and (
+            dim_red_method is not None
+        ):
             warnings.warn(
                 """
                 Are you sure you want to run hierarchical clustering on decomposed features?.,
@@ -318,7 +329,9 @@ class ClusteringPhenotyper(Phenotyper):
                 c_kwargs["covariance_type"] = "diag"
             c_kwargs["n_components"] = c_kwargs.get("n_clusters", 3)
 
-        self.clustering_model = clustering_model(random_state=random_seed, **c_kwargs)
+        self.clustering_model = clustering_model(
+            random_state=random_seed, **c_kwargs
+        )
         if dim_red_method is not None:
             d_kwargs = _get_method_kwargs(dim_red_model, kwargs)
             if dim_red_method == "kpca":
@@ -327,7 +340,9 @@ class ClusteringPhenotyper(Phenotyper):
                     d_kwargs["n_jobs"] = -1
                     d_kwargs["max_iter"] = 500
 
-            self.dim_red_model = dim_red_model(random_state=random_seed, **d_kwargs)
+            self.dim_red_model = dim_red_model(
+                random_state=random_seed, **d_kwargs
+            )
 
     def fit(self, features):
         """Perform dimensionality reduction and train an instance
@@ -359,7 +374,8 @@ class ClusteringPhenotyper(Phenotyper):
             )
 
         logger.info(
-            "Fitting the following Clustering Model:\n {}", self.clustering_model
+            "Fitting the following Clustering Model:\n {}",
+            self.clustering_model,
         )
         self.clustering_model = self.clustering_model.fit(features)
         self.fitted = True
@@ -387,10 +403,12 @@ class ClusteringPhenotyper(Phenotyper):
 
         # TODO:MAYBE DO THIS IN LOG SPACE?
 
-        negative_exp_distances = np.exp(-self.clustering_model.transform(features))
-        probs = negative_exp_distances / negative_exp_distances.sum(axis=1).reshape(
-            (-1, 1)
+        negative_exp_distances = np.exp(
+            -self.clustering_model.transform(features)
         )
+        probs = negative_exp_distances / negative_exp_distances.sum(
+            axis=1
+        ).reshape((-1, 1))
 
         # assert int(np.sum(probs)) == len(probs), 'Not valid probabilities'
 
@@ -414,7 +432,9 @@ class ClusteringPhenotyper(Phenotyper):
 
         """
 
-        assert self.fitted, "Phenotyper must be `fitted` before calling `phenotype`."
+        assert (
+            self.fitted
+        ), "Phenotyper must be `fitted` before calling `phenotype`."
 
         if self.dim_red_method is not None:
             features = self.dim_red_model.transform(features)
@@ -441,7 +461,9 @@ class ClusteringPhenotyper(Phenotyper):
 
         """
 
-        assert self.fitted, "Phenotyper must be `fitted` before calling `phenotype`."
+        assert (
+            self.fitted
+        ), "Phenotyper must be `fitted` before calling `phenotype`."
 
         return np.argmax(self.predict_proba(features), axis=1)
 
@@ -484,7 +506,9 @@ class SurvivalVirtualTwinsPhenotyper(Phenotyper):
         random_seed=0,
         **phenotyper_hyperparams
     ):
-        assert cf_method in CounterfactualSurvivalRegressionCV._VALID_CF_METHODS, (
+        assert (
+            cf_method in CounterfactualSurvivalRegressionCV._VALID_CF_METHODS
+        ), (
             "\
     Invalid Counterfactual Method: "
             + cf_method
@@ -551,7 +575,9 @@ class SurvivalVirtualTwinsPhenotyper(Phenotyper):
         )
         horizon = max(horizons)
         ite_estimates = cf_predictions[1] - cf_predictions[0]
-        ite_estimates = [estimate[times < horizon] for estimate in ite_estimates]
+        ite_estimates = [
+            estimate[times < horizon] for estimate in ite_estimates
+        ]
         times = times[times < horizon]
         # Compute rmst for each sample based on user-specified event-horizon
         rmst = np.array([auc(times, i) for i in ite_estimates])
@@ -591,7 +617,10 @@ class SurvivalVirtualTwinsPhenotyper(Phenotyper):
         )
         preds_surv_less = 1 - preds_surv_greater
         preds = np.array(
-            [[preds_surv_less[i], preds_surv_greater[i]] for i in range(len(features))]
+            [
+                [preds_surv_less[i], preds_surv_greater[i]]
+                for i in range(len(features))
+            ]
         )
 
         return preds
@@ -639,4 +668,6 @@ class SurvivalVirtualTwinsPhenotyper(Phenotyper):
 
         """
 
-        return self.fit(features, outcomes, interventions, horizon).predict(features)
+        return self.fit(features, outcomes, interventions, horizon).predict(
+            features
+        )

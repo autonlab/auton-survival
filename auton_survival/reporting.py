@@ -41,7 +41,8 @@ def plot_kaplanmeier(outcomes, groups=None, plot_counts=False, **kwargs):
             continue
 
         curves[group] = KaplanMeierFitter().fit(
-            outcomes[groups == group]["time"], outcomes[groups == group]["event"]
+            outcomes[groups == group]["time"],
+            outcomes[groups == group]["event"],
         )
         ax = curves[group].plot(label=group, ax=ax, **kwargs)
 
@@ -78,5 +79,6 @@ def plot_nelsonaalen(outcomes, groups=None, **kwargs):
         logger.info("Group: {}", group)
 
         NelsonAalenFitter().fit(
-            outcomes[groups == group]["time"], outcomes[groups == group]["event"]
+            outcomes[groups == group]["time"],
+            outcomes[groups == group]["event"],
         ).plot(label=group, **kwargs)

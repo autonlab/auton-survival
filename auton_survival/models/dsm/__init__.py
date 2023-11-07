@@ -335,7 +335,12 @@ class DSMBase:
         for r in range(self.torch_model.risks):
             loss += float(
                 losses.conditional_loss(
-                    self.torch_model, x_val, t_val, e_val, elbo=False, risk=str(r + 1)
+                    self.torch_model,
+                    x_val,
+                    t_val,
+                    e_val,
+                    elbo=False,
+                    risk=str(r + 1),
                 )
                 .detach()
                 .numpy()
@@ -362,7 +367,11 @@ class DSMBase:
 
         if val_data is None:
             vsize = int(vsize * x_train.shape[0])
-            x_val, t_val, e_val = x_train[-vsize:], t_train[-vsize:], e_train[-vsize:]
+            x_val, t_val, e_val = (
+                x_train[-vsize:],
+                t_train[-vsize:],
+                e_train[-vsize:],
+            )
 
             x_train = x_train[:-vsize]
             t_train = t_train[:-vsize]
@@ -534,7 +543,9 @@ class DeepSurvivalMachines(DSMBase):
         if self.fitted:
             logger.info("A fitted instance of the Deep Survival Machines model")
         else:
-            logger.info("An unfitted instance of the Deep Survival Machines model")
+            logger.info(
+                "An unfitted instance of the Deep Survival Machines model"
+            )
 
         logger.info("Number of underlying distributions (k): {}", self.k)
         logger.info("Hidden Layers: {}", self.layers)
@@ -626,7 +637,11 @@ class DeepRecurrentSurvivalMachines(DSMBase):
         if val_data is None:
             vsize = int(vsize * x_train.shape[0])
 
-            x_val, t_val, e_val = x_train[-vsize:], t_train[-vsize:], e_train[-vsize:]
+            x_val, t_val, e_val = (
+                x_train[-vsize:],
+                t_train[-vsize:],
+                e_train[-vsize:],
+            )
 
             x_train = x_train[:-vsize]
             t_train = t_train[:-vsize]
@@ -667,7 +682,11 @@ class DeepConvolutionalSurvivalMachines(DSMBase):
         typ="ConvNet",
     ):
         super(DeepConvolutionalSurvivalMachines, self).__init__(
-            k=k, distribution=distribution, temp=temp, discount=discount, random_seed=0
+            k=k,
+            distribution=distribution,
+            temp=temp,
+            discount=discount,
+            random_seed=0,
         )
         self.hidden = hidden
         self.typ = typ

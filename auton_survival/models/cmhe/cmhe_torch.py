@@ -96,13 +96,17 @@ class DeepCMHETorch(torch.nn.Module):
 
         for i in range(self.k):
             for j in range(self.g):
-                logp_jointlatent_gate[:, i, j] = logp_z_gate[:, i] + logp_phi_gate[:, j]
+                logp_jointlatent_gate[:, i, j] = (
+                    logp_z_gate[:, i] + logp_phi_gate[:, j]
+                )
 
         logp_joint_hrs = torch.zeros(len(x), self.k, self.g)
 
         for i in range(self.k):
             for j in range(self.g):
-                logp_joint_hrs[:, i, j] = log_hrs[:, i] + (j != 2) * a * self.omega[j]
+                logp_joint_hrs[:, i, j] = (
+                    log_hrs[:, i] + (j != 2) * a * self.omega[j]
+                )
 
         return logp_jointlatent_gate, logp_joint_hrs
 
@@ -125,7 +129,9 @@ class IdentifiableLinear(torch.nn.Module):
 
         self.out_features = out_features
         self.in_features = in_features
-        self.linear = torch.nn.Linear(in_features, max(out_features - 1, 1), bias=bias)
+        self.linear = torch.nn.Linear(
+            in_features, max(out_features - 1, 1), bias=bias
+        )
 
     @property
     def weight(self):

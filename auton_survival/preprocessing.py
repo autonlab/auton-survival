@@ -139,7 +139,9 @@ class Imputer:
                 )
 
         if len(self._num_feats):
-            df[self._num_feats] = self._num_base_imputer.transform(df[self._num_feats])
+            df[self._num_feats] = self._num_base_imputer.transform(
+                df[self._num_feats]
+            )
 
         return df
 
@@ -168,7 +170,10 @@ class Imputer:
         """
 
         return self.fit(
-            data, cat_feats=cat_feats, num_feats=num_feats, fill_value=fill_value
+            data,
+            cat_feats=cat_feats,
+            num_feats=num_feats,
+            fill_value=fill_value,
         ).transform(data)
 
 
@@ -326,7 +331,9 @@ class Preprocessor:
 
         self.scaler = Scaler(scaling_strategy=scaling_strategy)
 
-    def fit(self, data, cat_feats, num_feats, fill_value=-1, n_neighbors=5, **kwargs):
+    def fit(
+        self, data, cat_feats, num_feats, fill_value=-1, n_neighbors=5, **kwargs
+    ):
         """Fit imputer and scaler to dataset."""
 
         self._cat_feats = cat_feats

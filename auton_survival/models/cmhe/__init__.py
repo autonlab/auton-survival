@@ -159,7 +159,9 @@ class DeepCoxMixturesHeterogenousEffects:
         else:
             return torch.from_numpy(x).float()
 
-    def _preprocess_training_data(self, x, t, e, a, vsize, val_data, random_seed):
+    def _preprocess_training_data(
+        self, x, t, e, a, vsize, val_data, random_seed
+    ):
         x = _dataframe_to_array(x)
         t = _dataframe_to_array(t)
         e = _dataframe_to_array(e)

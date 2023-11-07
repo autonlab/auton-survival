@@ -6,6 +6,9 @@ authors = ["Chirag Nagpal <chiragn@cs.cmu.edu>"]
 readme = "README.md"
 packages = [{include = "auton_survival"}]
 
+[tool.black]
+line-length = 80
+
 [tool.poetry.dependencies]
 python = "^3.8"
 torch = "^1.13"

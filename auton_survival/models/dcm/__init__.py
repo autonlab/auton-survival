@@ -139,7 +139,11 @@ class DeepCoxMixtures:
 
         if val_data is None:
             vsize = int(vsize * x_train.shape[0])
-            x_val, t_val, e_val = x_train[-vsize:], t_train[-vsize:], e_train[-vsize:]
+            x_val, t_val, e_val = (
+                x_train[-vsize:],
+                t_train[-vsize:],
+                e_train[-vsize:],
+            )
 
             x_train = x_train[:-vsize]
             t_train = t_train[:-vsize]

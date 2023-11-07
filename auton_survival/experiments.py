@@ -90,7 +90,12 @@ class SurvivalRegressionCV:
     """
 
     def __init__(
-        self, model="dcph", folds=None, num_folds=5, random_seed=0, hyperparam_grid={}
+        self,
+        model="dcph",
+        folds=None,
+        num_folds=5,
+        random_seed=0,
+        hyperparam_grid={},
     ):
         self.model = model
         self.folds = folds
@@ -164,7 +169,8 @@ class SurvivalRegressionCV:
                     self.model, random_seed=self.random_seed, **hyper_param
                 )
                 model.fit(
-                    features.loc[self.folds != fold], outcomes.loc[self.folds != fold]
+                    features.loc[self.folds != fold],
+                    outcomes.loc[self.folds != fold],
                 )
                 predictions = model.predict_survival(
                     features.loc[self.folds == fold], times=horizons
@@ -181,9 +187,13 @@ class SurvivalRegressionCV:
             hyper_param_scores.append(np.mean(fold_scores))
 
         if self.metric in ["ibs", "brs"]:
-            best_hyper_param = self.hyperparam_grid[np.argmin(hyper_param_scores)]
+            best_hyper_param = self.hyperparam_grid[
+                np.argmin(hyper_param_scores)
+            ]
         elif self.metric in ["auc", "ctd"]:
-            best_hyper_param = self.hyperparam_grid[np.argmax(hyper_param_scores)]
+            best_hyper_param = self.hyperparam_grid[
+                np.argmax(hyper_param_scores)
+            ]
 
         model = SurvivalModel(
             self.model, random_seed=self.random_seed, **best_hyper_param
@@ -211,8 +221,12 @@ class SurvivalRegressionCV:
             The selected survival model based on lowest integrated brier score.
         """
 
-        pos_id = dataset.loc[lambda dataset: dataset[event_label] == 1].index.values
-        neg_id = dataset.loc[lambda dataset: dataset[event_label] == 0].index.values
+        pos_id = dataset.loc[
+            lambda dataset: dataset[event_label] == 1
+        ].index.values
+        neg_id = dataset.loc[
+            lambda dataset: dataset[event_label] == 0
+        ].index.values
         fold_assignments_pos = np.array_split(
             shuffle(pos_id, random_state=random_seed), n_folds
         )
@@ -223,7 +237,9 @@ class SurvivalRegressionCV:
         fold_assignments = []
         for i in range(n_folds):
             fold_assignments.append(
-                np.concatenate([fold_assignments_pos[i], fold_assignments_neg[i]])
+                np.concatenate(
+                    [fold_assignments_pos[i], fold_assignments_neg[i]]
+                )
             )
 
         df_folds = pd.DataFrame()

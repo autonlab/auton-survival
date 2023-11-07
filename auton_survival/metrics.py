@@ -99,7 +99,13 @@ def treatment_effect(
 
     """
 
-    assert metric in ["median", "hazard_ratio", "restricted_mean", "survival_at", "tar"]
+    assert metric in [
+        "median",
+        "hazard_ratio",
+        "restricted_mean",
+        "survival_at",
+        "tar",
+    ]
 
     if metric in ["restricted_mean", "survival_at"]:
         assert horizons is not None, "Please specify Event Horizon"
@@ -148,7 +154,9 @@ def treatment_effect(
     weights[weights > (1.0 - weights_clip)] = 1 - weights_clip
     weights[weights < weights_clip] = weights_clip
 
-    iptw_weights = 1.0 / ((is_treated * weights) + ((1 - is_treated) * (1 - weights)))
+    iptw_weights = 1.0 / (
+        (is_treated * weights) + ((1 - is_treated) * (1 - weights))
+    )
 
     treated_outcomes = outcomes[treatment_indicator]
     control_outcomes = outcomes[~treatment_indicator]
@@ -273,12 +281,16 @@ def survival_regression_metric(
         return _metric(survival_train, survival_test, predictions, times)
     else:
         return [
-            _metric(survival_train, survival_test, predictions, times, random_seed=i)
+            _metric(
+                survival_train, survival_test, predictions, times, random_seed=i
+            )
             for i in range(n_bootstrap)
         ]
 
 
-def _brier_score(survival_train, survival_test, predictions, times, random_seed=None):
+def _brier_score(
+    survival_train, survival_test, predictions, times, random_seed=None
+):
     idx = np.arange(len(predictions))
     if random_seed is not None:
         np.random.seed(random_seed)
@@ -428,7 +440,10 @@ def phenotype_purity(
             for i in tqdm(range(bootstrap)):
                 idx = np.random.choice(n, size=n, replace=True)
                 score = metrics.brier_score(
-                    survival_train, survival_test[idx], predictions[idx], horizons
+                    survival_train,
+                    survival_test[idx],
+                    predictions[idx],
+                    horizons,
                 )[1]
                 scores.append(score)
             return scores
@@ -458,7 +473,10 @@ def phenotype_purity(
                     idx = np.random.choice(n, size=n, replace=True)
                     score.append(
                         metrics.integrated_brier_score(
-                            survival_train, survival_test[idx], predictions[idx], times
+                            survival_train,
+                            survival_test[idx],
+                            predictions[idx],
+                            times,
                         )
                     )
                 horizon_scores.append(np.array(score))
@@ -643,8 +661,12 @@ def _survival_at_diff(
         control_outcomes["time"], control_outcomes["event"]
     )
 
-    treatment_estimate = treatment_survival.predict(horizons, interpolate=interpolate)
-    control_estimate = control_survival.predict(horizons, interpolate=interpolate)
+    treatment_estimate = treatment_survival.predict(
+        horizons, interpolate=interpolate
+    )
+    control_estimate = control_survival.predict(
+        horizons, interpolate=interpolate
+    )
 
     return np.array(treatment_estimate - control_estimate)
 

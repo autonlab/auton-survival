@@ -30,7 +30,9 @@ class DeepCoxPHTorch(nn.Module):
 
 
 class DeepRecurrentCoxPHTorch(DeepCoxPHTorch):
-    def __init__(self, inputdim, typ="LSTM", layers=1, hidden=None, optimizer="Adam"):
+    def __init__(
+        self, inputdim, typ="LSTM", layers=1, hidden=None, optimizer="Adam"
+    ):
         super(DeepCoxPHTorch, self).__init__()
 
         self.typ = typ

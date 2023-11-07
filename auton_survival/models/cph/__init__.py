@@ -107,7 +107,11 @@ class DeepCoxPH:
 
         if val_data is None:
             vsize = int(vsize * x_train.shape[0])
-            x_val, t_val, e_val = x_train[-vsize:], t_train[-vsize:], e_train[-vsize:]
+            x_val, t_val, e_val = (
+                x_train[-vsize:],
+                t_train[-vsize:],
+                e_train[-vsize:],
+            )
 
             x_train = x_train[:-vsize]
             t_train = t_train[:-vsize]
@@ -136,7 +140,10 @@ class DeepCoxPH:
 
     def init_torch_model(self, inputdim, optimizer):
         if not self.initialized:
-            self.torch_model = (self._gen_torch_model(inputdim, optimizer), None)
+            self.torch_model = (
+                self._gen_torch_model(inputdim, optimizer),
+                None,
+            )
             self.initialized = True
 
     def fit(
@@ -151,6 +158,7 @@ class DeepCoxPH:
         batch_size=100,
         optimizer="Adam",
         patience=3,
+        breslow=True,
     ):
         r"""This method is used to train an instance of the DSM model.
 
@@ -194,7 +202,7 @@ class DeepCoxPH:
 
         torch_module = self.torch_model[0]
 
-        trained_model, losses = train_dcph(
+        fitted_model, losses = train_dcph(
             torch_module,
             (x_train, t_train, e_train),
             (x_val, t_val, e_val),
@@ -204,25 +212,19 @@ class DeepCoxPH:
             return_losses=True,
             random_seed=self.random_seed,
             patience=patience,
+            breslow=breslow,
         )
 
-        self.torch_model = (trained_model[0].eval(), trained_model[1])
+        self.torch_model = (fitted_model[0].eval(), fitted_model[1])
         self.losses = losses
         self.fitted = True
+        self.breslow = True if fitted_model[1] is not None else False
 
         return self
 
-    def predict_risk(self, x, t=None):
-        if self.fitted:
-            return 1 - self.predict_survival(x, t)
-        else:
-            raise Exception(
-                "The model has not been fitted yet. Please fit the "
-                + "model using the `fit` method on some training data "
-                + "before calling `predict_risk`."
-            )
-
-    def predict_time_independent_survival(self, x: torch.Tensor) -> torch.Tensor:
+    def predict_time_independent_survival(
+        self, x: torch.Tensor
+    ) -> torch.Tensor:
         if self.fitted:
             return 1 - self.predict_time_independent_risk(x)
         else:
@@ -243,6 +245,16 @@ class DeepCoxPH:
                 + "before calling `predict_time_independent_risk`."
             )
 
+    def predict_risk(self, x, t=None):
+        if self.breslow and self.fitted:
+            return 1 - self.predict_survival(x, t)
+        else:
+            raise Exception(
+                "The model has not been fitted yet or has been fitted with `breslow=False`. Please fit the "
+                + "model using the `fit` method on some training data and enable Breslow spline fit "
+                + "before calling `predict_risk`."
+            )
+
     def predict_survival(self, x, t=None):
         r"""Returns the estimated survival probability at time \( t \),
           \( \widehat{\mathbb{P}}(T > t|X) \) for some input data \( x \).
@@ -258,10 +270,10 @@ class DeepCoxPH:
           np.array: numpy array of the survival probabilites at each time in t.
 
         """
-        if not self.fitted:
+        if not (self.fitted and self.breslow):
             raise Exception(
-                "The model has not been fitted yet. Please fit the "
-                + "model using the `fit` method on some training data "
+                "The model has not been fitted yet or has been fitted with `breslow=False`. Please fit the "
+                + "model using the `fit` method on some training data and enable Breslow spline fit "
                 + "before calling `predict_survival`."
             )
 
@@ -311,7 +323,9 @@ class DeepRecurrentCoxPH(DeepCoxPH):
         if self.fitted:
             logger.info("A fitted instance of the Recurrent Deep Cox PH model")
         else:
-            logger.info("An unfitted instance of the Recurrent Deep Cox PH model")
+            logger.info(
+                "An unfitted instance of the Recurrent Deep Cox PH model"
+            )
 
         logger.info("Hidden Layers: {}", self.layers)
 
@@ -358,7 +372,11 @@ class DeepRecurrentCoxPH(DeepCoxPH):
         if val_data is None:
             vsize = int(vsize * x_train.shape[0])
 
-            x_val, t_val, e_val = x_train[-vsize:], t_train[-vsize:], e_train[-vsize:]
+            x_val, t_val, e_val = (
+                x_train[-vsize:],
+                t_train[-vsize:],
+                e_train[-vsize:],
+            )
 
             x_train = x_train[:-vsize]
             t_train = t_train[:-vsize]

@@ -65,7 +65,9 @@ def get_likelihood(model, breslow_splines, x, t, e, a):
 
 
 def q_function(model, x, t, e, a, log_likelihoods, typ="soft"):
-    z_posteriors = repair_probs(get_posteriors(torch.logsumexp(log_likelihoods, dim=2)))
+    z_posteriors = repair_probs(
+        get_posteriors(torch.logsumexp(log_likelihoods, dim=2))
+    )
     zeta_posteriors = repair_probs(
         get_posteriors(torch.logsumexp(log_likelihoods, dim=1))
     )
@@ -152,7 +154,9 @@ def fit_breslow(
     breslow_splines = {}
     for i in range(model.k):
         breslowk = BreslowEstimator().fit(
-            lrisks[:, i, :][range(len(zeta)), zeta][z == i], e[z == i], t[z == i]
+            lrisks[:, i, :][range(len(zeta)), zeta][z == i],
+            e[z == i],
+            t[z == i],
         )
         breslow_splines[i] = smooth_bl_survival(
             breslowk, smoothing_factor=smoothing_factor
@@ -194,7 +198,9 @@ def train_step(
             log_likelihoods = e_step(model, breslow_splines, xb, tb, eb, ab)
 
         torch.enable_grad()
-        loss = m_step(model, optimizer, xb, tb, eb, ab, log_likelihoods, typ=typ)
+        loss = m_step(
+            model, optimizer, xb, tb, eb, ab, log_likelihoods, typ=typ
+        )
         epoch_loss += loss
 
         with torch.no_grad():
@@ -288,11 +294,15 @@ def train_cmhe(
             smoothing_factor=smoothing_factor,
         )
 
-        valcn = test_step(model, xv, tv, ev, av, breslow_splines, loss=vloss, typ=typ)
+        valcn = test_step(
+            model, xv, tv, ev, av, breslow_splines, loss=vloss, typ=typ
+        )
 
         losses.append(valcn)
 
-        logger.debug("Patience: {} | Epoch: {} | Loss: {}", patience_, epoch, valcn)
+        logger.debug(
+            "Patience: {} | Epoch: {} | Loss: {}", patience_, epoch, valcn
+        )
 
         if valcn > valc:
             patience_ += 1
@@ -328,7 +338,9 @@ def predict_survival(model, x, a, t):
             expert_output = get_survival(lrisks[:, :, i], breslow_splines, t_)
             expert_outputs.append(expert_output)
         expert_outputs = (
-            np.array(expert_outputs).transpose(1, 2, 0).reshape(-1, model.k * model.g)
+            np.array(expert_outputs)
+            .transpose(1, 2, 0)
+            .reshape(-1, model.k * model.g)
         )
 
         predictions.append((gates * expert_outputs).sum(axis=1))

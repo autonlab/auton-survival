@@ -641,7 +641,9 @@ class SurvivalModel:
                 weights_val is None
             ), "Weights for validation data must be None if validation data is not specified."
 
-            data_train = data.sample(frac=1 - vsize, random_state=self.random_seed)
+            data_train = data.sample(
+                frac=1 - vsize, random_state=self.random_seed
+            )
             data_val = data[~data.index.isin(data_train.index)]
 
         else:
@@ -660,7 +662,9 @@ class SurvivalModel:
                 assert (
                     len(weights_val) == data_val[features.columns].shape[0]
                 ), "Size of passed weights_val must match size of validation data."
-                assert (weights_val > 0.0).any(), "All weights_val must be positive."
+                assert (
+                    weights_val > 0.0
+                ).any(), "All weights_val must be positive."
 
                 weights_train = weights
 
@@ -698,23 +702,43 @@ class SurvivalModel:
 
         if self.model == "cph":
             self._model = _fit_cph(
-                features, outcomes, val_data, self.random_seed, **self.hyperparams
+                features,
+                outcomes,
+                val_data,
+                self.random_seed,
+                **self.hyperparams
             )
         elif self.model == "rsf":
             self._model = _fit_rsf(
-                features, outcomes, val_data, self.random_seed, **self.hyperparams
+                features,
+                outcomes,
+                val_data,
+                self.random_seed,
+                **self.hyperparams
             )
         elif self.model == "dsm":
             self._model = _fit_dsm(
-                features, outcomes, val_data, self.random_seed, **self.hyperparams
+                features,
+                outcomes,
+                val_data,
+                self.random_seed,
+                **self.hyperparams
             )
         elif self.model == "dcph":
             self._model = _fit_dcph(
-                features, outcomes, val_data, self.random_seed, **self.hyperparams
+                features,
+                outcomes,
+                val_data,
+                self.random_seed,
+                **self.hyperparams
             )
         elif self.model == "dcm":
             self._model = _fit_dcm(
-                features, outcomes, val_data, self.random_seed, **self.hyperparams
+                features,
+                outcomes,
+                val_data,
+                self.random_seed,
+                **self.hyperparams
             )
 
         else:

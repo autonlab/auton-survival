@@ -63,7 +63,9 @@ def pretrain_dsm(
 
         valid_loss = 0
         for r in range(model.risks):
-            valid_loss += unconditional_loss(premodel, t_valid, e_valid, str(r + 1))
+            valid_loss += unconditional_loss(
+                premodel, t_valid, e_valid, str(r + 1)
+            )
         valid_loss = valid_loss.detach().cpu().numpy()
         costs.append(valid_loss)
 
@@ -110,7 +112,14 @@ def train_dsm(
     e_valid_ = _reshape_tensor_with_nans(e_valid)
 
     premodel = pretrain_dsm(
-        model, t_train_, e_train_, t_valid_, e_valid_, n_iter=10000, lr=1e-2, thres=1e-4
+        model,
+        t_train_,
+        e_train_,
+        t_valid_,
+        e_valid_,
+        n_iter=10000,
+        lr=1e-2,
+        thres=1e-4,
     )
 
     for r in range(model.risks):
@@ -129,7 +138,9 @@ def train_dsm(
     costs = []
     i = 0
     for i in tqdm(range(n_iter)):
-        x_train, t_train, e_train = shuffle(x_train, t_train, e_train, random_state=i)
+        x_train, t_train, e_train = shuffle(
+            x_train, t_train, e_train, random_state=i
+        )
 
         for j in range(nbatches):
             xb = x_train[j * bs : (j + 1) * bs]

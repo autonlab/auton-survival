@@ -94,7 +94,16 @@ def _load_framingham_dataset(sequential):
         ]
     ]
     dat_num = data[
-        ["TOTCHOL", "AGE", "SYSBP", "DIABP", "CIGPDAY", "BMI", "HEARTRTE", "GLUCOSE"]
+        [
+            "TOTCHOL",
+            "AGE",
+            "SYSBP",
+            "DIABP",
+            "CIGPDAY",
+            "BMI",
+            "HEARTRTE",
+            "GLUCOSE",
+        ]
     ]
 
     x1 = pd.get_dummies(dat_cat).values
@@ -140,7 +149,15 @@ def _load_pbc_dataset(sequential):
 
     data["histologic"] = data["histologic"].astype(str)
     dat_cat = data[
-        ["drug", "sex", "ascites", "hepatomegaly", "spiders", "edema", "histologic"]
+        [
+            "drug",
+            "sex",
+            "ascites",
+            "hepatomegaly",
+            "spiders",
+            "edema",
+            "histologic",
+        ]
     ]
     dat_num = data[
         [
@@ -275,7 +292,9 @@ def _load_mnist():
     http://yann.lecun.com/exdb/mnist/.
     """
 
-    train = torchvision.datasets.MNIST(root="datasets/", train=True, download=True)
+    train = torchvision.datasets.MNIST(
+        root="datasets/", train=True, download=True
+    )
     x = train.data.numpy()
     x = np.expand_dims(x, 1).astype(float)
     t = train.targets.numpy().astype(float) + 1

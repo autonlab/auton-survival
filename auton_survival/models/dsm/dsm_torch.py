@@ -186,7 +186,9 @@ class DeepSurvivalMachinesTorch(torch.nn.Module):
 
         self.gate = nn.ModuleDict(
             {
-                str(r + 1): nn.Sequential(nn.Linear(lastdim, self.k, bias=False))
+                str(r + 1): nn.Sequential(
+                    nn.Linear(lastdim, self.k, bias=False)
+                )
                 for r in range(self.risks)
             }
         )
@@ -248,8 +250,10 @@ class DeepSurvivalMachinesTorch(torch.nn.Module):
         xrep = self.embedding(x)
         dim = x.shape[0]
         return (
-            self.act(self.shapeg[risk](xrep)) + self.shape[risk].expand(dim, -1),
-            self.act(self.scaleg[risk](xrep)) + self.scale[risk].expand(dim, -1),
+            self.act(self.shapeg[risk](xrep))
+            + self.shape[risk].expand(dim, -1),
+            self.act(self.scaleg[risk](xrep))
+            + self.scale[risk].expand(dim, -1),
             self.gate[risk](xrep) / self.temp,
         )
 
@@ -368,8 +372,10 @@ class DeepRecurrentSurvivalMachinesTorch(DeepSurvivalMachinesTorch):
         dim = xrep.shape[0]
 
         return (
-            self.act(self.shapeg[risk](xrep)) + self.shape[risk].expand(dim, -1),
-            self.act(self.scaleg[risk](xrep)) + self.scale[risk].expand(dim, -1),
+            self.act(self.shapeg[risk](xrep))
+            + self.shape[risk].expand(dim, -1),
+            self.act(self.scaleg[risk](xrep))
+            + self.scale[risk].expand(dim, -1),
             self.gate[risk](xrep) / self.temp,
         )
 
@@ -377,7 +383,9 @@ class DeepRecurrentSurvivalMachinesTorch(DeepSurvivalMachinesTorch):
         return (self.shape[risk], self.scale[risk])
 
 
-def create_conv_representation(inputdim, hidden, typ="ConvNet", add_linear=True):
+def create_conv_representation(
+    inputdim, hidden, typ="ConvNet", add_linear=True
+):
     r"""Helper function to generate the representation function for DSM.
 
     Deep Survival Machines learns a representation (\ Phi(X) \) for the input
@@ -508,8 +516,10 @@ class DeepConvolutionalSurvivalMachinesTorch(DeepSurvivalMachinesTorch):
 
         dim = x.shape[0]
         return (
-            self.act(self.shapeg[risk](xrep)) + self.shape[risk].expand(dim, -1),
-            self.act(self.scaleg[risk](xrep)) + self.scale[risk].expand(dim, -1),
+            self.act(self.shapeg[risk](xrep))
+            + self.shape[risk].expand(dim, -1),
+            self.act(self.scaleg[risk](xrep))
+            + self.scale[risk].expand(dim, -1),
             self.gate[risk](xrep) / self.temp,
         )
 
@@ -588,7 +598,9 @@ class DeepCNNRNNSurvivalMachinesTorch(DeepRecurrentSurvivalMachinesTorch):
         self.cnn = create_conv_representation(inputdim, hidden)
 
         if self.typ == "LSTM":
-            self.rnn = nn.LSTM(hidden, hidden, layers, bias=False, batch_first=True)
+            self.rnn = nn.LSTM(
+                hidden, hidden, layers, bias=False, batch_first=True
+            )
         if self.typ == "RNN":
             self.rnn = nn.RNN(
                 hidden,
@@ -599,7 +611,9 @@ class DeepCNNRNNSurvivalMachinesTorch(DeepRecurrentSurvivalMachinesTorch):
                 nonlinearity="relu",
             )
         if self.typ == "GRU":
-            self.rnn = nn.GRU(hidden, hidden, layers, bias=False, batch_first=True)
+            self.rnn = nn.GRU(
+                hidden, hidden, layers, bias=False, batch_first=True
+            )
 
     def forward(self, x, risk="1"):
         """The forward function that is called when data is passed through DSM.
@@ -633,8 +647,10 @@ class DeepCNNRNNSurvivalMachinesTorch(DeepRecurrentSurvivalMachinesTorch):
         xrep = nn.ReLU6()(xrep)
         dim = xrep.shape[0]
         return (
-            self.act(self.shapeg[risk](xrep)) + self.shape[risk].expand(dim, -1),
-            self.act(self.scaleg[risk](xrep)) + self.scale[risk].expand(dim, -1),
+            self.act(self.shapeg[risk](xrep))
+            + self.shape[risk].expand(dim, -1),
+            self.act(self.scaleg[risk](xrep))
+            + self.scale[risk].expand(dim, -1),
             self.gate[risk](xrep) / self.temp,
         )
 

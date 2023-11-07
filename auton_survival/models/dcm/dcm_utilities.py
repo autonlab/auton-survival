@@ -92,7 +92,9 @@ def m_step(model, optimizer, x, t, e, posteriors, typ="soft"):
     return float(loss)
 
 
-def fit_breslow(model, x, t, e, posteriors=None, smoothing_factor=1e-4, typ="soft"):
+def fit_breslow(
+    model, x, t, e, posteriors=None, smoothing_factor=1e-4, typ="soft"
+):
     # TODO: Make Breslow in Torch !!!
 
     gates, lrisks = model(x)
@@ -114,7 +116,9 @@ def fit_breslow(model, x, t, e, posteriors=None, smoothing_factor=1e-4, typ="sof
 
     breslow_splines = {}
     for i in range(model.k):
-        breslowk = BreslowEstimator().fit(lrisks[:, i][z == i], e[z == i], t[z == i])
+        breslowk = BreslowEstimator().fit(
+            lrisks[:, i][z == i], e[z == i], t[z == i]
+        )
         breslow_splines[i] = smooth_bl_survival(
             breslowk, smoothing_factor=smoothing_factor, k=1
         )
@@ -183,7 +187,9 @@ def train_step(
                         )
 
             except Exception as exception:
-                warnings.warn("Couldn't fit splines, reusing from previous epoch")
+                warnings.warn(
+                    "Couldn't fit splines, reusing from previous epoch"
+                )
         epoch_loss += loss
 
     return breslow_splines
@@ -251,11 +257,15 @@ def train_dcm(
             smoothing_factor=smoothing_factor,
         )
 
-        valcn = test_step(model, xv, tv, ev, breslow_splines, loss=vloss, typ=typ)
+        valcn = test_step(
+            model, xv, tv, ev, breslow_splines, loss=vloss, typ=typ
+        )
 
         losses.append(valcn)
 
-        logger.debug("Patience: {} | Epoch: {} | Loss: {}", patience_, epoch, valcn)
+        logger.debug(
+            "Patience: {} | Epoch: {} | Loss: {}", patience_, epoch, valcn
+        )
 
         if valcn > valc:
             patience_ += 1

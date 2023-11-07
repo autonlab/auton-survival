@@ -7,7 +7,11 @@ import torch
 import numpy as np
 import pandas as pd
 from sklearn.metrics import roc_curve, roc_auc_score
-from sksurv.metrics import concordance_index_ipcw, brier_score, integrated_brier_score
+from sksurv.metrics import (
+    concordance_index_ipcw,
+    brier_score,
+    integrated_brier_score,
+)
 from sksurv.util import Surv
 import seaborn as sns
 import matplotlib.pyplot as plt
@@ -18,12 +22,16 @@ from matplotlib.colors import ListedColormap, LinearSegmentedColormap
 def plot_synthetic_data(outcomes, features, interventions):
     import matplotlib.pyplot as plt
 
-    plt.rcParams["text.latex.preamble"] = r"\usepackage{bm} \usepackage{amsmath}"
+    plt.rcParams[
+        "text.latex.preamble"
+    ] = r"\usepackage{bm} \usepackage{amsmath}"
     fs = 48  # Font size
     s = 65  # Size of the marker
     lim = 2.25
 
-    fig, (ax1, ax2) = plt.subplots(ncols=2, nrows=1, figsize=(16, 8), sharey=True)
+    fig, (ax1, ax2) = plt.subplots(
+        ncols=2, nrows=1, figsize=(16, 8), sharey=True
+    )
     color_maps = {
         0: LinearSegmentedColormap.from_list("z1", colors=["black", "C0"]),
         1: LinearSegmentedColormap.from_list("z1", colors=["black", "r"]),
@@ -90,7 +98,12 @@ def plot_synthetic_data(outcomes, features, interventions):
 
     grid = np.meshgrid([2, 1, 0, -1, -2], [2, 1, 0, -1, -2])
     ax1.scatter(
-        grid[0].ravel(), grid[1].ravel(), color="grey", marker="+", zorder=-500, s=50
+        grid[0].ravel(),
+        grid[1].ravel(),
+        color="grey",
+        marker="+",
+        zorder=-500,
+        s=50,
     )
 
     ax2.set_xlabel(r"$\mathcal{X}_3 \longrightarrow$", fontsize=fs)
@@ -174,10 +187,12 @@ def find_mean_differential_survival(outcomes, interventions):
     from lifelines import KaplanMeierFitter
 
     treated_km = KaplanMeierFitter().fit(
-        outcomes["uncensored time treated"].values, np.ones(len(outcomes)).astype(bool)
+        outcomes["uncensored time treated"].values,
+        np.ones(len(outcomes)).astype(bool),
     )
     control_km = KaplanMeierFitter().fit(
-        outcomes["uncensored time control"].values, np.ones(len(outcomes)).astype(bool)
+        outcomes["uncensored time control"].values,
+        np.ones(len(outcomes)).astype(bool),
     )
 
     unique_times = (
@@ -199,7 +214,9 @@ def find_mean_differential_survival(outcomes, interventions):
 def plot_phenotypes_roc(outcomes, zeta_probs):
     from matplotlib import pyplot as plt
 
-    plt.rcParams["text.latex.preamble"] = r"\usepackage{bm} \usepackage{amsmath}"
+    plt.rcParams[
+        "text.latex.preamble"
+    ] = r"\usepackage{bm} \usepackage{amsmath}"
 
     zeta = outcomes["Zeta"]
 

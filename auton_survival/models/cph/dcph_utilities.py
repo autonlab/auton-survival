@@ -14,11 +14,16 @@ from auton_survival.models.dsm.dsm_utilities import (
 )
 
 from copy import deepcopy
-from auton_survival.models.utils.common_utils import get_optimizer, partial_ll_loss
+from auton_survival.models.utils.common_utils import (
+    get_optimizer,
+    partial_ll_loss,
+)
 
 
 def fit_breslow(model, x, t, e):
-    return BreslowEstimator().fit(model(x).detach().cpu().numpy(), e.numpy(), t.numpy())
+    return BreslowEstimator().fit(
+        model(x).detach().cpu().numpy(), e.numpy(), t.numpy()
+    )
 
 
 @torch.enable_grad()
@@ -75,6 +80,7 @@ def train_dcph(
     lr=1e-3,
     random_seed=0,
     return_losses=False,
+    breslow: bool = True,
 ):
     torch.manual_seed(random_seed)
     np.random.seed(random_seed)
@@ -110,7 +116,9 @@ def train_dcph(
 
         dics.append(deepcopy(model.state_dict()))
 
-        logger.debug("Patience: {} | Epoch: {} | Loss: {}", patience_, epoch, valcn)
+        logger.debug(
+            "Patience: {} | Epoch: {} | Loss: {}", patience_, epoch, valcn
+        )
 
         if valcn > valc:
             patience_ += 1
@@ -125,7 +133,7 @@ def train_dcph(
     minm = np.argmin(losses)
     model.load_state_dict(dics[minm])
 
-    breslow_spline = fit_breslow(model, xt, tt_, et_)
+    breslow_spline = fit_breslow(model, xt, tt_, et_) if breslow else None
 
     if return_losses:
         return (model, breslow_spline), losses

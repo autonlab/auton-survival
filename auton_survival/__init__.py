@@ -481,7 +481,9 @@ from tqdm.auto import tqdm
 logger.disable("auton_survival")
 
 
-def enable_auton_logger(add_logger=False, capture_warnings=False, log_level="INFO"):
+def enable_auton_logger(
+    add_logger=False, capture_warnings=False, log_level="INFO"
+):
     """
     Enable auton_survival logs
     """
@@ -498,7 +500,9 @@ def _add_auton_logger(log_level):
     """
     logger.remove()
 
-    logger.add(lambda msg: tqdm.write(msg, end=""), colorize=True, level=log_level)
+    logger.add(
+        lambda msg: tqdm.write(msg, end=""), colorize=True, level=log_level
+    )
 
 
 def _enable_warnings_capture():

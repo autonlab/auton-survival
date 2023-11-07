@@ -21,7 +21,13 @@ class DeepCoxMixturesTorch(nn.Module):
         self.expert = torch.nn.Linear(lastdim, self.k, bias=False)
 
     def __init__(
-        self, inputdim, k, gamma=1, use_activation=False, layers=None, optimizer="Adam"
+        self,
+        inputdim,
+        k,
+        gamma=1,
+        use_activation=False,
+        layers=None,
+        optimizer="Adam",
     ):
         super(DeepCoxMixturesTorch, self).__init__()
 
@@ -52,7 +58,9 @@ class DeepCoxMixturesTorch(nn.Module):
         if self.use_activation:
             log_hazard_ratios = gamma * torch.nn.Tanh()(self.expert(x))
         else:
-            log_hazard_ratios = torch.clamp(self.expert(x), min=-gamma, max=gamma)
+            log_hazard_ratios = torch.clamp(
+                self.expert(x), min=-gamma, max=gamma
+            )
         log_gate_prob = torch.nn.LogSoftmax(dim=1)(self.gate(x))
 
         return log_gate_prob, log_hazard_ratios
