@@ -222,14 +222,25 @@ class DeepCoxPH:
                 + "before calling `predict_risk`."
             )
 
-    def predict_raw_risk(self, x: torch.Tensor, t: torch.Tensor = None) -> torch.Tensor:
+    def predict_time_independent_survival(self, x: torch.Tensor) -> torch.Tensor:
         if self.fitted:
+            return 1 - self.predict_time_independent_risk(x)
+        else:
+            raise Exception(
+                "The model has not been fitted yet. Please fit the "
+                + "model using the `fit` method on some training data "
+                + "before calling `predict_time_independent_survival`."
+            )
+
+    def predict_time_independent_risk(self, x: torch.Tensor) -> torch.Tensor:
+        if self.fitted:
+            self.torch_model[0].eval()
             return self.torch_model[0](x)
         else:
             raise Exception(
                 "The model has not been fitted yet. Please fit the "
                 + "model using the `fit` method on some training data "
-                + "before calling `predict_raw_risk`."
+                + "before calling `predict_time_independent_risk`."
             )
 
     def predict_survival(self, x, t=None):

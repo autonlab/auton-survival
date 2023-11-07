@@ -160,7 +160,8 @@ def treatment_effect(
     elif metric == "restricted_mean":
         _metric = _restricted_mean_diff
     elif metric == "median":
-        _metric = _median  # Lifelines .median_survival_time_?
+        # _metric = _median
+        raise NotImplementedError()  # Lifelines .median_survival_time_?
     elif metric == "hazard_ratio":
         _metric = _hazard_ratio
     else:
@@ -275,17 +276,6 @@ def survival_regression_metric(
             _metric(survival_train, survival_test, predictions, times, random_seed=i)
             for i in range(n_bootstrap)
         ]
-
-
-def concordance_index_censored(
-    event_indicator, event_time, estimate, tied_tol: float = 1e-8
-):
-    return metrics.concordance_index_censored(
-        event_indicator=event_indicator,
-        event_time=event_time,
-        estimate=estimate,
-        tied_tol=tied_tol,
-    )
 
 
 def _brier_score(survival_train, survival_test, predictions, times, random_seed=None):
@@ -795,4 +785,79 @@ def _hazard_ratio(
         CoxPHFitter()
         .fit(outcomes, duration_col="time", event_col="event")
         .hazard_ratios_["treated"]
+    )
+
+
+def concordance_index_censored(
+    event_indicator, event_time, risk_estimate, tied_tol: float = 1e-8
+):
+    """Concordance index for right-censored data
+
+    The concordance index is defined as the proportion of all comparable pairs
+    in which the predictions and outcomes are concordant.
+
+    Two samples are comparable if (i) both of them experienced an event (at different times),
+    or (ii) the one with a shorter observed survival time experienced an event, in which case
+    the event-free subject "outlived" the other. A pair is not comparable if they experienced
+    events at the same time.
+
+    Concordance intuitively means that two samples were ordered correctly by the model.
+    More specifically, two samples are concordant, if the one with a higher estimated
+    risk score has a shorter actual survival time.
+    When predicted risks are identical for a pair, 0.5 rather than 1 is added to the count
+    of concordant pairs.
+
+    See the :ref:`User Guide </user_guide/evaluating-survival-models.ipynb>`
+    and [1]_ for further description.
+
+    Parameters
+    ----------
+    event_indicator : array-like, shape = (n_samples,)
+        Boolean array denotes whether an event occurred
+
+    event_time : array-like, shape = (n_samples,)
+        Array containing the time of an event or time of censoring
+
+    risk_estimate : array-like, shape = (n_samples,)
+        Estimated risk of experiencing an event
+
+    tied_tol : float, optional, default: 1e-8
+        The tolerance value for considering ties.
+        If the absolute difference between risk scores is smaller
+        or equal than `tied_tol`, risk scores are considered tied.
+
+    Returns
+    -------
+    cindex : float
+        Concordance index
+
+    concordant : int
+        Number of concordant pairs
+
+    discordant : int
+        Number of discordant pairs
+
+    tied_risk : int
+        Number of pairs having tied estimated risks
+
+    tied_time : int
+        Number of comparable pairs sharing the same time
+
+    See also
+    --------
+    concordance_index_ipcw
+        Alternative estimator of the concordance index with less bias.
+
+    References
+    ----------
+    .. [1] Harrell, F.E., Califf, R.M., Pryor, D.B., Lee, K.L., Rosati, R.A,
+           "Multivariable prognostic models: issues in developing models,
+           evaluating assumptions and adequacy, and measuring and reducing errors",
+           Statistics in Medicine, 15(4), 361-87, 1996.
+    """
+    return metrics.concordance_index_censored(
+        event_indicator=event_indicator,
+        event_time=event_time,
+        estimate=risk_estimate,
+        tied_tol=tied_tol,
     )
