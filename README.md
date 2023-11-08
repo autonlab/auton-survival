@@ -460,16 +460,20 @@ IEEE Journal of Biomedical and Health Informatics (2021)](https://arxiv.org/abs/
 
 Compatibility and Installation
 ------------------------------
-`auton_survival` requires `python` 3.5+ and `pytorch` 1.1+.
+`auton_survival` requires `python` 3.8+ and `pytorch` 1.13+.
 
 To evaluate performance using standard metrics
 `auton_survival` requires `scikit-survival`.
 
 To install `auton_survival`, clone the following git repository:
 ```console
-foo@bar:~$ git clone https://github.com/autonlab/auton-survival.git
-foo@bar:~$ pip install -r requirements.txt
-```
+git clone https://github.com/autonlab/auton-survival.git
+cd auton-survival
+````
+Then, install the requirements and package:
+````console
+python -m pip install .
+````
 
 <a id="contrib"></a>
 
