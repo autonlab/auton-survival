@@ -236,6 +236,7 @@ class DeepCoxPH:
 
     def predict_time_independent_risk(self, x: torch.Tensor) -> torch.Tensor:
         if self.fitted:
+            x = self._preprocess_test_data(x)
             self.torch_model[0].eval()
             return self.torch_model[0](x)
         else:
