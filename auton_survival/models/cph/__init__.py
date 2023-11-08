@@ -77,6 +77,13 @@ class DeepCoxPH:
         self.initialized = False
         self.random_seed = random_seed
 
+    @property
+    def torch_module(self):
+        if self.initialized:
+            return self.torch_model[0]
+        else:
+            raise Exception("Torch module not initialized")
+
     def __call__(self):
         if self.fitted:
             logger.info("A fitted instance of the Deep Cox PH model")
