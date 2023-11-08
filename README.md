@@ -470,9 +470,10 @@ To install `auton_survival`, clone the following git repository:
 git clone https://github.com/autonlab/auton-survival.git
 cd auton-survival
 ````
-Then, install the requirements and package:
+Then, install the requirements and package using poetry:
 ````console
-python -m pip install .
+pip install poetry
+poetry install 
 ````
 
 <a id="contrib"></a>
