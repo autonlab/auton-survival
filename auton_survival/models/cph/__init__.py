@@ -222,6 +222,7 @@ class DeepCoxPH:
 
         return self
 
+    @torch.inference_mode()
     def predict_time_independent_survival(
         self, x: torch.Tensor
     ) -> torch.Tensor:
@@ -234,6 +235,7 @@ class DeepCoxPH:
                 + "before calling `predict_time_independent_survival`."
             )
 
+    @torch.inference_mode()
     def predict_time_independent_risk(self, x: torch.Tensor) -> torch.Tensor:
         if self.fitted:
             x = self._preprocess_test_data(x)
