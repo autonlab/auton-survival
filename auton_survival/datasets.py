@@ -152,7 +152,7 @@ def _load_pbc_dataset(sequential):
       e.append(event[data['id'] == id_])
     return x, t, e
 
-def load_support():
+def load_support(return_features=False):
 
   """Helper function to load and preprocess the SUPPORT dataset.
   The SUPPORT Dataset comes from the Vanderbilt University study
@@ -182,6 +182,9 @@ def load_support():
                'temp', 'pafi', 'alb', 'bili', 'crea', 'sod', 'ph',
                'glucose', 'bun', 'urine', 'adlp', 'adls']
 
+  if return_features:
+    return outcomes, data[cat_feats+num_feats], {'cat': cat_feats, 'num': num_feats}
+  
   return outcomes, data[cat_feats+num_feats]
 
 
@@ -303,9 +306,10 @@ def load_dataset(dataset='SUPPORT', **kwargs):
       \( e \) the censoring indicators.
   """
   sequential = kwargs.get('sequential', False)
+  return_features = kwargs.get('return_features', True)
 
   if dataset == 'SUPPORT':
-    return load_support()
+    return load_support(return_features=return_features)
   if dataset == 'PBC':
     return _load_pbc_dataset(sequential)
   if dataset == 'FRAMINGHAM':
