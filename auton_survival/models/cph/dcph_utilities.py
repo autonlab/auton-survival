@@ -47,6 +47,8 @@ def train_step(model, x, t, e, optimizer, bs=256, seed=100):
   batches = (n // bs) + 1
 
   epoch_loss = 0
+  
+  model.train()
 
   for i in range(batches):
 
@@ -67,6 +69,7 @@ def train_step(model, x, t, e, optimizer, bs=256, seed=100):
 
   return epoch_loss/n
 
+@torch.inference_mode()
 def test_step(model, x, t, e):
 
   with torch.no_grad():
@@ -77,7 +80,7 @@ def test_step(model, x, t, e):
 
 def train_dcph(model, train_data, val_data, epochs=50,
                patience=3, bs=256, lr=1e-3, debug=False,
-               random_seed=0, return_losses=False):
+               random_seed=0, return_losses=False, breslow=True):
 
   torch.manual_seed(random_seed)
   np.random.seed(random_seed)
@@ -126,23 +129,14 @@ def train_dcph(model, train_data, val_data, epochs=50,
       patience_ = 0
 
     if patience_ == patience:
-      
-      minm = np.argmin(losses)
-      model.load_state_dict(dics[minm])
-
-      breslow_spline = fit_breslow(model, xt, tt_, et_)
-
-      if return_losses:
-        return (model, breslow_spline), losses
-      else:
-        return (model, breslow_spline)
+      break
 
     valc = valcn
     
   minm = np.argmin(losses)
   model.load_state_dict(dics[minm])
   
-  breslow_spline = fit_breslow(model, xt, tt_, et_)
+  breslow_spline = fit_breslow(model, xt, tt_, et_) if breslow else None
 
   if return_losses:
     return (model, breslow_spline), losses

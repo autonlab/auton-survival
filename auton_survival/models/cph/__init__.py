@@ -23,8 +23,10 @@
 
 r""" Deep Cox Proportional Hazards Model"""
 
+from collections import namedtuple
 import torch
 import numpy as np
+import pandas as pd
 
 from .dcph_torch import DeepCoxPHTorch, DeepRecurrentCoxPHTorch
 from .dcph_utilities import train_dcph, predict_survival
@@ -74,8 +76,19 @@ class DeepCoxPH:
 
     self.layers = layers
     self.fitted = False
+    self.initialized = False
+    self.breslow = None
     self.random_seed = random_seed
 
+  @property
+  def torch_module(self):
+    if self.initialized:
+      return self.torch_model[0]
+    else:
+      raise Exception("Torch module not initialized. " +
+                      "Please call `fit` or `init_torch_model` " +
+                      "before accessing `torch_module`.")
+        
   def __call__(self):
     if self.fitted:
       print("A fitted instance of the Deep Cox PH model")
@@ -136,10 +149,18 @@ class DeepCoxPH:
     
     return DeepCoxPHTorch(inputdim, layers=self.layers,
                           optimizer=optimizer)
+    
+  def init_torch_model(self, inputdim, optimizer):
+    if not self.initialized:
+      self.torch_model = (
+        self._gen_torch_model(inputdim, optimizer),
+        None,
+      )
+      self.initialized = True
 
   def fit(self, x, t, e, vsize=0.15, val_data=None,
           iters=1, learning_rate=1e-3, batch_size=100,
-          optimizer="Adam"):
+          optimizer="Adam", breslow=True, patience=3):
 
     r"""This method is used to train an instance of the DSM model.
 
@@ -166,6 +187,9 @@ class DeepCoxPH:
     optimizer: str
         The choice of the gradient based optimization method. One of
         'Adam', 'RMSProp' or 'SGD'.
+    breslow: bool
+        If breslow is set to False the Breslow Estimator will not be fitted.
+        Default value is True.
         
     """
 
@@ -179,25 +203,31 @@ class DeepCoxPH:
 
     inputdim = x_train.shape[-1]
 
-    model = self._gen_torch_model(inputdim, optimizer)
-
-    model, _ = train_dcph(model,
+    self.init_torch_model(inputdim, optimizer)
+    
+    torch_module = self.torch_model[0]
+    
+    model, losses = train_dcph(torch_module,
                           (x_train, t_train, e_train),
                           (x_val, t_val, e_val),
                           epochs=iters,
                           lr=learning_rate,
                           bs=batch_size,
                           return_losses=True,
-                          random_seed=self.random_seed)
+                          random_seed=self.random_seed,
+                          breslow=breslow,
+                          patience=patience)
 
-    self.torch_model = (model[0].eval(), model[1])
+    DcphModel = namedtuple('DcphModel', 'module breslow')
+    self.torch_model = DcphModel(model[0].eval(), model[1])
+    self.losses = losses
     self.fitted = True
-
+    self.breslow = True if self.torch_model.breslow is not None else False
+    
     return self
 
   def predict_risk(self, x, t=None):
-
-    if self.fitted:
+    if self.breslow and self.fitted:
       return 1-self.predict_survival(x, t)
     else:
       raise Exception("The model has not been fitted yet. Please fit the " +
@@ -233,6 +263,18 @@ class DeepCoxPH:
     scores = predict_survival(self.torch_model, x, t)
     return scores
 
+  @torch.inference_mode()
+  def predict_time_independent_risk(self, x: torch.Tensor) -> torch.Tensor:
+    if self.fitted:
+        x = self._preprocess_test_data(x)
+        self.torch_module.eval()
+        return self.torch_module(x)
+    else:
+        raise Exception(
+          "The model has not been fitted yet. Please fit the "
+          + "model using the `fit` method on some training data "
+          + "before calling `predict_time_independent_risk`."
+        )
 
 class DeepRecurrentCoxPH(DeepCoxPH):
   r"""A deep recurrent Cox PH model.
