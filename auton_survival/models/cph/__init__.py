@@ -145,7 +145,7 @@ class DeepCoxPH:
 
         return DeepCoxPHTorch(inputdim, layers=self.layers, optimizer=optimizer)
 
-    def init_torch_model(self, inputdim, optimizer=None):
+    def init_torch_model(self, inputdim, optimizer="Adam"):
         if not self.initialized:
             self.torch_model = (
                 self._gen_torch_model(inputdim, optimizer),
