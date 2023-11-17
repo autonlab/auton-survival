@@ -237,10 +237,10 @@ class DeepCoxPH:
 
     @torch.inference_mode()
     def predict_time_independent_risk(self, x: torch.Tensor) -> torch.Tensor:
-        if not self.fitted:
+        if not self.initialized:
             logger.warning(
-                "The model has not been fitted yet. Please fit the "
-                + "model using the `fit` method on some training data "
+                "The PyTorch module has not been initialized yet. Please init the "
+                + "model using the `init_torch_model` method on some training data "
                 + "before calling `predict_time_independent_risk`."
             )
 
