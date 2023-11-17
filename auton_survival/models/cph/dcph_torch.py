@@ -8,7 +8,7 @@ class DeepCoxPHTorch(nn.Module):
     def _init_coxph_layers(self, lastdim):
         self.expert = nn.Linear(lastdim, 1, bias=False)
 
-    def __init__(self, inputdim, layers=None, optimizer="Adam", activation="ReLU6"):
+    def __init__(self, inputdim, layers=None, optimizer="Adam", activation="Tanh"):
         super(DeepCoxPHTorch, self).__init__()
 
         self.optimizer = optimizer
