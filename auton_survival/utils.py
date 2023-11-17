@@ -15,6 +15,8 @@ def _get_method_kwargs(method, kwargs):
 
 
 def _dataframe_to_array(data):
+    if not data.flags['WRITEABLE']:
+        data = data.copy()
     if isinstance(data, (pd.Series, pd.DataFrame)):
         return data.to_numpy()
     else:
