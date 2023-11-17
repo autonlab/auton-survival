@@ -25,9 +25,11 @@ def partial_ll_loss(lrisks, tb, eb, eps=1e-2):
     return -pll
 
 
-def get_optimizer(model, lr):
+def get_optimizer(model, lr, weight_decay=0.001):
     if model.optimizer == "Adam":
-        return torch.optim.Adam(model.parameters(), lr=lr)
+        return torch.optim.Adam(
+            model.parameters(), lr=lr, weight_decay=weight_decay
+        )
     elif model.optimizer == "SGD":
         return torch.optim.SGD(model.parameters(), lr=lr)
     elif model.optimizer == "RMSProp":

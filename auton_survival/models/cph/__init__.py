@@ -166,6 +166,7 @@ class DeepCoxPH:
         optimizer="Adam",
         patience=3,
         breslow=True,
+        weight_decay=0.001,
     ):
         r"""This method is used to train an instance of the DSM model.
 
@@ -220,6 +221,7 @@ class DeepCoxPH:
             random_seed=self.random_seed,
             patience=patience,
             breslow=breslow,
+            weight_decay=weight_decay,
         )
 
         self.torch_model = (fitted_model[0].eval(), fitted_model[1])
