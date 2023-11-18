@@ -1,5 +1,5 @@
 import warnings
-from loguru import logger
+import logging
 from matplotlib.pyplot import get
 
 import torch
@@ -23,6 +23,8 @@ from auton_survival.models.utils.cox_mixtures_utils import (
     sample_hard_z,
     smooth_bl_survival,
 )
+
+logger = logging.getLogger(__name__)
 
 
 def get_likelihood(model, breslow_splines, x, t, e):
@@ -263,9 +265,7 @@ def train_dcm(
 
         losses.append(valcn)
 
-        logger.debug(
-            "Patience: {} | Epoch: {} | Loss: {}", patience_, epoch, valcn
-        )
+        logger.debug(f"Patience: {patience_} | Epoch: {epoch} | Loss: {valcn}")
 
         if valcn > valc:
             patience_ += 1

@@ -24,7 +24,7 @@
 """Utilities to phenotype individuals based on similar survival
 characteristics."""
 
-from loguru import logger
+import logging
 from random import random
 import warnings
 import numpy as np
@@ -37,6 +37,8 @@ from sklearn.metrics import auc
 
 from auton_survival.utils import _get_method_kwargs
 from auton_survival.experiments import CounterfactualSurvivalRegressionCV
+
+logger = logging.getLogger(__name__)
 
 
 class Phenotyper:
@@ -272,7 +274,7 @@ class ClusteringPhenotyper(Phenotyper):
         clustering_method="kmeans",
         dim_red_method=None,
         random_seed=0,
-        **kwargs
+        **kwargs,
     ):
         assert (
             clustering_method in ClusteringPhenotyper._VALID_CLUSTERING_METHODS
@@ -362,8 +364,7 @@ class ClusteringPhenotyper(Phenotyper):
 
         if self.dim_red_method is not None:
             logger.info(
-                "Fitting the following Dimensionality Reduction Model:\n {}",
-                self.dim_red_model,
+                f"Fitting the following Dimensionality Reduction Model:\n {self.dim_red_model}",
             )
             self.dim_red_model = self.dim_red_model.fit(features)
             features = self.dim_red_model.transform(features)
@@ -374,8 +375,7 @@ class ClusteringPhenotyper(Phenotyper):
             )
 
         logger.info(
-            "Fitting the following Clustering Model:\n {}",
-            self.clustering_model,
+            f"Fitting the following Clustering Model:\n {self.clustering_model}",
         )
         self.clustering_model = self.clustering_model.fit(features)
         self.fitted = True
@@ -504,7 +504,7 @@ class SurvivalVirtualTwinsPhenotyper(Phenotyper):
         phenotyping_method="rfr",
         cf_hyperparams=None,
         random_seed=0,
-        **phenotyper_hyperparams
+        **phenotyper_hyperparams,
     ):
         assert (
             cf_method in CounterfactualSurvivalRegressionCV._VALID_CF_METHODS

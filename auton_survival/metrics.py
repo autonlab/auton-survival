@@ -32,8 +32,10 @@ from sksurv import metrics, util
 from scipy.optimize import fsolve
 from sklearn.metrics import auc
 from tqdm import tqdm
-from loguru import logger
+import logging
 import warnings
+
+logger = logging.getLogger(__name__)
 
 
 def treatment_effect(
@@ -143,8 +145,7 @@ def treatment_effect(
 
     if isinstance(n_bootstrap, int):
         logger.info(
-            "Bootstrapping... {} number of times. This may take a while. Please be Patient...",
-            n_bootstrap,
+            f"Bootstrapping... {n_bootstrap} number of times. This may take a while. Please be Patient...",
         )
 
     is_treated = treatment_indicator.astype(float)
@@ -528,7 +529,7 @@ def _restricted_mean_diff(
     control_weights,
     size_bootstrap=1.0,
     random_seed=None,
-    **kwargs
+    **kwargs,
 ):
     """Compute the difference in the area under the Kaplan Meier curve
     (mean survival time) between control and treatment groups.
@@ -602,7 +603,7 @@ def _survival_at_diff(
     interpolate=True,
     size_bootstrap=1.0,
     random_seed=None,
-    **kwargs
+    **kwargs,
 ):
     """Compute the difference in Kaplan Meier survival function estimates
     between the control and treatment groups at a specified time horizon.
@@ -680,7 +681,7 @@ def _tar(
     interpolate=True,
     size_bootstrap=1.0,
     random_seed=None,
-    **kwargs
+    **kwargs,
 ):
     """Time at Risk (TaR) measures time-to-event at a specified level
     of risk.
@@ -749,7 +750,7 @@ def _hazard_ratio(
     control_weights,
     size_bootstrap=1.0,
     random_seed=None,
-    **kwargs
+    **kwargs,
 ):
     """Train an instance of the Cox Proportional Hazards model and return the
     exp(coefficients) (hazard ratios) of the model.

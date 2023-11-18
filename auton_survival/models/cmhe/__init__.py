@@ -75,7 +75,7 @@ Example Usage
 
 """
 
-from loguru import logger
+import logging
 import numpy as np
 import torch
 
@@ -84,6 +84,8 @@ from .cmhe_utilities import train_cmhe, predict_survival
 from .cmhe_utilities import predict_latent_phi, predict_latent_z
 
 from auton_survival.utils import _dataframe_to_array
+
+logger = logging.getLogger(__name__)
 
 
 class DeepCoxMixturesHeterogenousEffects:
@@ -149,7 +151,7 @@ class DeepCoxMixturesHeterogenousEffects:
         else:
             logger.info("An unfitted instance of the CMHE model")
 
-        logger.info("Hidden Layers: {}", self.layers)
+        logger.info(f"Hidden Layers: {self.layers}")
 
     def _preprocess_test_data(self, x, a=None):
         x = _dataframe_to_array(x)

@@ -37,7 +37,10 @@ import torch
 import numpy as np
 
 import gc
-from loguru import logger
+import logging
+
+
+logger = logging.getLogger(__name__)
 
 
 def pretrain_dsm(

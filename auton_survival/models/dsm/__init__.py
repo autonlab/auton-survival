@@ -156,7 +156,7 @@ Healthcare (2021)](https://arxiv.org/abs/2101.06536)</a>
 
 """
 
-from loguru import logger
+import logging
 import torch
 import numpy as np
 
@@ -181,6 +181,9 @@ __pdoc__["DeepSurvivalMachines.fit"] = True
 __pdoc__["DeepSurvivalMachines._eval_nll"] = True
 __pdoc__["DeepConvolutionalSurvivalMachines._eval_nll"] = True
 __pdoc__["DSMBase"] = False
+
+
+logger = logging.getLogger(__name__)
 
 
 class DSMBase:
@@ -547,9 +550,9 @@ class DeepSurvivalMachines(DSMBase):
                 "An unfitted instance of the Deep Survival Machines model"
             )
 
-        logger.info("Number of underlying distributions (k): {}", self.k)
-        logger.info("Hidden Layers: {}", self.layers)
-        logger.info("Distribution Choice: {}", self.dist)
+        logger.info(f"Number of underlying distributions (k): {self.k}")
+        logger.info(f"Hidden Layers: {self.layers}")
+        logger.info(f"Distribution Choice: {self.dist}")
 
 
 class DeepRecurrentSurvivalMachines(DSMBase):

@@ -50,7 +50,7 @@ for Survival Regression. Machine Learning in Health Conference (2021)</a>
 
 """
 
-from loguru import logger
+import logging
 import torch
 import numpy as np
 
@@ -58,6 +58,8 @@ from .dcm_torch import DeepCoxMixturesTorch
 from .dcm_utilities import train_dcm, predict_survival, predict_latent_z
 
 from auton_survival.utils import _dataframe_to_array
+
+logger = logging.getLogger(__name__)
 
 
 class DeepCoxMixtures:
@@ -116,8 +118,8 @@ class DeepCoxMixtures:
         else:
             logger.info("An unfitted instance of the Deep Cox Mixtures model")
 
-        logger.info("Number of underlying cox distributions (k): {}", self.k)
-        logger.info("Hidden Layers: {}", self.layers)
+        logger.info(f"Number of underlying cox distributions (k): {self.k}")
+        logger.info(f"Hidden Layers: {self.layers}")
 
     def _preprocess_test_data(self, x):
         x = _dataframe_to_array(x)

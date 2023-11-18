@@ -1,7 +1,7 @@
 import torch
 import numpy as np
 import pandas as pd
-from loguru import logger
+import logging
 
 from sksurv.linear_model.coxph import BreslowEstimator
 
@@ -18,6 +18,8 @@ from auton_survival.models.utils.common_utils import (
     get_optimizer,
     partial_ll_loss,
 )
+
+logger = logging.getLogger(__name__)
 
 
 def fit_breslow(model, x, t, e):
@@ -119,9 +121,7 @@ def train_dcph(
 
         dics.append(deepcopy(model.state_dict()))
 
-        logger.debug(
-            "Patience: {} | Epoch: {} | Loss: {}", patience_, epoch, valcn
-        )
+        logger.debug(f"Patience: {patience_} | Epoch: {epoch} | Loss: {valcn}")
 
         if valcn > valc:
             patience_ += 1

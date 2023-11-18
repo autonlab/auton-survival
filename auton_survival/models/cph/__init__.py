@@ -24,7 +24,7 @@
 r""" Deep Cox Proportional Hazards Model"""
 
 from collections import namedtuple
-from loguru import logger
+import logging
 import torch
 import numpy as np
 import random
@@ -35,6 +35,9 @@ from .dcph_utilities import train_dcph, predict_survival
 from auton_survival.utils import _dataframe_to_array
 from auton_survival.models.utils.recurrent_nn_utils import _get_padded_features
 from auton_survival.models.utils.recurrent_nn_utils import _get_padded_targets
+
+
+logger = logging.getLogger(__name__)
 
 
 DcphModel = namedtuple("DcphModel", ["module", "breslow"])
@@ -127,7 +130,7 @@ class DeepCoxPH:
         else:
             logger.info("An unfitted instance of the Deep Cox PH model")
 
-        logger.info("Hidden Layers: {}", self.layers)
+        logger.info(f"Hidden Layers: {self.layers}")
 
     def _preprocess_test_data(self, x):
         x = _dataframe_to_array(x)
@@ -209,7 +212,7 @@ class DeepCoxPH:
             self.initialized = True
         else:
             logger.info(
-                f"""Early initialization selected. Model-specific `fit` parameters will be ignored."""
+                "Early initialization selected. Model-specific `fit` parameters will be ignored."
             )
 
     def fit(
@@ -324,7 +327,7 @@ class DeepCoxPH:
     @torch.inference_mode()
     def predict_time_independent_risk(self, x: torch.Tensor) -> torch.Tensor:
         if not self.initialized:
-            logger.warning(
+            raise Exception(
                 "The PyTorch module has not been initialized yet. Please init the "
                 + "model using the `init_torch_model` method on some training data "
                 + "before calling `predict_time_independent_risk`."
@@ -418,7 +421,7 @@ class DeepRecurrentCoxPH(DeepCoxPH):
                 "An unfitted instance of the Recurrent Deep Cox PH model"
             )
 
-        logger.info("Hidden Layers: {}", self.layers)
+        logger.info(f"Hidden Layers: {self.layers}")
 
     def _gen_torch_model(self, inputdim, optimizer):
         """Helper function to return a torch model."""

@@ -21,7 +21,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from loguru import logger
+import logging
 import torch
 import numpy as np
 
@@ -39,6 +39,8 @@ from auton_survival.models.utils.cox_mixtures_utils import (
     sample_hard_z,
     smooth_bl_survival,
 )
+
+logger = logging.getLogger(__name__)
 
 
 def get_likelihood(model, breslow_splines, x, t, e, a):
@@ -300,9 +302,7 @@ def train_cmhe(
 
         losses.append(valcn)
 
-        logger.debug(
-            "Patience: {} | Epoch: {} | Loss: {}", patience_, epoch, valcn
-        )
+        logger.debug(f"Patience: {patience_} | Epoch: {epoch} | Loss: {valcn}")
 
         if valcn > valc:
             patience_ += 1
