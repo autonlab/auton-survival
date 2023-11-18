@@ -183,9 +183,9 @@ __pdoc__["DeepConvolutionalSurvivalMachines._eval_nll"] = True
 __pdoc__["DSMBase"] = False
 
 
-from auton_survival.logging import LOGGER
+import logging
 
-logger = LOGGER.getChild(__name__)
+logger = logging.getLogger(__name__)
 
 
 class DSMBase:

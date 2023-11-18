@@ -38,9 +38,9 @@ from sklearn.metrics import auc
 from auton_survival.utils import _get_method_kwargs
 from auton_survival.experiments import CounterfactualSurvivalRegressionCV
 
-from auton_survival.logging import LOGGER
+import logging
 
-logger = LOGGER.getChild(__name__)
+logger = logging.getLogger(__name__)
 
 
 class Phenotyper:

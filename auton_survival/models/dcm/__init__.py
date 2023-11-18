@@ -59,9 +59,9 @@ from .dcm_utilities import train_dcm, predict_survival, predict_latent_z
 
 from auton_survival.utils import _dataframe_to_array
 
-from auton_survival.logging import LOGGER
+import logging
 
-logger = LOGGER.getChild(__name__)
+logger = logging.getLogger(__name__)
 
 
 class DeepCoxMixtures:

@@ -24,9 +24,9 @@ from auton_survival.models.utils.cox_mixtures_utils import (
     smooth_bl_survival,
 )
 
-from auton_survival.logging import LOGGER
+import logging
 
-logger = LOGGER.getChild(__name__)
+logger = logging.getLogger(__name__)
 
 
 def get_likelihood(model, breslow_splines, x, t, e):
