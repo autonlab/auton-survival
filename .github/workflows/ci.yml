@@ -45,7 +45,7 @@ jobs:
         python -m poetry install
 
     - name: Test
-      run: poetry run python3 -m unittest discover
+      run: poetry run python3 -m unittest discover -v
 
   Release:
     needs: Quality
