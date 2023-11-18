@@ -144,11 +144,13 @@ def train_dcph(
         return (model, breslow_spline)
 
 
+@torch.inference_mode()
 def predict_survival(model, x, t=None):
     if isinstance(t, (int, float)):
         t = [t]
 
     model, breslow_spline = model
+    model.eval()
     lrisks = model(x).detach().cpu().numpy()
 
     unique_times = breslow_spline.baseline_survival_.x

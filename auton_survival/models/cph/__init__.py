@@ -37,6 +37,9 @@ from auton_survival.models.utils.recurrent_nn_utils import _get_padded_features
 from auton_survival.models.utils.recurrent_nn_utils import _get_padded_targets
 
 
+DcphModel = namedtuple("DcphModel", ["module", "breslow"])
+
+
 class DeepCoxPH:
     """A Deep Cox Proportional Hazards model.
 
@@ -196,22 +199,17 @@ class DeepCoxPH:
         dropout=None,
     ):
         if not self.initialized:
-            self.torch_model = (
+            self.torch_model = DcphModel(
                 self._gen_torch_model(
                     inputdim, optimizer, activation, bias, dropout
                 ),
                 None,
             )
+
             self.initialized = True
-            logger.info(
-                f"Initialized torch model with parameters: \n{self.torch_module}"
-            )
         else:
             logger.info(
-                f"""Early initialization selected.
-                            Skipping model initialization in `fit` method.
-                            Model-specific parameters will be ignored.
-                            Fitting model with parameters: \n{self.torch_module}"""
+                f"""Early initialization selected. Model-specific `fit` parameters will be ignored."""
             )
 
     def fit(
@@ -256,22 +254,22 @@ class DeepCoxPH:
             Learning is performed on mini-batches of input data. this parameter
             specifies the size of each mini-batch.
         optimizer: str
-            The choice of the gradient based optimization method. One of
+            Ignored if model is built with `early_init=True`. The choice of the gradient based optimization method. One of
             'Adam', 'RMSProp' or 'SGD'.
+        activation: str
+            Ignored if model is built with `early_init=True`. Choice of activation function: supports 'ReLU6', 'ReLU', 'Tanh', 'SeLU'.
+        dropout: float
+            Ignored if model is built with `early_init=True`. If present introduces drop-out at the input layer and in the hidden layers.
+        bias: bool
+            Ignored if model is built with `early_init=True`. If True uses `bias=True` in the internal torch.nn.Linear modules
+        momentum: float
+            Controls optimizer momentum if available.
         patience: str
             Early-stopping threshold.
         breslow: bool
             If True fits the Breslow Estimator to predict time-dependent risks.
         weight_decay: float
             Controls optimizer weight decay if available.
-        bias: bool
-            If True uses `bias=True` in the internal torch.nn.Linear modules
-        activation: str
-            Choice of activation function: supports 'ReLU6', 'ReLU', 'Tanh', 'SeLU'.
-        dropout: float
-            If present introduces drop-out at the input layer and in the hidden layers.
-        momentum: float
-            Controls optimizer momentum if available.
         """
 
         processed_data = self._preprocess_training_data(
@@ -292,7 +290,7 @@ class DeepCoxPH:
             dropout=dropout,
         )
 
-        torch_module = self.torch_model[0]
+        torch_module = self.torch_model.module
 
         fitted_model, losses = train_dcph(
             torch_module,
@@ -309,7 +307,6 @@ class DeepCoxPH:
             momentum=momentum,
         )
 
-        DcphModel = namedtuple("DcphModel", ["module", "breslow"])
         self.torch_model = DcphModel(fitted_model[0].eval(), fitted_model[1])
 
         self.losses = losses
@@ -337,6 +334,7 @@ class DeepCoxPH:
         self.torch_model[0].eval()
         return self.torch_model[0](x)
 
+    @torch.inference_mode()
     def predict_risk(self, x, t=None):
         if self.breslow and self.fitted:
             return 1 - self.predict_survival(x, t)
@@ -347,6 +345,7 @@ class DeepCoxPH:
                 + "before calling `predict_risk`."
             )
 
+    @torch.inference_mode()
     def predict_survival(self, x, t=None):
         r"""Returns the estimated survival probability at time \( t \),
           \( \widehat{\mathbb{P}}(T > t|X) \) for some input data \( x \).
