@@ -7,7 +7,9 @@ from lifelines import KaplanMeierFitter
 from lifelines.plotting import add_at_risk_counts
 
 
-from auton_survival.logging import logger
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def plot_kaplanmeier(outcomes, groups=None, plot_counts=False, **kwargs):

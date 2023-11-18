@@ -37,7 +37,9 @@ from auton_survival.models.utils.recurrent_nn_utils import _get_padded_features
 from auton_survival.models.utils.recurrent_nn_utils import _get_padded_targets
 
 
-from auton_survival.logging import logger
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 DcphModel = namedtuple("DcphModel", ["module", "breslow"])

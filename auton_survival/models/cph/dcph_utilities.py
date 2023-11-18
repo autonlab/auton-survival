@@ -19,7 +19,9 @@ from auton_survival.models.utils.common_utils import (
     partial_ll_loss,
 )
 
-from auton_survival.logging import logger
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def fit_breslow(model, x, t, e):

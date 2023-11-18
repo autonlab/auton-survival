@@ -35,7 +35,9 @@ from tqdm import tqdm
 
 import warnings
 
-from auton_survival.logging import logger
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def treatment_effect(

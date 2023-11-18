@@ -1,4 +1,7 @@
 import logging
 
 LOGGER_NAME = "auton_survival"
-logger = logging.getLogger(LOGGER_NAME)
+
+
+def configure_logging():
+    logging.getLogger(LOGGER_NAME).addHandler(logging.NullHandler())

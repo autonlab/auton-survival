@@ -37,7 +37,9 @@ from sklearn.utils import shuffle
 from tqdm import tqdm
 
 
-from auton_survival.logging import logger
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class SurvivalRegressionCV:
