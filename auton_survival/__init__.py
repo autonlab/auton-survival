@@ -475,6 +475,3 @@ from .models.cmhe import DeepCoxMixturesHeterogenousEffects
 
 import warnings
 from tqdm.auto import tqdm
-import logging
-
-logging.basicConfig()

@@ -1,7 +1,7 @@
 import torch
 import numpy as np
 import pandas as pd
-import logging
+
 
 from sksurv.linear_model.coxph import BreslowEstimator
 
@@ -19,7 +19,9 @@ from auton_survival.models.utils.common_utils import (
     partial_ll_loss,
 )
 
-logger = logging.getLogger(__name__)
+from auton_survival.logging import LOGGER
+
+logger = LOGGER.getChild(__name__)
 
 
 def fit_breslow(model, x, t, e):

@@ -156,7 +156,7 @@ Healthcare (2021)](https://arxiv.org/abs/2101.06536)</a>
 
 """
 
-import logging
+
 import torch
 import numpy as np
 
@@ -183,7 +183,9 @@ __pdoc__["DeepConvolutionalSurvivalMachines._eval_nll"] = True
 __pdoc__["DSMBase"] = False
 
 
-logger = logging.getLogger(__name__)
+from auton_survival.logging import LOGGER
+
+logger = LOGGER.getChild(__name__)
 
 
 class DSMBase:

@@ -50,7 +50,7 @@ for Survival Regression. Machine Learning in Health Conference (2021)</a>
 
 """
 
-import logging
+
 import torch
 import numpy as np
 
@@ -59,7 +59,9 @@ from .dcm_utilities import train_dcm, predict_survival, predict_latent_z
 
 from auton_survival.utils import _dataframe_to_array
 
-logger = logging.getLogger(__name__)
+from auton_survival.logging import LOGGER
+
+logger = LOGGER.getChild(__name__)
 
 
 class DeepCoxMixtures:

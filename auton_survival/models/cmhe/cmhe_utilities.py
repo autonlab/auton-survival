@@ -21,7 +21,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import logging
+
 import torch
 import numpy as np
 
@@ -40,7 +40,9 @@ from auton_survival.models.utils.cox_mixtures_utils import (
     smooth_bl_survival,
 )
 
-logger = logging.getLogger(__name__)
+from auton_survival.logging import LOGGER
+
+logger = LOGGER.getChild(__name__)
 
 
 def get_likelihood(model, breslow_splines, x, t, e, a):

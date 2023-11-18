@@ -1,4 +1,3 @@
-import logging
 import numpy as np
 import pandas as pd
 
@@ -8,7 +7,9 @@ from lifelines import KaplanMeierFitter
 from lifelines.plotting import add_at_risk_counts
 
 
-logger = logging.getLogger(__name__)
+from auton_survival.logging import LOGGER
+
+logger = LOGGER.getChild(__name__)
 
 
 def plot_kaplanmeier(outcomes, groups=None, plot_counts=False, **kwargs):

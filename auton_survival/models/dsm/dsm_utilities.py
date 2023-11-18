@@ -37,10 +37,11 @@ import torch
 import numpy as np
 
 import gc
-import logging
 
 
-logger = logging.getLogger(__name__)
+from auton_survival.logging import LOGGER
+
+logger = LOGGER.getChild(__name__)
 
 
 def pretrain_dsm(
