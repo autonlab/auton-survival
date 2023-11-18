@@ -1,3 +1,3 @@
 import logging
 
-LOGGER = logging.getLogger("auton_survival")
+LOGGER = logging.getLogger("autonlab")
