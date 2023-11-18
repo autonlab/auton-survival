@@ -5,13 +5,25 @@ from auton_survival.models.dsm.dsm_torch import create_representation
 
 
 class DeepCoxPHTorch(nn.Module):
-    def _init_coxph_layers(self, lastdim):
-        self.expert = nn.Linear(lastdim, 1, bias=False)
+    def _init_coxph_layers(self, lastdim, bias=False):
+        self.expert = nn.Linear(lastdim, 1, bias=bias)
 
-    def __init__(self, inputdim, layers=None, optimizer="Adam", activation="Tanh"):
+    def __init__(
+        self,
+        inputdim,
+        layers=None,
+        optimizer="Adam",
+        activation="ReLU",
+        bias=False,
+        dropout=None,
+    ):
         super(DeepCoxPHTorch, self).__init__()
 
+        self.inputdim = inputdim
         self.optimizer = optimizer
+        self.bias = bias
+        self.activation = activation
+        self.dropout = dropout
 
         if layers is None:
             layers = []
@@ -23,7 +35,9 @@ class DeepCoxPHTorch(nn.Module):
             lastdim = layers[-1]
 
         self._init_coxph_layers(lastdim)
-        self.embedding = create_representation(inputdim, layers, activation=activation)
+        self.embedding = create_representation(
+            inputdim, layers, activation=activation, bias=bias, dropout=dropout
+        )
 
     def forward(self, x):
         return self.expert(self.embedding(x))

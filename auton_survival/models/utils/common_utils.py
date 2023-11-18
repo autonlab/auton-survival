@@ -25,15 +25,27 @@ def partial_ll_loss(lrisks, tb, eb, eps=1e-2):
     return -pll
 
 
-def get_optimizer(model, lr, weight_decay=0.001):
+def get_optimizer(model, lr, weight_decay=0.001, momentum=0.9):
     if model.optimizer == "Adam":
         return torch.optim.Adam(
-            model.parameters(), lr=lr, weight_decay=weight_decay
+            model.parameters(),
+            lr=lr,
+            weight_decay=weight_decay,
         )
     elif model.optimizer == "SGD":
-        return torch.optim.SGD(model.parameters(), lr=lr)
+        return torch.optim.SGD(
+            model.parameters(),
+            lr=lr,
+            momentum=momentum,
+            weight_decay=weight_decay,
+        )
     elif model.optimizer == "RMSProp":
-        return torch.optim.RMSprop(model.parameters(), lr=lr)
+        return torch.optim.RMSprop(
+            model.parameters(),
+            lr=lr,
+            momentum=momentum,
+            weight_decay=weight_decay,
+        )
     else:
         raise NotImplementedError(
             "Optimizer " + model.optimizer + " is not implemented"

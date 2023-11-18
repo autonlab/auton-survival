@@ -82,6 +82,7 @@ def train_dcph(
     return_losses=False,
     breslow: bool = True,
     weight_decay=0.001,
+    momentum=0.9,
 ):
     torch.manual_seed(random_seed)
     np.random.seed(random_seed)
@@ -97,8 +98,9 @@ def train_dcph(
     tv_ = _reshape_tensor_with_nans(tv)
     ev_ = _reshape_tensor_with_nans(ev)
 
-    optimizer = torch.optim.Adam(model.parameters(), lr=lr)
-    optimizer = get_optimizer(model, lr, weight_decay=weight_decay)
+    optimizer = get_optimizer(
+        model, lr, weight_decay=weight_decay, momentum=momentum
+    )
 
     valc = np.inf
     patience_ = 0

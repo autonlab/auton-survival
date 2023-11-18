@@ -23,9 +23,11 @@
 
 r""" Deep Cox Proportional Hazards Model"""
 
+from collections import namedtuple
 from loguru import logger
 import torch
 import numpy as np
+import random
 
 from .dcph_torch import DeepCoxPHTorch, DeepRecurrentCoxPHTorch
 from .dcph_utilities import train_dcph, predict_survival
@@ -63,6 +65,18 @@ class DeepCoxPH:
         hidden layer.
     random_seed: int
         Controls the reproducibility of called functions.
+    early_init: bool
+        If True initialize PyTorch module on DeepCoxPH initialization
+    weight_decay: float
+        If `early_init=True` controls optimizer weight decay if available.
+    bias: bool
+        If `early_init=True` if True uses `bias=True` in the internal torch.nn.Linear modules
+    activation: str
+        If `early_init=True` controls activation function: supports 'ReLU6', 'ReLU', 'Tanh', 'SeLU'.
+    dropout: float
+        If `early_init=True` if present introduces drop-out at the input layer and in the hidden layers.
+    momentum: float
+        If `early_init=True` controls optimizer momentum if available.
     Example
     -------
     >>> from auton_survival import DeepCoxPH
@@ -71,11 +85,31 @@ class DeepCoxPH:
 
     """
 
-    def __init__(self, layers=None, random_seed=0):
+    def __init__(
+        self,
+        layers=None,
+        random_seed=0,
+        early_init=False,
+        input_dim=None,
+        optimizer="Adam",
+        activation="ReLU",
+        bias=False,
+        dropout=None,
+    ):
         self.layers = layers
         self.fitted = False
         self.initialized = False
         self.random_seed = random_seed
+        self.early_init = early_init
+
+        if self.early_init and input_dim is not None:
+            self.init_torch_model(
+                inputdim=input_dim,
+                optimizer=optimizer,
+                activation=activation,
+                bias=bias,
+                dropout=dropout,
+            )
 
     @property
     def torch_module(self):
@@ -137,21 +171,48 @@ class DeepCoxPH:
 
         return (x_train, t_train, e_train, x_val, t_val, e_val)
 
-    def _gen_torch_model(self, inputdim, optimizer):
+    def _gen_torch_model(self, inputdim, optimizer, activation, bias, dropout):
         """Helper function to return a torch model."""
         # Add random seed to get the same results like in dcm __init__.py
         np.random.seed(self.random_seed)
         torch.manual_seed(self.random_seed)
+        random.seed(self.random_seed)
 
-        return DeepCoxPHTorch(inputdim, layers=self.layers, optimizer=optimizer)
+        return DeepCoxPHTorch(
+            inputdim,
+            layers=self.layers,
+            optimizer=optimizer,
+            activation=activation,
+            bias=bias,
+            dropout=dropout,
+        )
 
-    def init_torch_model(self, inputdim, optimizer="Adam"):
+    def init_torch_model(
+        self,
+        inputdim,
+        optimizer="Adam",
+        activation="ReLU",
+        bias=False,
+        dropout=None,
+    ):
         if not self.initialized:
             self.torch_model = (
-                self._gen_torch_model(inputdim, optimizer),
+                self._gen_torch_model(
+                    inputdim, optimizer, activation, bias, dropout
+                ),
                 None,
             )
             self.initialized = True
+            logger.info(
+                f"Initialized torch model with parameters: \n{self.torch_module}"
+            )
+        else:
+            logger.info(
+                f"""Early initialization selected.
+                            Skipping model initialization in `fit` method.
+                            Model-specific parameters will be ignored.
+                            Fitting model with parameters: \n{self.torch_module}"""
+            )
 
     def fit(
         self,
@@ -167,8 +228,12 @@ class DeepCoxPH:
         patience=3,
         breslow=True,
         weight_decay=0.001,
+        bias=False,
+        activation="ReLU",
+        dropout=None,
+        momentum=0.9,
     ):
-        r"""This method is used to train an instance of the DSM model.
+        r"""This method is used to train an instance of the DCPH model.
 
         Parameters
         ----------
@@ -188,12 +253,25 @@ class DeepCoxPH:
         learning_rate: float
             The learning rate for the `Adam` optimizer.
         batch_size: int
-            learning is performed on mini-batches of input data. this parameter
+            Learning is performed on mini-batches of input data. this parameter
             specifies the size of each mini-batch.
         optimizer: str
             The choice of the gradient based optimization method. One of
             'Adam', 'RMSProp' or 'SGD'.
-
+        patience: str
+            Early-stopping threshold.
+        breslow: bool
+            If True fits the Breslow Estimator to predict time-dependent risks.
+        weight_decay: float
+            Controls optimizer weight decay if available.
+        bias: bool
+            If True uses `bias=True` in the internal torch.nn.Linear modules
+        activation: str
+            Choice of activation function: supports 'ReLU6', 'ReLU', 'Tanh', 'SeLU'.
+        dropout: float
+            If present introduces drop-out at the input layer and in the hidden layers.
+        momentum: float
+            Controls optimizer momentum if available.
         """
 
         processed_data = self._preprocess_training_data(
@@ -206,7 +284,13 @@ class DeepCoxPH:
 
         inputdim = x_train.shape[-1]
 
-        self.init_torch_model(inputdim, optimizer)
+        self.init_torch_model(
+            inputdim,
+            optimizer,
+            activation=activation,
+            bias=bias,
+            dropout=dropout,
+        )
 
         torch_module = self.torch_model[0]
 
@@ -222,12 +306,15 @@ class DeepCoxPH:
             patience=patience,
             breslow=breslow,
             weight_decay=weight_decay,
+            momentum=momentum,
         )
 
-        self.torch_model = (fitted_model[0].eval(), fitted_model[1])
+        DcphModel = namedtuple("DcphModel", ["module", "breslow"])
+        self.torch_model = DcphModel(fitted_model[0].eval(), fitted_model[1])
+
         self.losses = losses
         self.fitted = True
-        self.breslow = True if fitted_model[1] is not None else False
+        self.breslow = True if self.torch_model.breslow is not None else False
 
         return self
 

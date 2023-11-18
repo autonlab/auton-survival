@@ -46,7 +46,9 @@ for clsn in [
         __pdoc__[clsn + "." + membr] = False
 
 
-def create_representation(inputdim, layers, activation, bias=False):
+def create_representation(
+    inputdim, layers, activation, bias=False, dropout: float = None
+):
     r"""Helper function to generate the representation function for DSM.
 
     Deep Survival Machines learns a representation (\ Phi(X) \) for the input
@@ -84,9 +86,16 @@ def create_representation(inputdim, layers, activation, bias=False):
     modules = []
     prevdim = inputdim
 
+    if dropout is not None:
+        modules.append(nn.Dropout(p=dropout))
+
     for hidden in layers:
         modules.append(nn.Linear(prevdim, hidden, bias=bias))
         modules.append(act)
+
+        if dropout is not None:
+            modules.append(nn.Dropout(p=dropout))
+
         prevdim = hidden
 
     return nn.Sequential(*modules)
