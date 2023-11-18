@@ -85,9 +85,7 @@ from .cmhe_utilities import predict_latent_phi, predict_latent_z
 
 from auton_survival.utils import _dataframe_to_array
 
-import logging
-
-logger = logging.getLogger(__name__)
+from auton_survival.logging import logger
 
 
 class DeepCoxMixturesHeterogenousEffects:

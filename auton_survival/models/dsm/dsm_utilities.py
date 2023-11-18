@@ -39,9 +39,7 @@ import numpy as np
 import gc
 
 
-import logging
-
-logger = logging.getLogger(__name__)
+from auton_survival.logging import logger
 
 
 def pretrain_dsm(
