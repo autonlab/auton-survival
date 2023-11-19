@@ -161,3 +161,16 @@ class TestDCPH(unittest.TestCase):
 
         with self.assertRaises(Exception) as cm:
             model.predict_risk(features_test, t=times)
+
+    def test_dcph_early_init(self):
+        model = DeepCoxPH(layers=[128, 64, 32], early_init=True, input_dim=33)
+        from torch import nn
+
+        self.assertIsInstance(model.torch_module, nn.Module)
+        self.assertIsInstance(model.torch_module, DeepCoxPHTorch)
+
+    def test_dcph_no_early_init(self):
+        model = DeepCoxPH(layers=[64])
+
+        with self.assertRaises(Exception) as cm:
+            model.torch_module
