@@ -336,8 +336,8 @@ class DeepCoxPH:
             )
 
         x = self._preprocess_test_data(x)
-        self.torch_model[0].eval()
-        return self.torch_model[0](x)
+        self.torch_module.eval()
+        return self.torch_module(x)
 
     @torch.inference_mode()
     def predict_risk(self, x, t=None):
