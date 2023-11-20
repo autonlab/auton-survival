@@ -465,7 +465,13 @@ Compatibility and Installation
 To evaluate performance using standard metrics
 `auton_survival` requires `scikit-survival`.
 
-To install `auton_survival`, clone the following git repository:
+You can install the package via pip:
+````console
+pip install auton-survival
+````
+
+## Development
+To install `auton_survival` for development purposes, clone the following git repository:
 ```console
 git clone https://github.com/autonlab/auton-survival.git
 cd auton-survival
