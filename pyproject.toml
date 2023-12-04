@@ -6,6 +6,9 @@ authors = ["Chirag Nagpal <chiragn@cs.cmu.edu>"]
 readme = "README.md"
 packages = [{include = "auton_survival"}]
 
+[tool.black]
+line-length = 80
+
 [tool.poetry.dependencies]
 python = "^3.8"
 torch = "^1.13"
@@ -16,6 +19,9 @@ scikit-learn = "^1.2"
 torchvision = "^0.14"
 scikit-survival = "^0.21"
 lifelines = "^0.26"
+
+[tool.poetry.group.dev.dependencies]
+pre-commit = "^3.4.0"
 
 [tool.semantic_release]
 version_toml = [

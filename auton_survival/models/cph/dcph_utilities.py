@@ -2,178 +2,181 @@ import torch
 import numpy as np
 import pandas as pd
 
+
 from sksurv.linear_model.coxph import BreslowEstimator
 
 from sklearn.utils import shuffle
 
-from tqdm import tqdm
+from tqdm.auto import tqdm
 
-from auton_survival.models.dsm.utilities import get_optimizer, _reshape_tensor_with_nans
+from auton_survival.models.dsm.dsm_utilities import (
+    _reshape_tensor_with_nans,
+)
 
 from copy import deepcopy
+from auton_survival.models.utils.common_utils import (
+    get_optimizer,
+    partial_ll_loss,
+)
 
-def randargmax(b,**kw):
-  """ a random tie-breaking argmax"""
-  return np.argmax(np.random.random(b.shape) * (b==b.max()), **kw)
+import logging
 
-def partial_ll_loss(lrisks, tb, eb, eps=1e-3):
+logger = logging.getLogger(__name__)
 
-  tb = tb + eps*np.random.random(len(tb))
-  sindex = np.argsort(-tb)
-
-  tb = tb[sindex]
-  eb = eb[sindex]
-
-  lrisks = lrisks[sindex]
-  lrisksdenom = torch.logcumsumexp(lrisks, dim = 0)
-
-  plls = lrisks - lrisksdenom
-  pll = plls[eb == 1]
-
-  pll = torch.sum(pll)
-
-  return -pll
 
 def fit_breslow(model, x, t, e):
-  return BreslowEstimator().fit(model(x).detach().cpu().numpy(),
-                                e.numpy(), t.numpy())
+    return BreslowEstimator().fit(
+        model(x).detach().cpu().numpy(), e.numpy(), t.numpy()
+    )
 
-def train_step(model, x, t, e, optimizer, bs=256, seed=100):
 
-  x, t, e = shuffle(x, t, e, random_state=seed)
+@torch.enable_grad()
+def train_step(model: torch.nn.Module, x, t, e, optimizer, bs=256, seed=100):
+    x, t, e = shuffle(x, t, e, random_state=seed)
 
-  n = x.shape[0]
+    n = x.shape[0]
 
-  batches = (n // bs) + 1
+    batches = (n // bs) + 1
 
-  epoch_loss = 0
+    epoch_loss = 0
 
-  for i in range(batches):
+    model.train()
 
-    xb = x[i*bs:(i+1)*bs]
-    tb = t[i*bs:(i+1)*bs]
-    eb = e[i*bs:(i+1)*bs]
+    for i in range(batches):
+        xb = x[i * bs : (i + 1) * bs]
+        tb = t[i * bs : (i + 1) * bs]
+        eb = e[i * bs : (i + 1) * bs]
 
-    # Training Step
-    torch.enable_grad()
-    optimizer.zero_grad()
-    loss = partial_ll_loss(model(xb),
-                          _reshape_tensor_with_nans(tb),
-                          _reshape_tensor_with_nans(eb))
-    loss.backward()
-    optimizer.step()
+        loss = partial_ll_loss(
+            model(xb),
+            _reshape_tensor_with_nans(tb),
+            _reshape_tensor_with_nans(eb),
+            eps=1e-3,
+        )
 
-    epoch_loss += float(loss)
+        optimizer.zero_grad()
 
-  return epoch_loss/n
+        loss.backward()
 
+        optimizer.step()
+
+        epoch_loss += float(loss)
+
+    return epoch_loss / n
+
+
+@torch.inference_mode()
 def test_step(model, x, t, e):
+    model.eval()
 
-  with torch.no_grad():
-    loss = float(partial_ll_loss(model(x), t, e))
+    loss = float(partial_ll_loss(model(x), t, e, eps=1e-3))
 
-  return loss/x.shape[0]
+    return loss / x.shape[0]
 
 
-def train_dcph(model, train_data, val_data, epochs=50,
-               patience=3, bs=256, lr=1e-3, debug=False,
-               random_seed=0, return_losses=False):
+def train_dcph(
+    model,
+    train_data,
+    val_data,
+    epochs=50,
+    patience=3,
+    bs=256,
+    lr=1e-3,
+    random_seed=0,
+    return_losses=False,
+    breslow: bool = True,
+    weight_decay=0.001,
+    momentum=0.9,
+):
+    torch.manual_seed(random_seed)
+    np.random.seed(random_seed)
 
-  torch.manual_seed(random_seed)
-  np.random.seed(random_seed)
+    if val_data is None:
+        val_data = train_data
 
-  if val_data is None:
-    val_data = train_data
+    xt, tt, et = train_data
+    xv, tv, ev = val_data
 
-  xt, tt, et = train_data
-  xv, tv, ev = val_data
+    tt_ = _reshape_tensor_with_nans(tt)
+    et_ = _reshape_tensor_with_nans(et)
+    tv_ = _reshape_tensor_with_nans(tv)
+    ev_ = _reshape_tensor_with_nans(ev)
 
-  tt_ = _reshape_tensor_with_nans(tt)
-  et_ = _reshape_tensor_with_nans(et)
-  tv_ = _reshape_tensor_with_nans(tv)
-  ev_ = _reshape_tensor_with_nans(ev)
+    optimizer = get_optimizer(
+        model, lr, weight_decay=weight_decay, momentum=momentum
+    )
 
-  optimizer = torch.optim.Adam(model.parameters(), lr=lr)
-  optimizer = get_optimizer(model, lr)
+    valc = np.inf
+    patience_ = 0
 
-  valc = np.inf
-  patience_ = 0
+    breslow_spline = None
 
-  breslow_spline = None
+    losses = []
+    dics = []
 
-  losses = []
-  dics = []
-  
-  for epoch in tqdm(range(epochs)):
+    for epoch in tqdm(range(epochs), desc="Training"):
+        _ = train_step(model, xt, tt, et, optimizer, bs, seed=epoch)
 
-    # train_step_start = time.time()
-    _ = train_step(model, xt, tt, et, optimizer, bs, seed=epoch)
-    # print(f'Duration of train-step: {time.time() - train_step_start}')
-    # test_step_start = time.time()
-    valcn = test_step(model, xv, tv_, ev_)
-    # print(f'Duration of test-step: {time.time() - test_step_start}')
+        valcn = test_step(model, xv, tv_, ev_)
 
-    losses.append(float(valcn))
-    
-    dics.append(deepcopy(model.state_dict()))
+        losses.append(float(valcn))
 
-    if epoch % 1 == 0:
-      if debug: print(patience_, epoch, valcn)
+        dics.append(deepcopy(model.state_dict()))
 
-    if valcn > valc:
-      patience_ += 1
-    else:
-      patience_ = 0
+        logger.debug(f"Patience: {patience_} | Epoch: {epoch} | Loss: {valcn}")
 
-    if patience_ == patience:
-      
-      minm = np.argmin(losses)
-      model.load_state_dict(dics[minm])
+        if valcn > valc:
+            patience_ += 1
+        else:
+            patience_ = 0
 
-      breslow_spline = fit_breslow(model, xt, tt_, et_)
+        if patience_ == patience:
+            break
 
-      if return_losses:
+        valc = valcn
+
+    minm = np.argmin(losses)
+    model.load_state_dict(dics[minm])
+
+    breslow_spline = fit_breslow(model, xt, tt_, et_) if breslow else None
+
+    if return_losses:
         return (model, breslow_spline), losses
-      else:
+    else:
         return (model, breslow_spline)
 
-    valc = valcn
-    
-  minm = np.argmin(losses)
-  model.load_state_dict(dics[minm])
-  
-  breslow_spline = fit_breslow(model, xt, tt_, et_)
 
-  if return_losses:
-    return (model, breslow_spline), losses
-  else:
-    return (model, breslow_spline)
-
+@torch.inference_mode()
 def predict_survival(model, x, t=None):
+    if isinstance(t, (int, float)):
+        t = [t]
 
-  if isinstance(t, (int, float)): t = [t]
+    model, breslow_spline = model
+    model.eval()
+    lrisks = model(x).detach().cpu().numpy()
 
-  model, breslow_spline = model
-  lrisks = model(x).detach().cpu().numpy()
+    unique_times = breslow_spline.baseline_survival_.x
 
-  unique_times = breslow_spline.baseline_survival_.x
+    raw_predictions = breslow_spline.get_survival_function(lrisks)
+    raw_predictions = np.array([pred.y for pred in raw_predictions])
 
-  raw_predictions = breslow_spline.get_survival_function(lrisks)
-  raw_predictions = np.array([pred.y for pred in raw_predictions])
+    predictions = pd.DataFrame(data=raw_predictions, columns=unique_times)
 
-  predictions = pd.DataFrame(data=raw_predictions, columns=unique_times)
+    if t is None:
+        return predictions
+    else:
+        return __interpolate_missing_times(predictions.T, t)
 
-  if t is None:
-    return predictions
-  else:
-    return __interpolate_missing_times(predictions.T, t)
-    #return np.array(predictions).T
 
 def __interpolate_missing_times(survival_predictions, times):
+    nans = np.full(survival_predictions.shape[1], np.nan)
+    not_in_index = list(set(times) - set(survival_predictions.index))
 
-  nans = np.full(survival_predictions.shape[1], np.nan)
-  not_in_index = list(set(times) - set(survival_predictions.index))
-
-  for idx in not_in_index:
-    survival_predictions.loc[idx] = nans
-  return survival_predictions.sort_index(axis=0).interpolate(method='bfill').T[times].values
+    for idx in not_in_index:
+        survival_predictions.loc[idx] = nans
+    return (
+        survival_predictions.sort_index(axis=0)
+        .interpolate(method="bfill")
+        .T[times]
+        .values
+    )

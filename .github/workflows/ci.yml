@@ -8,7 +8,15 @@ on:
 
 
 jobs:
+  Pre-Commit:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/setup-python@v3
+    - uses: pre-commit/action@v3.0.0
+
   Quality:
+    needs: Pre-Commit
     runs-on: ubuntu-latest
     strategy:
         fail-fast: true
@@ -37,14 +45,14 @@ jobs:
         python -m poetry install
 
     - name: Test
-      run: poetry run python3 -m unittest discover
-    
+      run: poetry run python3 -m unittest discover -v
+
   Release:
     needs: Quality
     if: |
-      github.repository == 'autonlab/auton-survival' && 
-      github.event_name == 'push' && 
-      github.ref == 'refs/heads/master' && 
+      github.repository == 'autonlab/auton-survival' &&
+      github.event_name == 'push' &&
+      github.ref == 'refs/heads/master' &&
       !contains ( github.event.head_commit.message, 'chore(release)' )
 
     runs-on: ubuntu-latest
@@ -86,7 +94,7 @@ jobs:
           for file in ./dist/**
             do gh release upload "${{steps.release-status.outputs.tag}}" $file
           done
-        
+
       - if: steps.release-status.outputs.released == 'true'
         name: Release to Test PyPI
         id: test-pypi-release
