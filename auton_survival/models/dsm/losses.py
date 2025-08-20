@@ -388,8 +388,41 @@ def _weibull_mean(model, x, risk='1'):
 
   return torch.exp(lmeans).detach().numpy()
 
-
-
+def _lognormal_pdf(model, x, t_horizon, risk='1'):
+    """Calculate the PDF for LogNormal distribution"""
+    squish = nn.LogSoftmax(dim=1)
+    
+    shape, scale, logits = model.forward(x, risk)
+    logits = squish(logits)
+    
+    k_ = shape  # location parameter (μ)
+    b_ = scale  # scale parameter (σ)
+    
+    t_horz = torch.tensor(t_horizon).double().to(logits.device)
+    t_horz = t_horz.repeat(shape.shape[0], 1)
+    
+    pdfs = []
+    for j in range(len(t_horizon)):
+        t = t_horz[:, j]
+        lpdfs = []
+        
+        for g in range(model.k):
+            mu = k_[:, g]
+            sigma = b_[:, g]
+            
+            # Calculate log PDF
+            # log(1/(t*σ√(2π))) = -log(t) - log(σ) - 0.5*log(2π)
+            # -(ln(t) - μ)²/(2σ²)
+            f = -torch.log(t) - sigma - 0.5*np.log(2*np.pi)
+            f = f - torch.div((torch.log(t) - mu)**2, 2.*torch.exp(2*sigma))
+            lpdfs.append(f)
+        
+        lpdfs = torch.stack(lpdfs, dim=1)
+        lpdfs = lpdfs + logits
+        lpdfs = torch.logsumexp(lpdfs, dim=1)
+        pdfs.append(lpdfs.detach().cpu().numpy())
+    
+    return pdfs
 
 def _lognormal_cdf(model, x, t_horizon, risk='1'):
 
@@ -427,6 +460,42 @@ def _lognormal_cdf(model, x, t_horizon, risk='1'):
     cdfs.append(lcdfs.detach().cpu().numpy())
 
   return cdfs
+
+def _normal_pdf(model, x, t_horizon, risk='1'):
+    """Calculate the PDF for Normal distribution"""
+    squish = nn.LogSoftmax(dim=1)
+    
+    shape, scale, logits = model.forward(x, risk)
+    logits = squish(logits)
+    
+    k_ = shape  # mean parameter (μ)
+    b_ = scale  # standard deviation parameter (σ)
+    
+    t_horz = torch.tensor(t_horizon).double().to(logits.device)
+    t_horz = t_horz.repeat(shape.shape[0], 1)
+    
+    pdfs = []
+    for j in range(len(t_horizon)):
+        t = t_horz[:, j]
+        lpdfs = []
+        
+        for g in range(model.k):
+            mu = k_[:, g]
+            sigma = b_[:, g]
+            
+            # Calculate log PDF
+            # log(1/(σ√(2π))) = -log(σ) - 0.5*log(2π)
+            # -(t - μ)²/(2σ²)
+            f = -sigma - 0.5*np.log(2*np.pi)
+            f = f - 0.5*torch.div((t - mu)**2, torch.exp(2*sigma))
+            lpdfs.append(f)
+        
+        lpdfs = torch.stack(lpdfs, dim=1)
+        lpdfs = lpdfs + logits
+        lpdfs = torch.logsumexp(lpdfs, dim=1)
+        pdfs.append(lpdfs.detach().cpu().numpy())
+    
+    return pdfs
 
 def _normal_cdf(model, x, t_horizon, risk='1'):
 
@@ -487,6 +556,29 @@ def _normal_mean(model, x, risk='1'):
 
   return lmeans.detach().cpu().numpy()
 
+def _lognormal_mean(model, x, risk='1'):
+    """Calculate the mean for LogNormal distribution"""
+    squish = nn.Softmax(dim=1)
+    shape, scale, logits = model.forward(x, risk)
+    
+    logits = squish(logits)
+    k_ = shape  # location parameter (μ)
+    b_ = scale  # scale parameter (σ)
+    
+    lmeans = []
+    for g in range(model.k):
+        mu = k_[:, g]
+        sigma = b_[:, g]
+        # Mean of lognormal = exp(μ + σ²/2)
+        mean = mu + torch.exp(2*sigma)/2
+        mean = torch.exp(mean)
+        lmeans.append(mean)
+    
+    lmeans = torch.stack(lmeans, dim=1)
+    lmeans = lmeans*logits
+    lmeans = torch.sum(lmeans, dim=1)
+    
+    return lmeans.detach().cpu().numpy()
 
 def predict_mean(model, x, risk='1'):
   torch.no_grad()
@@ -494,6 +586,8 @@ def predict_mean(model, x, risk='1'):
     return _normal_mean(model, x, risk)
   elif model.dist == 'Weibull':
     return _weibull_mean(model, x, risk)
+  elif model.dist == 'LogNormal':
+    return _lognormal_mean(model, x, risk)
   else:
     raise NotImplementedError('Mean of Distribution: '+model.dist+
                               ' not implemented yet.')
@@ -503,10 +597,10 @@ def predict_pdf(model, x, t_horizon, risk='1'):
   torch.no_grad()
   if model.dist == 'Weibull':
     return _weibull_pdf(model, x, t_horizon, risk)
-  # if model.dist == 'LogNormal':
-  #   return _lognormal_pdf(model, x, t_horizon, risk)
-  # if model.dist == 'Normal':
-  #   return _normal_pdf(model, x, t_horizon, risk)
+  elif model.dist == 'LogNormal':
+    return _lognormal_pdf(model, x, t_horizon, risk)
+  elif model.dist == 'Normal':
+    return _normal_pdf(model, x, t_horizon, risk)
   else:
     raise NotImplementedError('Distribution: '+model.dist+
                               ' not implemented yet.')
